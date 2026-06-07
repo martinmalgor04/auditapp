@@ -1,0 +1,6 @@
+{
+  "target": "cursor",
+  "profile": "core",
+  "includeComponents": ["lang:typescript"],
+  "notes": "Configuración por defecto de la plantilla. Ejecuta /project-init para ajustar al stack real del repo."
+}

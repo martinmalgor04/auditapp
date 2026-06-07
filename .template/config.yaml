@@ -1,0 +1,7 @@
+is_template: false
+project_name: "auditapp"
+description: "Auditapp permite a los tecnicos de servicios y sistemas Auditar empresas en toda su infraestructura IT e ERP, desde la agenda del cliente hasta el cierre de la auditoria con presupuestos acordes al mismovienen de presupuestos.serviciosysistemas.com.ar"
+languages:
+  - typescript
+onboarded_at: "2026-06-07T20:40:31Z"
+ecc_version: "2.0.0-rc.1"
