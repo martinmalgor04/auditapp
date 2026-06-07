@@ -1,6 +1,10 @@
 {
-  "target": "cursor",
-  "profile": "core",
-  "includeComponents": ["lang:typescript"],
-  "notes": "Configuración por defecto de la plantilla. Ejecuta /project-init para ajustar al stack real del repo."
+  "$schema": "./_ecc/schemas/ecc-install-config.schema.json",
+  "version": 1,
+  "target": "claude-project",
+  "profile": "full",
+  "include": ["lang:typescript"],
+  "options": {
+    "notes": "ECC full a nivel proyecto (auditapp/.claude). Stack: SvelteKit + Postgres + R2. Ajustar con /project-init."
+  }
 }
