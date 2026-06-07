@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ecc.install.v1",
-  "installedAt": "2026-06-07T20:54:45.174Z",
+  "installedAt": "2026-06-07T21:04:37.227Z",
   "target": {
     "id": "claude-project",
     "target": "claude-project",
@@ -12,7 +12,20 @@
     "profile": "full",
     "modules": [],
     "includeComponents": [
-      "lang:typescript"
+      "lang:typescript",
+      "skill:vite-patterns",
+      "skill:git-workflow",
+      "skill:frontend-a11y",
+      "skill:design-system",
+      "skill:browser-qa",
+      "skill:repo-scan",
+      "skill:codebase-onboarding",
+      "skill:documentation-lookup",
+      "skill:architecture-decision-records",
+      "skill:hexagonal-architecture",
+      "skill:context-budget",
+      "skill:plan-orchestrate",
+      "skill:ecc-guide"
     ],
     "excludeComponents": [],
     "legacyLanguages": [],
@@ -42,13 +55,26 @@
       "devops-infra",
       "machine-learning",
       "supply-chain-domain",
-      "document-processing"
+      "document-processing",
+      "skill-architecture-decision-records",
+      "skill-browser-qa",
+      "skill-codebase-onboarding",
+      "skill-context-budget",
+      "skill-design-system",
+      "skill-documentation-lookup",
+      "skill-ecc-guide",
+      "skill-frontend-a11y",
+      "skill-git-workflow",
+      "skill-hexagonal-architecture",
+      "skill-plan-orchestrate",
+      "skill-repo-scan",
+      "skill-vite-patterns"
     ],
     "skippedModules": []
   },
   "source": {
     "repoVersion": "2.0.0-rc.1",
-    "repoCommit": "e3aa852c10e772f05a7383c5a11bc25e83bbda6e",
+    "repoCommit": "9e3e480f0f0a786c0972a42bf4b4733cf9109008",
     "manifestVersion": 1
   },
   "operations": [
@@ -7508,6 +7534,136 @@
       "sourcePath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/_ecc/skills/visa-doc-translate/SKILL.md",
       "sourceRelativePath": "skills/visa-doc-translate/SKILL.md",
       "destinationPath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/.claude/skills/ecc/visa-doc-translate/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "skill-architecture-decision-records",
+      "sourcePath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/_ecc/skills/architecture-decision-records/SKILL.md",
+      "sourceRelativePath": "skills/architecture-decision-records/SKILL.md",
+      "destinationPath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/.claude/skills/ecc/architecture-decision-records/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "skill-browser-qa",
+      "sourcePath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/_ecc/skills/browser-qa/SKILL.md",
+      "sourceRelativePath": "skills/browser-qa/SKILL.md",
+      "destinationPath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/.claude/skills/ecc/browser-qa/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "skill-codebase-onboarding",
+      "sourcePath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/_ecc/skills/codebase-onboarding/SKILL.md",
+      "sourceRelativePath": "skills/codebase-onboarding/SKILL.md",
+      "destinationPath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/.claude/skills/ecc/codebase-onboarding/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "skill-context-budget",
+      "sourcePath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/_ecc/skills/context-budget/SKILL.md",
+      "sourceRelativePath": "skills/context-budget/SKILL.md",
+      "destinationPath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/.claude/skills/ecc/context-budget/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "skill-design-system",
+      "sourcePath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/_ecc/skills/design-system/SKILL.md",
+      "sourceRelativePath": "skills/design-system/SKILL.md",
+      "destinationPath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/.claude/skills/ecc/design-system/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "skill-documentation-lookup",
+      "sourcePath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/_ecc/skills/documentation-lookup/SKILL.md",
+      "sourceRelativePath": "skills/documentation-lookup/SKILL.md",
+      "destinationPath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/.claude/skills/ecc/documentation-lookup/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "skill-ecc-guide",
+      "sourcePath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/_ecc/skills/ecc-guide/SKILL.md",
+      "sourceRelativePath": "skills/ecc-guide/SKILL.md",
+      "destinationPath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/.claude/skills/ecc/ecc-guide/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "skill-frontend-a11y",
+      "sourcePath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/_ecc/skills/frontend-a11y/SKILL.md",
+      "sourceRelativePath": "skills/frontend-a11y/SKILL.md",
+      "destinationPath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/.claude/skills/ecc/frontend-a11y/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "skill-git-workflow",
+      "sourcePath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/_ecc/skills/git-workflow/SKILL.md",
+      "sourceRelativePath": "skills/git-workflow/SKILL.md",
+      "destinationPath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/.claude/skills/ecc/git-workflow/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "skill-hexagonal-architecture",
+      "sourcePath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/_ecc/skills/hexagonal-architecture/SKILL.md",
+      "sourceRelativePath": "skills/hexagonal-architecture/SKILL.md",
+      "destinationPath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/.claude/skills/ecc/hexagonal-architecture/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "skill-plan-orchestrate",
+      "sourcePath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/_ecc/skills/plan-orchestrate/SKILL.md",
+      "sourceRelativePath": "skills/plan-orchestrate/SKILL.md",
+      "destinationPath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/.claude/skills/ecc/plan-orchestrate/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "skill-repo-scan",
+      "sourcePath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/_ecc/skills/repo-scan/SKILL.md",
+      "sourceRelativePath": "skills/repo-scan/SKILL.md",
+      "destinationPath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/.claude/skills/ecc/repo-scan/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "skill-vite-patterns",
+      "sourcePath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/_ecc/skills/vite-patterns/SKILL.md",
+      "sourceRelativePath": "skills/vite-patterns/SKILL.md",
+      "destinationPath": "/Users/martinmalgor/Library/CloudStorage/GoogleDrive-martinmmalgor@gmail.com/Mi unidad/SERVICIOS & SISTEMAS/sysaudit/auditapp/.claude/skills/ecc/vite-patterns/SKILL.md",
       "strategy": "preserve-relative-path",
       "ownership": "managed",
       "scaffoldOnly": false

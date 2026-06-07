@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npm test*)",
+      "Bash(npm ci*)",
+      "Bash(npm install*)",
+      "Bash(pnpm *)",
+      "Bash(npx vite*)",
+      "Bash(npx svelte-kit*)",
+      "Bash(npx sv *)",
+      "Bash(npx tsc*)",
+      "Bash(npx eslint*)",
+      "Bash(npx prettier*)",
+      "Bash(npx vitest*)",
+      "Bash(npx playwright*)",
+      "Bash(npx drizzle-kit*)",
+      "Bash(psql *)",
+      "Bash(docker *)",
+      "Bash(docker compose *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)"
+    ],
+    "deny": [
+      "Bash(npm publish*)",
+      "Bash(rm -rf /*)",
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ]
+  }
+}
