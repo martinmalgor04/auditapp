@@ -1,33 +1,35 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -f package.json && npm test 2>&1 | tail -5 || true",
+            "description": "Tras editar, corre tests si hay package.json"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./init.sh > /tmp/harness_init.log 2>&1 && echo '[harness] init.sh OK' || (echo '[harness] init.sh FALLÓ' && tail -20 /tmp/harness_init.log)",
+            "description": "Verificación completa antes de cerrar sesión"
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
-      "Bash(npm run *)",
+      "Bash(./init.sh)",
       "Bash(npm test*)",
-      "Bash(npm ci*)",
-      "Bash(npm install*)",
-      "Bash(pnpm *)",
-      "Bash(npx vite*)",
-      "Bash(npx svelte-kit*)",
-      "Bash(npx sv *)",
-      "Bash(npx tsc*)",
-      "Bash(npx eslint*)",
-      "Bash(npx prettier*)",
       "Bash(npx vitest*)",
-      "Bash(npx playwright*)",
-      "Bash(npx drizzle-kit*)",
-      "Bash(psql *)",
-      "Bash(docker *)",
-      "Bash(docker compose *)",
-      "Bash(git status*)",
-      "Bash(git diff*)",
-      "Bash(git log*)"
-    ],
-    "deny": [
-      "Bash(npm publish*)",
-      "Bash(rm -rf /*)",
-      "Read(./.env)",
-      "Read(./.env.*)"
+      "Bash(npx playwright*)"
     ]
   }
 }

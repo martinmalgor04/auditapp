@@ -1,0 +1,14 @@
+---
+description: Reglas del arnés Spec-Driven Development (harness-sdd)
+alwaysApply: true
+---
+
+# Harness SDD
+
+- Lee `AGENTS.md` al inicio de cada sesión de implementación.
+- Backlog único: `feature_list.json`. Una feature a la vez.
+- Features `sdd: true`: spec EARS obligatorio antes de código.
+- Puerta humana en `spec_ready` — no implementar sin aprobación explícita.
+- Cierre: `./init.sh` verde antes de marcar `done`.
+- Specs vivos en `specs/<feature>/`. Referencia histórica en `docs/source-specs/`.
+- Orquestación: agente `leader` o comando `/leader`.

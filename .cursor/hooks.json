@@ -1,114 +1,25 @@
 {
   "version": 1,
   "hooks": {
-    "sessionStart": [
+    "afterFileEdit": [
       {
-        "command": "node .cursor/hooks/session-start.js",
-        "event": "sessionStart",
-        "description": "Load previous context and detect environment"
+        "command": "node .cursor/hooks/after-file-edit-harness.js",
+        "event": "afterFileEdit",
+        "description": "Tras editar archivos, corre npm test si existe package.json"
       }
     ],
     "sessionEnd": [
       {
-        "command": "node .cursor/hooks/session-end.js",
+        "command": "node .cursor/hooks/session-end-harness.js",
         "event": "sessionEnd",
-        "description": "Persist session state and evaluate patterns"
-      }
-    ],
-    "beforeShellExecution": [
-      {
-        "command": "npx block-no-verify@1.1.2",
-        "event": "beforeShellExecution",
-        "description": "Block git hook-bypass flag to protect pre-commit, commit-msg, and pre-push hooks from being skipped"
-      },
-      {
-        "command": "node .cursor/hooks/before-shell-execution.js",
-        "event": "beforeShellExecution",
-        "description": "Tmux dev server blocker, tmux reminder, git push review"
-      }
-    ],
-    "afterShellExecution": [
-      {
-        "command": "node .cursor/hooks/after-shell-execution.js",
-        "event": "afterShellExecution",
-        "description": "PR URL logging, build analysis"
-      }
-    ],
-    "afterFileEdit": [
-      {
-        "command": "node .cursor/hooks/after-file-edit.js",
-        "event": "afterFileEdit",
-        "description": "Auto-format, TypeScript check, console.log warning, and frontend design-quality reminder"
-      }
-    ],
-    "beforeMCPExecution": [
-      {
-        "command": "node .cursor/hooks/before-mcp-execution.js",
-        "event": "beforeMCPExecution",
-        "description": "MCP audit logging and untrusted server warning"
-      }
-    ],
-    "afterMCPExecution": [
-      {
-        "command": "node .cursor/hooks/after-mcp-execution.js",
-        "event": "afterMCPExecution",
-        "description": "MCP result logging"
+        "description": "Antes de cerrar sesión, fuerza ./init.sh completo"
       }
     ],
     "beforeReadFile": [
       {
-        "command": "node .cursor/hooks/before-read-file.js",
+        "command": "node -e \"const fs=require('fs');let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const j=JSON.parse(d);const p=(j.path||j.file||'').toLowerCase();if(/\\.(env|pem|key)$/.test(p)||p.endsWith('.env')){console.error('[harness] WARN: sensitive file');process.exit(1)}}catch{}})\"",
         "event": "beforeReadFile",
-        "description": "Warn when reading sensitive files (.env, .key, .pem)"
-      }
-    ],
-    "beforeSubmitPrompt": [
-      {
-        "command": "node .cursor/hooks/before-submit-prompt.js",
-        "event": "beforeSubmitPrompt",
-        "description": "Detect secrets in prompts (sk-, ghp_, AKIA patterns)"
-      }
-    ],
-    "subagentStart": [
-      {
-        "command": "node .cursor/hooks/subagent-start.js",
-        "event": "subagentStart",
-        "description": "Log agent spawning for observability"
-      }
-    ],
-    "subagentStop": [
-      {
-        "command": "node .cursor/hooks/subagent-stop.js",
-        "event": "subagentStop",
-        "description": "Log agent completion"
-      }
-    ],
-    "beforeTabFileRead": [
-      {
-        "command": "node .cursor/hooks/before-tab-file-read.js",
-        "event": "beforeTabFileRead",
-        "description": "Block Tab from reading secrets (.env, .key, .pem, credentials)"
-      }
-    ],
-    "afterTabFileEdit": [
-      {
-        "command": "node .cursor/hooks/after-tab-file-edit.js",
-        "event": "afterTabFileEdit",
-        "description": "Auto-format Tab edits"
-      }
-    ],
-    "preCompact": [
-      {
-        "command": "node .cursor/hooks/pre-compact.js",
-        "event": "preCompact",
-        "description": "Save state before context compaction"
-      }
-    ],
-    "stop": [
-      {
-        "command": "node .cursor/hooks/stop.js",
-        "event": "stop",
-        "description": "Console.log audit on all modified files"
+        "description": "Warn on sensitive file reads (.env, keys)"
       }
     ]
   }

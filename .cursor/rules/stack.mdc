@@ -1,0 +1,14 @@
+---
+description: Stack y arquitectura auditapp
+alwaysApply: true
+---
+
+# Stack auditapp
+
+SvelteKit 5 · TypeScript · PostgreSQL · postgres.js (SQL puro, sin ORM) · R2 · Docker · Tailwind · Zod.
+
+- Capas: `src/lib/server/db/` → `src/lib/server/` → `src/routes/`.
+- Migraciones SQL en `migrations/`.
+- Auth: argon2id + cookie HttpOnly.
+- Inmutabilidad por defecto. Validación Zod en fronteras.
+- Ver `docs/architecture.md` y `docs/conventions.md`.

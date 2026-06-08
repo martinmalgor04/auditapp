@@ -1,0 +1,14 @@
+---
+description: Seguridad auditapp
+alwaysApply: true
+---
+
+# Seguridad
+
+- NUNCA hardcodear secretos. Solo env vars.
+- No commitear `.env`, claves, tokens.
+- SQL siempre parametrizado.
+- Cookies HttpOnly + Secure + SameSite.
+- Postgres no expuesto a internet (red Docker interna).
+- Rate limit en login. Presigned R2 con TTL corto.
+- Errores al cliente sin stack traces ni datos sensibles.

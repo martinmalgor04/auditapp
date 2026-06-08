@@ -1,0 +1,193 @@
+{
+  "project": "auditapp",
+  "description": "App web mobile-first para auditorías IT/ERP de Servicios y Sistemas. SvelteKit + Postgres + R2.",
+  "rules": {
+    "one_feature_at_a_time": true,
+    "require_tests_to_close": true,
+    "require_approved_spec_to_implement": true,
+    "valid_status": ["pending", "spec_ready", "in_progress", "done", "blocked"],
+    "sdd_required_when": "feature has \"sdd\": true"
+  },
+  "features": [
+    {
+      "id": 1,
+      "name": "stack_scaffolding",
+      "title": "Scaffolding SvelteKit + tooling",
+      "description": "Proyecto base SvelteKit 5, TypeScript, Tailwind, Zod, vitest, playwright, postgres.js, .env.example.",
+      "source": "docs/source-specs/specs-07/07h-stack-deploy/spec.md (fase inicial)",
+      "acceptance": [
+        "Existe package.json con scripts dev, build, check, test",
+        "SvelteKit 5 + TypeScript + Tailwind configurados",
+        "vitest y playwright configurados con al menos 1 test smoke",
+        "postgres.js instalado y módulo db stub en src/lib/server/db/",
+        "Existe .env.example sin secretos",
+        "npm run build y npm test pasan"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 2,
+      "name": "modelo_datos",
+      "title": "Modelo de datos Postgres + seed",
+      "description": "Schema completo, 12 field_type, máquina de estados audit, seed admin/técnicos/plantillas/clientes CSV.",
+      "source": "docs/source-specs/specs-07/07a-modelo-datos/spec.md",
+      "acceptance": [
+        "Migraciones SQL crean todas las tablas (template, section, template_item, client, audit, audit_response, audit_section_score, audit_closure, attachment, app_user, session)",
+        "12 field_type con constraints y JSONB schemas",
+        "audit.status implementa máquina de estados documentada",
+        "Seed: 1 admin, 2 técnicos, 3 plantillas activas",
+        "Seed clientes desde seed/clientes-presupuestossys.csv (~1905 filas)",
+        "Rúbrica scoring en options de ítems (escala 0/50/100)",
+        "Índices en audit(status), audit(client_id), audit_response(audit_id)",
+        "Tests de schema y seed pasan"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 3,
+      "name": "auth_roles",
+      "title": "Auth, sesiones y roles",
+      "description": "Login argon2id, cookie HttpOnly, hooks.server.ts, guards por rol, token briefing.",
+      "source": "docs/source-specs/specs-07/07b-auth-roles/spec.md",
+      "acceptance": [
+        "Login user+pass con argon2id y sesión por cookie HttpOnly Secure",
+        "hooks.server.ts resuelve session → user → event.locals.user",
+        "Guards server-side: técnico crea/ve auditorías; admin acciones sensibles; cliente solo briefing",
+        "Token público validado en /briefing/[token], invalidado al avanzar/cerrar",
+        "Rate limit en /login",
+        "Tests de auth y guards pasan"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 4,
+      "name": "backoffice",
+      "title": "Backoffice admin + técnico",
+      "description": "Tablero, CRUD auditorías, usuarios, editor plantillas (ítems existentes), layout responsive.",
+      "source": "docs/source-specs/specs-07/07c-backoffice/spec.md",
+      "acceptance": [
+        "Tablero con filtros tipo/estado/cliente, búsqueda, badges, % avance",
+        "CRUD auditorías: crear cabecera+plantilla+técnico, editar, borrado lógico",
+        "Generar/regenerar link briefing (public_token)",
+        "ABM usuarios técnicos/admins, reset contraseña (solo admin)",
+        "Editor plantillas: solo edición ítems existentes (label, help, options, method, filled_by)",
+        "Layout responsive: tabla desktop, cards mobile",
+        "Tests de rutas backoffice pasan"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 5,
+      "name": "briefing_externo",
+      "title": "Briefing externo (cliente)",
+      "description": "Ruta pública /briefing/[token], ítems filled_by=cliente, autosave, enviar.",
+      "source": "docs/source-specs/specs-07/07d-briefing-externo/spec.md",
+      "acceptance": [
+        "Ruta /briefing/[token] sin auth",
+        "Render solo ítems filled_by=cliente",
+        "Autosave upsert audit_response con source=cliente",
+        "Enviar cambia audit.status a briefing_completo",
+        "Token inválido o auditoría avanzada → pantalla amable",
+        "Branding SyS, mobile-first",
+        "Tests y e2e básico de briefing pasan"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 6,
+      "name": "storage_r2",
+      "title": "Storage Cloudflare R2",
+      "description": "Presigned PUT/GET con aws4fetch, bucket privado, convención de keys.",
+      "source": "docs/source-specs/specs-07/07g-storage-r2/spec.md",
+      "acceptance": [
+        "Módulo storage con presigned PUT y GET via aws4fetch",
+        "Bucket privado, TTL configurable en URLs",
+        "Convención key: audits/{id}/_general/{uuid} y audits/{id}/{section}/{uuid}",
+        "Tabla attachment vincula r2_key a audit_response",
+        "Tests con mock o sandbox R2 pasan"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 7,
+      "name": "form_tecnico",
+      "title": "Form técnico mobile + PWA",
+      "description": "Render 12 field_type, autosave, fotos R2, score en vivo lectura, PWA instalable.",
+      "source": "docs/source-specs/specs-07/07e-form-tecnico-mobile/spec.md",
+      "acceptance": [
+        "Render data-driven de 12 field_type mobile-first",
+        "Datos briefing precargados visibles al técnico",
+        "Autosave debounced + cola reintentos + export/import JSON respaldo",
+        "Indicador Guardando/Guardado/Sin conexión",
+        "Fotos: presigned PUT, compresión cliente 1600px/0.8, HEIC→JPEG",
+        "Cámara desde grilla inventario enlaza foto a fila",
+        "Score en vivo solo lectura por sección con semáforo",
+        "Secciones orden libre, barra progreso",
+        "PWA: manifest SyS, SW shell, network-first datos",
+        "Tests y e2e form pasan"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 8,
+      "name": "cierre_scoring",
+      "title": "Cierre + scoring determinístico",
+      "description": "Motor scoring 3 niveles CIS/NIST, pantalla cierre, preview informe, confirmar cierre.",
+      "source": "docs/source-specs/specs-07/07f-cierre-auditoria/spec.md",
+      "acceptance": [
+        "Scoring determinístico: rúbrica ítem → sección → índices IT/ERP independientes",
+        "Pesos automáticos bajo=1 medio=2 alto=3 muy_alto=5",
+        "EOL hardware por ciclo fabricante (vigente=100 extendido=50 EOL=0)",
+        "Pantalla cierre: top 5 riesgos, quick wins, upsell (admin+técnico), próximo paso",
+        "Preview informe legible en app",
+        "Confirmar cierre → cerrada + invalidar token + closed_at/closed_by",
+        "Reabrir solo admin → en_cierre",
+        "Mismo input → mismo output (tests determinismo)"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 9,
+      "name": "contrato_datos",
+      "title": "Contrato JSON canónico / pipeline IA",
+      "description": "JSON versionado, score_basis, market_data, endpoint protegido, puente SPEC-08.",
+      "source": "docs/source-specs/specs-07/07i-contrato-datos-ia/spec.md",
+      "acceptance": [
+        "JSON canónico con schema_version en endpoint protegido",
+        "Header X-Schema-Version en respuesta",
+        "score_basis=auto y score_contribution por ítem",
+        "market_data desnormalizado para estudio mercado NEA",
+        "Preview informe compartido con cierre",
+        "Tests de contrato y snapshot schema pasan"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 10,
+      "name": "deploy_dokploy",
+      "title": "Deploy Docker + Dokploy",
+      "description": "Dockerfile, migraciones en entrypoint, HTTPS Traefik, Postgres red interna, seed prod.",
+      "source": "docs/source-specs/specs-07/07h-stack-deploy/spec.md (fase final)",
+      "acceptance": [
+        "Dockerfile multi-stage para SvelteKit",
+        "Entrypoint ejecuta migraciones SQL antes de arrancar app",
+        "Deploy Dokploy con HTTPS Traefik en app.auditoriaserviciosysistemas.com.ar",
+        "Postgres solo red Docker interna, sin puerto expuesto",
+        "PWA assets servidos correctamente en prod",
+        "Seed prod documentado y ejecutable",
+        "CI: build+tests pre-push"
+      ],
+      "sdd": true,
+      "status": "pending"
+    }
+  ]
+}

@@ -1,35 +1,43 @@
 # auditapp
 
-Auditapp permite a los tecnicos de servicios y sistemas Auditar empresas en toda su infraestructura IT e ERP, desde la agenda del cliente hasta el cierre de la auditoria con presupuestos acordes al mismovienen de presupuestos.serviciosysistemas.com.ar
+Auditapp permite a los técnicos de Servicios y Sistemas auditar empresas en toda su infraestructura IT e ERP, desde la agenda del cliente hasta el cierre de la auditoría con presupuestos acordes al mismo origen de presupuestos.serviciosysistemas.com.ar.
 
 ## Reglas del proyecto
 
 - Responde en español salvo que el usuario pida otro idioma.
-- Lee `PROJECT.md` al inicio de cada sesión si existe.
-- Usa `/project-init` para ajustar reglas ECC al stack detectado.
+- Lee `AGENTS.md` y `PROJECT.md` al inicio de cada sesión.
 - No commitees secretos (.env, claves, tokens).
+- Backlog único: `feature_list.json`. Una feature a la vez.
+
+## Arnés SDD (harness-sdd)
+
+Este repo usa **Spec-Driven Development** con puerta de aprobación humana.
+
+| Harness | Ubicación |
+|---|---|
+| **Cursor (primario)** | `.cursor/agents/`, `.cursor/hooks.json`, `/leader` |
+| Claude Code (espejo) | `.claude/agents/`, `.claude/settings.json` |
+
+Flujo: `pending → spec_author → spec_ready → ⏸ HUMANO → in_progress → implementer → reviewer → done`
+
+Entrada: `AGENTS.md`. Verificación: `./init.sh`.
+
+Specs históricos (referencia): `docs/source-specs/`. Specs vivos: `specs/<feature>/`.
 
 ## Stack y comandos
 
-Stack (SPEC-07): **SvelteKit + TypeScript · Postgres (Dokploy) · Cloudflare R2 · Docker**.
+**SvelteKit 5 · TypeScript · PostgreSQL · postgres.js · Cloudflare R2 · Docker · Tailwind · Zod**
 
-> ⚠️ App aún sin scaffolding. Comandos provisorios (SvelteKit por defecto), ajustar al crear `package.json`:
+> App aún sin scaffolding. Tras feature #1 `stack_scaffolding`:
 
-- **Dev:** `npm run dev` (vite)
+- **Dev:** `npm run dev`
 - **Build:** `npm run build`
-- **Typecheck:** `npm run check` (svelte-check) · `npx tsc --noEmit`
-- **Lint/format:** `npx eslint .` · `npx prettier --write .`
-- **Test:** `npx vitest` (unit) · `npx playwright test` (e2e)
-- **DB migraciones:** `npx drizzle-kit *` (ORM por definir en 07h)
+- **Typecheck:** `npm run check` · `npx tsc --noEmit`
+- **Test:** `npm test` (vitest) · `npx playwright test` (e2e)
+- **Gate arnés:** `./init.sh`
+- **DB:** SQL en `migrations/` + runner propio
 
-## ECC
+## Rol en Claude Code
 
-Este proyecto incluye [ECC](https://github.com/affaan-m/ECC) a nivel de proyecto:
-- Cursor: `.cursor/`
-- Claude Code: `.claude/`
-
-Skills ECC podadas al stack: **46 skills** activas en `.claude/skills/ecc/` (TS/frontend/backend/Postgres/Docker + calidad/seguridad/research/orquestación). Restaurar set completo: `node _ecc/scripts/install-apply.js --target claude-project --profile full`.
-
-Permisos acotados al stack en `.claude/settings.json`.
-
-Para onboarding guiado: `/onboard-proyecto`
+Actuá como `leader` (`.claude/agents/leader.md`): coordiná, no implementes código de app.
+Lanzá `spec_author`, `implementer`, `reviewer` según el estado en `feature_list.json`.
