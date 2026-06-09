@@ -82,11 +82,23 @@ export async function destroySession(sessionId: string): Promise<void> {
   await deleteSession(sessionId);
 }
 
+/** Secure cuando prod usa HTTPS (PUBLIC_APP_URL); en dev HTTP no marca Secure. */
+export function shouldUseSecureCookies(
+  overrides?: { dev?: boolean; publicAppUrl?: string }
+): boolean {
+  const isDev = overrides?.dev ?? dev;
+  if (isDev) {
+    return false;
+  }
+  const appUrl = overrides?.publicAppUrl ?? process.env.PUBLIC_APP_URL ?? '';
+  return appUrl.startsWith('https://');
+}
+
 export function setSessionCookie(cookies: Cookies, sessionId: string): void {
   cookies.set(SESSION_COOKIE, sessionId, {
     path: '/',
     httpOnly: true,
-    secure: !dev,
+    secure: shouldUseSecureCookies(),
     sameSite: 'lax',
     maxAge: SESSION_MAX_AGE_SECONDS
   });

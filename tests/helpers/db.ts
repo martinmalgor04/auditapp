@@ -95,15 +95,23 @@ export async function resetVolatileTablesForTests(sql: postgres.Sql): Promise<vo
   });
 }
 
+/** Trunca tablas de seed y ejecuta runSeed (sin mutex; usar dentro de withTestDbSerial). */
+export async function resetDatabaseToBaseline(
+  sql: postgres.Sql,
+  opts?: SeedOptions
+): Promise<void> {
+  await truncateSeedTablesUnsafe(sql);
+  await runSeed(sql, opts);
+  getState().baselineSeeded = true;
+}
+
 /** Trunca tablas de seed y ejecuta runSeed de forma serializada. */
 export async function resetAndSeedForTests(
   sql: postgres.Sql,
   opts?: SeedOptions
 ): Promise<void> {
   await withTestDbSerial(sql, async (s) => {
-    await truncateSeedTablesUnsafe(s);
-    await runSeed(s, opts);
-    getState().baselineSeeded = true;
+    await resetDatabaseToBaseline(s, opts);
   });
 }
 

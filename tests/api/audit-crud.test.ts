@@ -1,5 +1,6 @@
 import { isRedirect } from '@sveltejs/kit';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { setSqlForTests } from '../../src/lib/server/db/client';
 import {
   archiveAudit,
   createAudit,
@@ -24,6 +25,7 @@ describe('audit CRUD', () => {
   });
 
   beforeEach(async () => {
+    setSqlForTests(sql);
     adminId = await findUserIdByEmail(sql, 'admin@serviciosysistemas.com.ar');
     tecnicoId = await findUserIdByEmail(sql, 'facu@serviciosysistemas.com.ar');
   });

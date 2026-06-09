@@ -1,0 +1,48 @@
+# deploy/dokploy.compose.example.yml — referencia Dokploy, sin secretos reales
+# Dominio/HTTPS: configurar en la UI de Dokploy (servicio app, puerto 3000).
+services:
+  postgres:
+    image: postgres:16-bookworm
+    environment:
+      POSTGRES_USER: auditapp
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: auditapp
+    volumes:
+      - auditapp_pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U auditapp -d auditapp']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    # SIN ports: — solo red interna
+
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://auditapp:${POSTGRES_PASSWORD}@postgres:5432/auditapp
+      SESSION_SECRET: ${SESSION_SECRET}
+      PUBLIC_APP_URL: https://app.auditoriaserviciosysistemas.com.ar
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+      R2_BUCKET: ${R2_BUCKET}
+      R2_ENDPOINT: ${R2_ENDPOINT}
+      PORT: '3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+    restart: unless-stopped
+
+networks:
+  internal:
+    internal: true
+
+volumes:
+  auditapp_pgdata:

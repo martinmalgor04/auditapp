@@ -1,4 +1,3 @@
-import { dev } from '$app/environment';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
   createSession,
@@ -7,7 +6,8 @@ import {
   resolveSession,
   SESSION_TTL_DAYS,
   setSessionCookie,
-  clearSessionCookie
+  clearSessionCookie,
+  shouldUseSecureCookies
 } from '../../src/lib/server/auth/session';
 import { findUserIdByEmail } from '../helpers/auth';
 import { setupTestDb, teardownTestDb } from '../helpers/db';
@@ -112,7 +112,7 @@ describe('session management', () => {
     expect(setCalls[0].name).toBe('session');
     expect(setCalls[0].value).toBe('test-session-id');
     expect(setCalls[0].options.httpOnly).toBe(true);
-    expect(setCalls[0].options.secure).toBe(!dev);
+    expect(setCalls[0].options.secure).toBe(shouldUseSecureCookies());
     expect(setCalls[0].options.sameSite).toBe('lax');
     expect(setCalls[0].options.path).toBe('/');
   });

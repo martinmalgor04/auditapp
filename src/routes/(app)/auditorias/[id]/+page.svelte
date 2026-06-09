@@ -56,9 +56,17 @@
     {#if data.audit.status === 'briefing_completo' || data.audit.status === 'en_relevamiento' || data.audit.status === 'en_cierre'}
       <a
         href="/auditorias/{data.audit.id}/form"
-        class="inline-flex min-h-[var(--sys-touch-min)] items-center rounded bg-[var(--sys-primary)] px-4 py-2 text-sm font-medium text-white"
+        class="inline-flex min-h-[var(--sys-touch-min)] items-center rounded-sys bg-sys-electrico px-4 py-2 text-sm font-medium text-white"
       >
         Abrir relevamiento técnico
+      </a>
+    {/if}
+    {#if data.audit.status === 'en_cierre' || data.audit.status === 'cerrada'}
+      <a
+        href="/auditorias/{data.audit.id}/cierre"
+        class="mt-2 inline-flex min-h-[var(--sys-touch-min)] items-center rounded border border-slate-300 px-4 py-2 text-sm font-medium text-slate-800"
+      >
+        Pantalla de cierre
       </a>
     {/if}
   </section>

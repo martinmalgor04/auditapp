@@ -153,7 +153,7 @@
         "Mismo input → mismo output (tests determinismo)"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 9,
@@ -170,10 +170,28 @@
         "Tests de contrato y snapshot schema pasan"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 10,
+      "name": "11_ui_branding_sys",
+      "title": "Branding SyS global (UI)",
+      "description": "Design system de la app: tokens CSS/Tailwind oficiales (sys-brand), logos, Montserrat, shell común en login/backoffice/form/cierre; alinear briefing y PWA con la paleta unificada.",
+      "source": "docs/source-specs/specs-07/spec.md (dependencia marca sys-brand)",
+      "acceptance": [
+        "Tokens oficiales SyS (palette.md) en brand.css y tailwind.config",
+        "Logos oficiales en static/brand/ (horizontal claro/oscuro, isotipo favicon)",
+        "Shell SyS en login, backoffice, form técnico y pantalla de cierre",
+        "Briefing alineado con tokens unificados (sin paleta legacy)",
+        "PWA manifest y theme_color coherentes con tokens",
+        "Componentes base reutilizables: botón primario, inputs, badges",
+        "Tests de tokens, manifest y logo en rutas clave"
+      ],
+      "sdd": true,
+      "status": "done"
+    },
+    {
+      "id": 11,
       "name": "10_deploy_dokploy",
       "title": "Deploy Docker + Dokploy",
       "description": "Dockerfile, migraciones en entrypoint, HTTPS Traefik, Postgres red interna, seed prod.",
@@ -188,7 +206,7 @@
         "CI: build+tests pre-push"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     }
   ]
 }

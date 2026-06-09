@@ -1,0 +1,837 @@
+{
+  "schema_version": "1.0",
+  "audit_id": "44431575-e34f-44a6-adc4-008313958807",
+  "generated_at": "2026-06-08T14:30:00-03:00",
+  "client": {
+    "razon_social": "Fixture Form Técnico SA",
+    "cuit": null,
+    "rubro": "Industria",
+    "segment": "A"
+  },
+  "types": [
+    "it",
+    "erp-tango"
+  ],
+  "templates": [
+    {
+      "code": "erp-tango",
+      "version": "v2"
+    },
+    {
+      "code": "it",
+      "version": "v2"
+    }
+  ],
+  "sections": [
+    {
+      "code": "A1",
+      "title": "Inventario de activos / hardware",
+      "standard_ref": "CIS 1 · NIST: Identify",
+      "weight": "muy_alto",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "1bc6b3ac-4c26-4c03-8b9c-afba9bb4dec9",
+          "label": "¿Existe inventario documentado de equipos?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "7050aa35-20be-400a-8b4b-1e961f7f93da",
+          "label": "¿El inventario está actualizado?",
+          "field_type": "tri",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "fa32d49d-d3ec-4cad-bb15-1049a3c55ab7",
+          "label": "Tabla de equipos relevados",
+          "field_type": "table",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "618e75fb-5dea-4aa3-af12-85b21bef353f",
+          "label": "Captura del inventario",
+          "field_type": "file_ref",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "B1",
+      "title": "Administración y parametrización",
+      "standard_ref": "ERP B1",
+      "weight": "muy_alto",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "77612d94-05bf-4b43-87d3-083133499fa4",
+          "label": "¿Proceso Administración y parametrización documentado?",
+          "field_type": "tri",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "1942d9cb-5508-478f-a6b3-f76256f6de03",
+          "label": "¿Controles internos aplicados en Administración y parametrización?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "1be0816c-02cb-4ed8-88d7-88c88b50a471",
+          "label": "Madurez operativa — Administración y parametrización",
+          "field_type": "select",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "A2",
+      "title": "Software / licencias",
+      "standard_ref": "CIS 2 · NIST: Identify",
+      "weight": "alto",
+      "score": 100,
+      "score_basis": "auto",
+      "observations": null,
+      "items": [
+        {
+          "item_id": "1dc1af10-eb53-4bde-8991-28608fa46654",
+          "label": "¿Existe registro de software instalado?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "3752a4c4-bf24-4f6c-8bd2-f51a5fd0e572",
+          "label": "Nivel de control de licencias",
+          "field_type": "select",
+          "value": "Controlado",
+          "na": false,
+          "score_contribution": 100,
+          "observations": null,
+          "attachments": [
+            "audits/44431575-e34f-44a6-adc4-008313958807/A2/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "B2",
+      "title": "Ventas y facturación",
+      "standard_ref": "ERP B2",
+      "weight": "muy_alto",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "bf49bcf9-a6c3-403c-abe6-403e484850b1",
+          "label": "¿Proceso Ventas y facturación documentado?",
+          "field_type": "tri",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "8442265b-6144-44a5-87e7-97471e8e1ee2",
+          "label": "¿Controles internos aplicados en Ventas y facturación?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "5abf5d08-01c6-407d-aceb-6dc435aa57ff",
+          "label": "Madurez operativa — Ventas y facturación",
+          "field_type": "select",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "A3",
+      "title": "Gestión de datos",
+      "standard_ref": "CIS 3 · NIST: Protect",
+      "weight": "alto",
+      "score": 100,
+      "score_basis": "auto",
+      "observations": null,
+      "items": [
+        {
+          "item_id": "f70a27cd-69b1-418b-bf24-654a73c3d7f9",
+          "label": "¿Hay política de clasificación de datos?",
+          "field_type": "tri",
+          "value": "si",
+          "na": false,
+          "score_contribution": 100,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "661a0585-b97b-4f7c-8298-f7d6e87a4489",
+          "label": "¿Se aplican permisos por rol en carpetas críticas?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "B3",
+      "title": "Compras y proveedores",
+      "standard_ref": "ERP B3",
+      "weight": "muy_alto",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "e335952a-537d-462c-b834-e02ba97eabee",
+          "label": "¿Proceso Compras y proveedores documentado?",
+          "field_type": "tri",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "8b818c91-a582-4500-8f56-a62201bbc05e",
+          "label": "¿Controles internos aplicados en Compras y proveedores?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "3042e6d7-8a9d-4b92-89e2-37307377da30",
+          "label": "Madurez operativa — Compras y proveedores",
+          "field_type": "select",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "A4",
+      "title": "Configuración segura",
+      "standard_ref": "CIS 4 · NIST: Protect",
+      "weight": "alto",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "97c0c42b-7464-4042-bc64-9cc11ed76b10",
+          "label": "Endurecimiento de servidores",
+          "field_type": "select",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "c7ac730c-6ab7-4105-a542-4aa6a4fff8ac",
+          "label": "¿Se deshabilitan servicios innecesarios?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "B4",
+      "title": "Stock e inventarios",
+      "standard_ref": "ERP B4",
+      "weight": "alto",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "963afa04-b32b-4cd6-9e6a-d9867e3d858a",
+          "label": "¿Proceso Stock e inventarios documentado?",
+          "field_type": "tri",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "125cc0b6-5df9-4366-ad3d-7e12d64ea856",
+          "label": "¿Controles internos aplicados en Stock e inventarios?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "a263e3da-7170-464e-b026-13662e18c470",
+          "label": "Madurez operativa — Stock e inventarios",
+          "field_type": "select",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "A5",
+      "title": "Control de acceso",
+      "standard_ref": "CIS 5 · NIST: Protect",
+      "weight": "muy_alto",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "dda6e622-5c9d-4f0a-b63d-15983fe23e58",
+          "label": "¿Existe proceso formal de altas/bajas de usuarios?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "d1ce7277-e397-41f1-bada-5a2c9b4811ec",
+          "label": "¿Se revisan permisos periódicamente?",
+          "field_type": "tri",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "B5",
+      "title": "Contabilidad",
+      "standard_ref": "ERP B5",
+      "weight": "alto",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "6827c7bb-426e-4d72-bee2-ae4d1ac9cb7b",
+          "label": "¿Proceso Contabilidad documentado?",
+          "field_type": "tri",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "0aeb7915-0ad8-4a8a-a2e6-48fdc8b5d841",
+          "label": "¿Controles internos aplicados en Contabilidad?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "c4d2be7b-9a8d-4990-8c81-eea1ef685f4a",
+          "label": "Madurez operativa — Contabilidad",
+          "field_type": "select",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "A6",
+      "title": "Protección de cuentas",
+      "standard_ref": "CIS 6 · NIST: Protect",
+      "weight": "muy_alto",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "18758d2d-2c96-490f-82a1-8519a33a8d23",
+          "label": "Política de contraseñas",
+          "field_type": "select",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "0ee24726-9c70-427a-8db8-3edcbbae648c",
+          "label": "¿MFA habilitado en servicios críticos?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "B6",
+      "title": "Tesorería y bancos",
+      "standard_ref": "ERP B6",
+      "weight": "alto",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "3456d826-d453-4385-b80e-b15e40cd0843",
+          "label": "¿Proceso Tesorería y bancos documentado?",
+          "field_type": "tri",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "97a41d88-31b1-4299-89c6-c39ba727b04f",
+          "label": "¿Controles internos aplicados en Tesorería y bancos?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "9e60f7e3-e256-4f71-b6c1-de960c787bda",
+          "label": "Madurez operativa — Tesorería y bancos",
+          "field_type": "select",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "A7",
+      "title": "Gestión de vulnerabilidades",
+      "standard_ref": "CIS 7 · NIST: Detect",
+      "weight": "alto",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "a3878618-6b48-423d-aa4f-6247979ebc5f",
+          "label": "¿Se aplican parches de seguridad periódicamente?",
+          "field_type": "tri",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "97827d08-3ed3-45c3-aec1-752f3936b3b3",
+          "label": "Días promedio de demora en parches críticos",
+          "field_type": "number",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "B7",
+      "title": "Sueldos y RRHH",
+      "standard_ref": "ERP B7",
+      "weight": "medio",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "bc8d30a9-1599-4aca-a6e9-92840ef90752",
+          "label": "¿Proceso Sueldos y RRHH documentado?",
+          "field_type": "tri",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "762053ea-d8ae-4142-96b2-86089c161f17",
+          "label": "¿Controles internos aplicados en Sueldos y RRHH?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "282d1b9f-fd62-4f4f-b14d-c80c7c91f93b",
+          "label": "Madurez operativa — Sueldos y RRHH",
+          "field_type": "select",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "A8",
+      "title": "Registro y monitoreo",
+      "standard_ref": "CIS 8 · NIST: Detect",
+      "weight": "alto",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "3d355a6e-3b77-4dab-a275-415430c0b6fe",
+          "label": "¿Hay centralización de logs?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "c0a3f4a7-5691-4d53-9f20-047a539f24e9",
+          "label": "¿Se revisan alertas de seguridad?",
+          "field_type": "tri",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "B8",
+      "title": "Producción / costos",
+      "standard_ref": "ERP B8",
+      "weight": "medio",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "d9e994b7-b449-4c98-ae78-ad94e921df29",
+          "label": "¿Proceso Producción / costos documentado?",
+          "field_type": "tri",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "86fc20e5-792b-44a4-8582-ace713f988bf",
+          "label": "¿Controles internos aplicados en Producción / costos?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "931ff81a-d4d1-4a1b-9664-132ca0c9a453",
+          "label": "Madurez operativa — Producción / costos",
+          "field_type": "select",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "A9",
+      "title": "Protección contra malware",
+      "standard_ref": "CIS 10 · NIST: Protect",
+      "weight": "alto",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "efe3e133-7919-4abc-b9a2-f3b34015d938",
+          "label": "Antivirus/EDR en endpoints",
+          "field_type": "select",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "B9",
+      "title": "Integraciones y Nexo",
+      "standard_ref": "ERP B9",
+      "weight": "medio",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "1fc613bb-00e9-4dd3-aa6f-3ea2928bf504",
+          "label": "¿Proceso Integraciones y Nexo documentado?",
+          "field_type": "tri",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "33bff9fb-d2a4-427c-a8f9-05128be6a264",
+          "label": "¿Controles internos aplicados en Integraciones y Nexo?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "ef1ca719-7360-43c3-8b82-b315a57a5cbb",
+          "label": "Madurez operativa — Integraciones y Nexo",
+          "field_type": "select",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "A10",
+      "title": "Recuperación de datos / backups",
+      "standard_ref": "CIS 11 · NIST: Recover",
+      "weight": "muy_alto",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "f1363d6b-df73-4d49-8c96-41bf0026956a",
+          "label": "¿Existen backups automatizados?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "c56579e4-b706-4ef1-858d-279f4ad78eee",
+          "label": "¿Se prueban restauraciones periódicamente?",
+          "field_type": "tri",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "61117a42-7184-4927-be38-46593c4699be",
+          "label": "Lista de gaps de backup detectados",
+          "field_type": "list",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "B10",
+      "title": "Seguridad y usuarios Tango",
+      "standard_ref": "ERP B10",
+      "weight": "medio",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "67a9e6f7-6b50-45a7-965d-c49c5e45a609",
+          "label": "¿Proceso Seguridad y usuarios Tango documentado?",
+          "field_type": "tri",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "a7ba8295-d70a-4a49-86f6-eae601bb5df2",
+          "label": "¿Controles internos aplicados en Seguridad y usuarios Tango?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "8e29fcbe-9c8f-4a6d-8cff-651d1d23a617",
+          "label": "Madurez operativa — Seguridad y usuarios Tango",
+          "field_type": "select",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "A11",
+      "title": "Seguridad de red",
+      "standard_ref": "CIS 12 · NIST: Protect",
+      "weight": "muy_alto",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "8b819496-6f8d-4454-af21-bc5af8994447",
+          "label": "Segmentación de red",
+          "field_type": "select",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "cbc6f925-4325-4cdd-99b9-7fb38c39c1af",
+          "label": "¿Firewall perimetral activo?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "A12",
+      "title": "Seguridad perimetral",
+      "standard_ref": "CIS 13 · NIST: Protect",
+      "weight": "alto",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "25fd4946-05b9-4eee-a1b9-f15d561c8311",
+          "label": "¿Reglas de firewall documentadas y revisadas?",
+          "field_type": "tri",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "bd391e36-21dd-4fdd-8f07-5ce7b958bd9c",
+          "label": "¿Hay filtrado de salida a internet?",
+          "field_type": "bool",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "A13",
+      "title": "Seguridad wireless",
+      "standard_ref": "CIS 15 · NIST: Protect",
+      "weight": "medio",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "5a32acee-7b0d-4622-9915-9df7c4094689",
+          "label": "Estándar WiFi corporativo",
+          "field_type": "select",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "code": "A14",
+      "title": "Formación y concienciación",
+      "standard_ref": "CIS 14 · NIST: Protect",
+      "weight": "medio",
+      "score": null,
+      "observations": null,
+      "items": [
+        {
+          "item_id": "61623da1-ba50-4ff0-8e29-309a075c6065",
+          "label": "¿Capacitación periódica en ciberseguridad?",
+          "field_type": "tri",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        },
+        {
+          "item_id": "fa6ffe32-13f4-4e5c-8aa0-ae2a8a93f322",
+          "label": "Costo mensual estimado shadow IT",
+          "field_type": "money",
+          "value": null,
+          "na": false,
+          "observations": null,
+          "attachments": []
+        }
+      ]
+    }
+  ],
+  "indices": {
+    "it": 100,
+    "erp": 0
+  },
+  "top_risks": [
+    {
+      "text": "Backup sin probar",
+      "severity": "alta"
+    }
+  ],
+  "quick_wins": [
+    "Activar MFA en correo"
+  ],
+  "upsell_findings": [
+    {
+      "text": "Renovar servidores EOL",
+      "internal": true
+    }
+  ],
+  "next_step": "Revisión trimestral",
+  "market_data": {
+    "erp_actual": "Tango Gestión",
+    "modulos_tango": [
+      "ventas",
+      "stock"
+    ],
+    "empleados": 45,
+    "puestos": 30,
+    "sedes": 2,
+    "proveedor_correo": "Google Workspace",
+    "soporte_it_actual": "Interno"
+  },
+  "closed_at": "2026-06-08T14:25:00-03:00"
+}

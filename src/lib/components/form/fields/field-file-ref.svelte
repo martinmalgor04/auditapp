@@ -28,7 +28,7 @@
     <button
       type="button"
       id="{id}-capture"
-      class="flex-1 min-h-[var(--sys-touch-min)] rounded-[var(--sys-radius)] bg-[var(--sys-primary)] text-white text-sm font-medium"
+      class="flex-1 min-h-[var(--sys-touch-min)] rounded-sys-app bg-sys-electrico text-sm font-medium text-white"
       onclick={() => oncapture?.()}
     >
       Tomar foto

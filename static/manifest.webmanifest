@@ -3,8 +3,8 @@
   "short_name": "SyS Audit",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#003366",
+  "background_color": "#0A1929",
+  "theme_color": "#0A1929",
   "lang": "es",
   "icons": [
     {

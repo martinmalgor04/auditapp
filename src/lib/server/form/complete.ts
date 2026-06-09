@@ -4,6 +4,7 @@ import {
   listPendingRequiredItems,
   setAuditStatus
 } from '$lib/server/db/audit-form';
+import { recalculateAndPersistScores } from '$lib/server/scoring/persist';
 import { AuditFormNotAllowedError, AuditFormNotEditableError } from './errors';
 import { assertFormAccess } from './load-form';
 
@@ -29,6 +30,7 @@ export async function completeRelevamiento(
 
   const pending = await listPendingRequiredItems(auditId);
   await setAuditStatus(auditId, 'en_cierre');
+  await recalculateAndPersistScores(auditId);
 
   return {
     status: 'en_cierre',

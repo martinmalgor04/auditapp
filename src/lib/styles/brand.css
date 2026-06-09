@@ -1,10 +1,44 @@
 :root {
-  --sys-primary: #1e4d8c;
-  --sys-primary-dark: #163a6b;
-  --sys-accent: #2b7de9;
-  --sys-surface: #f8fafc;
-  --sys-text: #0f172a;
-  --sys-text-muted: #64748b;
-  --sys-radius: 0.75rem;
+  /* Fuentes */
+  --sys-font-logo: 'Keep Calm', serif;
+  --sys-font: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+
+  /* Superficies */
+  --sys-azul-profundo: #0a1929;
+  --sys-azul-medio: #102a43;
+  --sys-blanco: #ffffff;
+  --sys-offwhite: #f7f9fb;
+  --sys-bg-gradient: linear-gradient(135deg, #0a1929 0%, #0f2238 60%, #102a43 100%);
+
+  /* Acentos */
+  --sys-celeste: #a2c6d4;
+  --sys-azul-electrico: #2196f3;
+
+  /* Tipografía sobre oscuro */
+  --sys-text-on-dark: rgba(255, 255, 255, 0.9);
+  --sys-text-muted-dark: rgba(255, 255, 255, 0.65);
+
+  /* Tipografía sobre claro */
+  --sys-text-on-light: #0a1929;
+  --sys-text-body-light: #102a43;
+  --sys-text-negro: #1a1a1a;
+  --sys-text-muted-light: #64748b;
+
+  /* Semáforo */
+  --sys-verde: #27ae60;
+  --sys-rojo: #e63946;
+  --sys-naranja: #f39c12;
+  --sys-gris-neutro: #908a82;
+
+  /* Layout app */
+  --sys-top-bar: 6px;
   --sys-touch-min: 44px;
+  --sys-radius-app: 0.75rem;
+  --sys-radius-cta: 4px;
+
+  /* Animación */
+  --sys-ease: cubic-bezier(0.33, 1, 0.68, 1);
+  --sys-fast: 220ms;
+  --sys-base: 360ms;
+  --sys-slow: 640ms;
 }

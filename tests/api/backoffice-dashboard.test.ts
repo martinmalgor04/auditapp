@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { setSqlForTests } from '../../src/lib/server/db/client';
 import { listDashboardAudits, DASHBOARD_PAGE_SIZE } from '../../src/lib/server/backoffice/dashboard';
-import { setupTestDb, teardownTestDb } from '../helpers/db';
+import { setupTestDb, teardownTestDb, withTestDbSerial } from '../helpers/db';
 import { insertTestAuditRow } from '../helpers/backoffice';
 import type postgres from 'postgres';
 
@@ -12,6 +13,7 @@ describe('backoffice dashboard', () => {
   });
 
   beforeEach(async () => {
+    setSqlForTests(sql);
   });
 
   afterAll(async () => {
@@ -67,64 +69,70 @@ describe('backoffice dashboard', () => {
   });
 
   it('search matches client razon_social', async () => {
-    await insertTestAuditRow(sql, { razonSocial: 'Mazzoni Distribución' });
-    await insertTestAuditRow(sql, { razonSocial: 'Otro Cliente' });
+    await withTestDbSerial(sql, async (s) => {
+      await insertTestAuditRow(s, { razonSocial: 'Mazzoni Distribución' });
+      await insertTestAuditRow(s, { razonSocial: 'Otro Cliente' });
 
-    const result = await listDashboardAudits({
-      q: 'mazzoni',
-      page: 1,
-      sort: 'last_activity_desc'
+      const result = await listDashboardAudits({
+        q: 'mazzoni',
+        page: 1,
+        sort: 'last_activity_desc'
+      });
+
+      expect(result.rows.length).toBe(1);
+      expect(result.rows[0].razonSocial).toContain('Mazzoni');
     });
-
-    expect(result.rows.length).toBe(1);
-    expect(result.rows[0].razonSocial).toContain('Mazzoni');
   });
 
   it('sorts by scheduled_at and by last activity', async () => {
-    await insertTestAuditRow(sql, {
-      razonSocial: 'Antigua',
-      scheduledAt: new Date('2026-01-01')
-    });
-    const { auditId: newerId } = await insertTestAuditRow(sql, {
-      razonSocial: 'Reciente',
-      scheduledAt: new Date('2026-12-01')
-    });
+    await withTestDbSerial(sql, async (s) => {
+      await insertTestAuditRow(s, {
+        razonSocial: 'Antigua',
+        scheduledAt: new Date('2026-01-01')
+      });
+      const { auditId: newerId } = await insertTestAuditRow(s, {
+        razonSocial: 'Reciente',
+        scheduledAt: new Date('2026-12-01')
+      });
 
-    const itemId = await import('../helpers/backoffice').then((m) =>
-      m.getFirstTemplateItemId(sql, 'it')
-    );
-    await sql`
-      INSERT INTO audit_response (audit_id, item_id, value, source, updated_at)
-      VALUES (${newerId}, ${itemId}, ${sql.json('x')}, 'admin', ${new Date('2026-12-31')})
-      ON CONFLICT (audit_id, item_id) DO UPDATE SET updated_at = EXCLUDED.updated_at
-    `;
+      const itemId = await import('../helpers/backoffice').then((m) =>
+        m.getFirstTemplateItemId(s, 'it')
+      );
+      await s`
+        INSERT INTO audit_response (audit_id, item_id, value, source, updated_at)
+        VALUES (${newerId}, ${itemId}, ${s.json('x')}, 'admin', ${new Date('2026-12-31')})
+        ON CONFLICT (audit_id, item_id) DO UPDATE SET updated_at = EXCLUDED.updated_at
+      `;
 
-    const byScheduled = await listDashboardAudits({
-      sort: 'scheduled_at_asc',
-      page: 1
-    });
-    expect(byScheduled.rows[0].razonSocial).toBe('Antigua');
+      const byScheduled = await listDashboardAudits({
+        sort: 'scheduled_at_asc',
+        page: 1
+      });
+      expect(byScheduled.rows[0].razonSocial).toBe('Antigua');
 
-    const byActivity = await listDashboardAudits({
-      sort: 'last_activity_desc',
-      page: 1
+      const byActivity = await listDashboardAudits({
+        sort: 'last_activity_desc',
+        page: 1
+      });
+      expect(byActivity.rows[0].razonSocial).toBe('Reciente');
     });
-    expect(byActivity.rows[0].razonSocial).toBe('Reciente');
   });
 
   it('returns page size limit and next cursor', async () => {
-    for (let i = 0; i < 55; i++) {
-      await insertTestAuditRow(sql, { razonSocial: `Cliente ${i}` });
-    }
+    await withTestDbSerial(sql, async (s) => {
+      for (let i = 0; i < 55; i++) {
+        await insertTestAuditRow(s, { razonSocial: `Cliente ${i}` });
+      }
 
-    const page1 = await listDashboardAudits({ page: 1, sort: 'last_activity_desc' });
-    expect(page1.rows.length).toBe(DASHBOARD_PAGE_SIZE);
-    expect(page1.hasNext).toBe(true);
-    expect(page1.total).toBe(55);
+      const page1 = await listDashboardAudits({ page: 1, sort: 'last_activity_desc' });
+      expect(page1.rows.length).toBe(DASHBOARD_PAGE_SIZE);
+      expect(page1.hasNext).toBe(true);
+      expect(page1.total).toBe(55);
 
-    const page2 = await listDashboardAudits({ page: 2, sort: 'last_activity_desc' });
-    expect(page2.rows.length).toBe(5);
-    expect(page2.hasNext).toBe(false);
+      const page2 = await listDashboardAudits({ page: 2, sort: 'last_activity_desc' });
+      expect(page2.rows.length).toBe(5);
+      expect(page2.hasNext).toBe(false);
+    });
   });
 
   it('excludes archived audits', async () => {

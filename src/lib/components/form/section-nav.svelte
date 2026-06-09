@@ -16,13 +16,13 @@
 
 <div class="space-y-3" data-section-nav>
   <div class="space-y-1">
-    <div class="flex justify-between text-xs text-slate-600">
+    <div class="flex justify-between text-xs text-[var(--sys-text-muted-light)]">
       <span>Progreso</span>
       <span>{progressPct}%</span>
     </div>
-    <div class="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
+    <div class="h-2 w-full overflow-hidden rounded-full bg-sys-medio/10">
       <div
-        class="h-full bg-[var(--sys-primary)] transition-all duration-300"
+        class="h-full bg-sys-electrico transition-all duration-300"
         style="width: {progressPct}%"
         role="progressbar"
         aria-valuenow={progressPct}
@@ -36,10 +36,10 @@
     {#each sections as section (section.id)}
       <button
         type="button"
-        class="min-h-[var(--sys-touch-min)] shrink-0 rounded-[var(--sys-radius)] border px-3 py-2 text-sm font-medium lg:w-full lg:text-left
+        class="min-h-[var(--sys-touch-min)] shrink-0 rounded-sys-app border px-3 py-2 text-sm font-medium lg:w-full lg:text-left
           {section.id === activeSectionId
-          ? 'border-[var(--sys-primary)] bg-[var(--sys-primary)] text-white'
-          : 'border-slate-300 bg-white text-slate-700'}"
+          ? 'border-sys-electrico bg-sys-electrico text-white'
+          : 'border-sys-medio/20 bg-sys-blanco text-[var(--sys-text-body-light)] hover:border-sys-electrico'}"
         onclick={() => onselect?.(section.id)}
       >
         {section.code} — {section.title}

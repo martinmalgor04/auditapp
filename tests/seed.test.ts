@@ -9,7 +9,8 @@ import {
   resetAndSeedForTests,
   resetBaselineSeedFlag,
   setupTestDb,
-  teardownTestDb
+  teardownTestDb,
+  withTestDbSerial
 } from './helpers/db';
 import type postgres from 'postgres';
 
@@ -161,21 +162,19 @@ describe('database seed', () => {
   });
 
   it('seed is idempotent on second run', async () => {
-    const first = {
-      users: Number((await sql`SELECT COUNT(*)::text AS c FROM app_user`)[0].c),
-      templates: Number((await sql`SELECT COUNT(*)::text AS c FROM template`)[0].c),
-      items: Number((await sql`SELECT COUNT(*)::text AS c FROM template_item`)[0].c),
-      clients: Number((await sql`SELECT COUNT(*)::text AS c FROM client`)[0].c)
-    };
+    await withTestDbSerial(sql, async (s) => {
+      const countSnapshot = async () => ({
+        users: Number((await s`SELECT COUNT(*)::text AS c FROM app_user`)[0].c),
+        templates: Number((await s`SELECT COUNT(*)::text AS c FROM template`)[0].c),
+        items: Number((await s`SELECT COUNT(*)::text AS c FROM template_item`)[0].c),
+        clients: Number((await s`SELECT COUNT(*)::text AS c FROM client`)[0].c)
+      });
 
-    await runSeed(sql);
-    const second = {
-      users: Number((await sql`SELECT COUNT(*)::text AS c FROM app_user`)[0].c),
-      templates: Number((await sql`SELECT COUNT(*)::text AS c FROM template`)[0].c),
-      items: Number((await sql`SELECT COUNT(*)::text AS c FROM template_item`)[0].c),
-      clients: Number((await sql`SELECT COUNT(*)::text AS c FROM client`)[0].c)
-    };
+      const first = await countSnapshot();
+      await runSeed(s);
+      const second = await countSnapshot();
 
-    expect(second).toEqual(first);
+      expect(second).toEqual(first);
+    });
   });
 });

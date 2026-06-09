@@ -4,6 +4,7 @@
   import BriefingHeader from '$lib/components/briefing/briefing-header.svelte';
   import BriefingUnavailable from '$lib/components/briefing/briefing-unavailable.svelte';
   import BriefingWizard from '$lib/components/briefing/briefing-wizard.svelte';
+  import SysButton from '$lib/components/brand/SysButton.svelte';
   import SaveIndicator, { type SaveState } from '$lib/components/briefing/save-indicator.svelte';
   import type { PageData, ActionData } from './$types';
 
@@ -82,12 +83,7 @@
     />
     <SaveIndicator state={saveState} />
     <form method="POST" action="?/submit" use:enhance class="sticky bottom-4 pt-2">
-      <button
-        type="submit"
-        class="w-full min-h-[var(--sys-touch-min)] rounded-[var(--sys-radius)] bg-[var(--sys-primary)] text-white font-semibold text-base shadow-md hover:bg-[var(--sys-primary-dark)]"
-      >
-        Enviar
-      </button>
+      <SysButton type="submit" variant="primary" class="w-full text-base shadow-md">Enviar</SysButton>
     </form>
   </div>
 {/if}

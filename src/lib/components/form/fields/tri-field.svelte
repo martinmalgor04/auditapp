@@ -37,7 +37,7 @@
           onchange={onchange}
         />
         <span
-          class="flex min-h-[var(--sys-touch-min)] items-center justify-center rounded-[var(--sys-radius)] border border-slate-300 px-3 text-sm peer-checked:border-[var(--sys-primary)] peer-checked:bg-[var(--sys-primary)] peer-checked:text-white"
+          class="flex min-h-[var(--sys-touch-min)] items-center justify-center rounded-sys-app border border-sys-medio/20 px-3 text-sm peer-checked:border-sys-electrico peer-checked:bg-sys-electrico peer-checked:text-white"
         >
           {opt.label}
         </span>

@@ -58,3 +58,31 @@
 - **Veredicto:** APPROVED (`progress/review_07_form_tecnico.md`)
 - **Próximo paso:** `/leader` → #8 `08_cierre_scoring` (spec_ready, aprobación humana)
 
+## 2026-06-09 — 08_cierre_scoring (#8) done
+
+- **Agente:** leader → implementer → reviewer
+- **Resultado:** Motor scoring determinístico (ítem → sección → índice IT/ERP), EOL inventario, persistencia `audit_section_score`/`audit_closure`, pantalla `/auditorias/[id]/cierre` con top riesgos, quick wins, upsell interno, preview HTML, confirmar cierre (invalida token), reapertura admin. `computeLiveScores` integrado al form técnico. 24 tests nuevos (218 vitest total). `./init.sh` verde.
+- **Veredicto:** APPROVED (`progress/review_08_cierre_scoring.md`)
+- **Próximo paso:** `/leader` → #9 `09_contrato_datos` (spec_ready, aprobación humana) o #11 `11_ui_branding_sys`
+
+## 2026-06-09 — 09_contrato_datos (#9) done
+
+- **Agente:** leader → implementer → reviewer
+- **Resultado:** Contrato JSON canónico v1.0: módulo `src/lib/server/canonical/` (builder, schema Zod, market_data, preview compartido), `GET /api/audits/[id]/export` admin-only con header `X-Schema-Version`, cierre integrado vía `buildReportPreview`, ítem `cab_modulos_tango` en seed ERP. 22 tests nuevos (244 vitest total). `./init.sh` verde.
+- **Veredicto:** APPROVED (`progress/review_09_contrato_datos.md`)
+- **Próximo paso:** `/leader` → #10 `11_ui_branding_sys` (spec_ready, aprobación humana)
+
+## 2026-06-09 — 11_ui_branding_sys (#10) done
+
+- **Agente:** leader → implementer → reviewer
+- **Resultado:** Design system SyS global: tokens oficiales (`brand.css` + Tailwind), Montserrat, logos PNG en `static/brand/`, componentes `SysShell`/`SysButton`/`SysInput`/`SysBadge`, shells en login/backoffice/form/cierre/briefing, PWA `#0A1929`. 6 suites `tests/brand-*.test.ts` + `e2e/branding.spec.ts`. 263 vitest total. `./init.sh` verde.
+- **Veredicto:** APPROVED (`progress/review_11_ui_branding_sys.md`)
+- **Próximo paso:** `/leader` → #11 `10_deploy_dokploy` (spec_ready, aprobación humana)
+
+## 2026-06-09 — 10_deploy_dokploy (#11) done
+
+- **Agente:** leader → implementer → reviewer
+- **Resultado:** Deploy Dokploy: Dockerfile multi-stage (node:22-bookworm-slim), entrypoint migrate→node, `/health`, compose ejemplo Traefik, `docs/deploy-dokploy.md`, gate `./scripts/pre-push.sh`, cookies Secure en HTTPS, 9 suites tests deploy + `e2e/pwa-install.spec.ts`. 288 vitest (2 skipped docker). `./init.sh` verde.
+- **Veredicto:** APPROVED (`progress/review_10_deploy_dokploy.md`)
+- **Próximo paso:** Backlog completo — commit + push cuando el humano lo pida
+

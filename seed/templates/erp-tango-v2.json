@@ -121,6 +121,28 @@
         },
         {
           "sort_order": 9,
+          "label": "Módulos Tango instalados",
+          "field_type": "multiselect",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {
+            "item_code": "cab_modulos_tango",
+            "choices": [
+              "ventas",
+              "compras",
+              "stock",
+              "contabilidad",
+              "sueldos",
+              "punto_venta"
+            ]
+          }
+        },
+        {
+          "sort_order": 10,
           "label": "Fecha programada de visita",
           "field_type": "date",
           "method": [

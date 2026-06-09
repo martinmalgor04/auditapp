@@ -12,12 +12,14 @@ describe('pwa manifest', () => {
       short_name: string;
       display: string;
       theme_color: string;
+      background_color: string;
       icons: Array<{ src: string; sizes: string }>;
     };
 
     expect(manifest.name).toBe('SyS Auditorías');
     expect(manifest.display).toBe('standalone');
-    expect(manifest.theme_color).toBe('#003366');
+    expect(manifest.theme_color).toBe('#0A1929');
+    expect(manifest.background_color).toBe('#0A1929');
     expect(manifest.icons.length).toBeGreaterThanOrEqual(2);
 
     for (const icon of manifest.icons) {

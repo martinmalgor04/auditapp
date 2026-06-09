@@ -51,6 +51,30 @@ describe('briefing load API', () => {
     }
   });
 
+  it('upsell absent from public briefing', async () => {
+    const { auditId } = await insertTestAuditRow(sql, {
+      razonSocial: 'Upsell Hidden',
+      status: 'briefing_enviado',
+      publicToken: 'hidden-findings-token'
+    });
+
+    await sql`
+      INSERT INTO audit_closure (audit_id, upsell_findings)
+      VALUES (${auditId}, ${sql.json(['Oportunidad firewall'] as never)})
+      ON CONFLICT (audit_id) DO UPDATE SET upsell_findings = EXCLUDED.upsell_findings
+    `;
+
+    const data = (await briefingLoad({
+      params: { token: 'hidden-findings-token' },
+      locals: { user: null }
+    } as never)) as BriefingLoadResult;
+
+    expect(data.available).toBe(true);
+    expect(JSON.stringify(data)).not.toContain('Oportunidad firewall');
+    expect(JSON.stringify(data)).not.toContain('upsell_findings');
+    expect(JSON.stringify(data)).not.toContain('Oportunidad firewall');
+  });
+
   it.each(['en_relevamiento', 'cerrada'] as const)(
     'shows unavailable when audit is %s',
     async (status) => {

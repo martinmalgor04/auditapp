@@ -5,12 +5,12 @@
 </script>
 
 <p
-  class="text-xs text-center min-h-[1.25rem] sticky top-0 z-20 bg-[var(--sys-surface)] py-1"
+  class="text-xs text-center min-h-[1.25rem] sticky top-0 z-20 bg-sys-offwhite py-1"
   aria-live="polite"
   data-save-state={state}
 >
   {#if state === 'saving'}
-    <span class="text-[var(--sys-accent)]">Guardando…</span>
+    <span class="text-sys-electrico">Guardando…</span>
   {:else if state === 'saved'}
     <span class="text-emerald-600">Guardado ✓</span>
   {:else if state === 'offline'}

@@ -4,14 +4,14 @@ import { E2E_BRIEFING_TOKEN, ensureE2eBriefingAudit } from './ensure-audit';
 test.describe('briefing externo', () => {
   test.use({ viewport: { width: 375, height: 667 } });
 
-  test.beforeAll(async () => {
+  test.beforeEach(async () => {
     await ensureE2eBriefingAudit();
   });
 
   test('flujo feliz: cargar, completar campo, enviar, confirmación', async ({ page }) => {
     await page.goto(`/briefing/${E2E_BRIEFING_TOKEN}`);
 
-    await expect(page.getByRole('img', { name: 'Servicios y Sistemas' })).toBeVisible();
+    await expect(page.locator('img[src="/brand/sys-horizontal-b.png"]').first()).toBeVisible();
     await expect(page.getByText(/Hola,/)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Enviar' })).toBeVisible();
 

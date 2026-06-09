@@ -6,6 +6,7 @@
   import LiveSectionScore from '$lib/components/form/live-section-score.svelte';
   import SaveIndicator, { type SaveIndicatorState } from '$lib/components/form/save-indicator.svelte';
   import SectionNav from '$lib/components/form/section-nav.svelte';
+  import SysButton from '$lib/components/brand/SysButton.svelte';
   import { createAutosave } from '$lib/client/form/autosave';
   import {
     downloadBackupJson,
@@ -165,7 +166,7 @@
   <title>Relevamiento — {data.audit.razonSocial}</title>
 </svelte:head>
 
-<div class="sticky top-0 z-30 -mx-4 px-4 py-2 bg-[var(--sys-surface)] border-b border-slate-200 mb-4">
+<div class="sticky top-0 z-30 -mx-4 mb-4 border-b border-sys-medio/10 bg-sys-offwhite px-4 py-2">
   <SaveIndicator state={saveState} />
 </div>
 
@@ -227,12 +228,9 @@
     </div>
 
     <form method="POST" action="?/complete" use:enhance class="sticky bottom-4 pt-4">
-      <button
-        type="submit"
-        class="w-full min-h-[var(--sys-touch-min)] rounded-[var(--sys-radius)] bg-[var(--sys-primary)] text-white font-semibold shadow-md"
-      >
+      <SysButton type="submit" variant="primary" class="w-full shadow-md">
         Relevamiento completo
-      </button>
+      </SysButton>
     </form>
   </div>
 </div>

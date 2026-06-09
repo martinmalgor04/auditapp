@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { AuditStatus } from '$lib/audit-status';
-  import { getStatusBadgeClasses } from '$lib/backoffice/status-colors';
+  import SysBadge from '$lib/components/brand/SysBadge.svelte';
 
   let { status, label }: { status: AuditStatus; label?: string } = $props();
 
@@ -14,9 +14,4 @@
   };
 </script>
 
-<span
-  data-status={status}
-  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {getStatusBadgeClasses(status)}"
->
-  {label ?? STATUS_LABELS[status]}
-</span>
+<SysBadge {status} label={label ?? STATUS_LABELS[status]} />

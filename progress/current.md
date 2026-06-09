@@ -6,6 +6,8 @@
 
 ## Bitácora
 
+_(vacío — nueva sesión)_
+
 ## Próximo paso
 
-`/leader` → feature #8 `08_cierre_scoring` (spec_ready — pendiente aprobación humana).
+Backlog completo. Todas las features en `feature_list.json` están `done`.

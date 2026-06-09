@@ -1,6 +1,6 @@
 import { createSql } from '../src/lib/server/db/client';
 import { runMigrations } from '../src/lib/server/db/migrate';
-import { closeTestDb } from './helpers/db';
+import { closeTestDb, resetDatabaseToBaseline } from './helpers/db';
 
 async function waitForPostgres(connectionString: string, attempts = 30): Promise<void> {
   let lastError: unknown;
@@ -8,6 +8,7 @@ async function waitForPostgres(connectionString: string, attempts = 30): Promise
     const sql = createSql(connectionString);
     try {
       await runMigrations(sql);
+      await resetDatabaseToBaseline(sql);
       await sql.end({ timeout: 5 });
       return;
     } catch (error) {

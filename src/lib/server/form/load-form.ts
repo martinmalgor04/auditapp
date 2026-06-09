@@ -9,6 +9,9 @@ import {
 } from '$lib/server/db/audit-form';
 import type { FieldType } from '$lib/server/db/field-schemas';
 import { computeSectionScore, type ScoreBand } from '$lib/scoring/section-score';
+import { computeLiveScores } from '$lib/server/scoring/live';
+import { indexToSemaphore } from '$lib/server/scoring/semaphore';
+import type { Semaphore } from '$lib/server/scoring/types';
 import { AuditFormNotAllowedError, AuditFormNotEditableError } from './errors';
 
 export type FormItem = {
@@ -121,10 +124,22 @@ export function assertFormAccess(audit: NonNullable<Awaited<ReturnType<typeof ge
   }
 }
 
+export type LiveIndices = {
+  it: number | null;
+  erp: number | null;
+  itSemaphore: Semaphore | null;
+  erpSemaphore: Semaphore | null;
+};
+
 export async function loadAuditForm(
   auditId: string,
   user: AppUser
-): Promise<{ audit: AuditHeader; sections: FormSection[]; progressPct: number }> {
+): Promise<{
+  audit: AuditHeader;
+  sections: FormSection[];
+  progressPct: number;
+  liveIndices: LiveIndices;
+}> {
   const header = await getAuditFormHeader(auditId);
   if (!header) {
     throw new AuditFormNotAllowedError('Auditoría no encontrada');
@@ -188,6 +203,26 @@ export async function loadAuditForm(
     };
   });
 
+  const liveScores = await computeLiveScores(auditId);
+  const liveScoreBySection = new Map(
+    liveScores.sectionScores.map((s) => [s.sectionId, s.score])
+  );
+
+  const sectionsWithLive = sections.map((sec) => {
+    const serverScore = liveScoreBySection.get(sec.id);
+    if (serverScore !== undefined) {
+      return {
+        ...sec,
+        liveScore: serverScore,
+        scoreBand: indexToSemaphore(serverScore) as ScoreBand
+      };
+    }
+    return sec;
+  });
+
+  const indiceIt = liveScores.indiceIt;
+  const indiceErp = liveScores.indiceErp;
+
   return {
     audit: {
       id: header.id,
@@ -197,8 +232,14 @@ export async function loadAuditForm(
       types: header.types,
       segment: header.segment
     },
-    sections,
-    progressPct
+    sections: sectionsWithLive,
+    progressPct,
+    liveIndices: {
+      it: indiceIt,
+      erp: indiceErp,
+      itSemaphore: indiceIt !== null ? indexToSemaphore(indiceIt) : null,
+      erpSemaphore: indiceErp !== null ? indexToSemaphore(indiceErp) : null
+    }
   };
 }
 

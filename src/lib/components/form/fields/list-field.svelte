@@ -54,7 +54,7 @@
     {/each}
     <button
       type="button"
-      class="text-sm text-[var(--sys-primary)] min-h-[var(--sys-touch-min)]"
+      class="text-sm text-sys-electrico min-h-[var(--sys-touch-min)]"
       onclick={addRow}
     >
       + Agregar

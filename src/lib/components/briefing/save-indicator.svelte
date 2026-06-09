@@ -6,7 +6,7 @@
 
 <p class="text-xs text-center min-h-[1.25rem]" aria-live="polite">
   {#if state === 'saving'}
-    <span class="text-[var(--sys-accent)]">Guardando…</span>
+    <span class="text-sys-electrico">Guardando…</span>
   {:else if state === 'saved'}
     <span class="text-emerald-600">Guardado</span>
   {:else if state === 'error'}
