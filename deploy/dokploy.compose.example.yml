@@ -1,5 +1,9 @@
-# deploy/dokploy.compose.example.yml — referencia Dokploy, sin secretos reales
-# Dominio/HTTPS: configurar en la UI de Dokploy (servicio app, puerto 3033).
+# deploy/dokploy.compose.example.yml — TODO-EN-UNO (alternativa)
+# Recomendado en producción: dos apps Dokploy separadas (como presupuestossys):
+#   deploy/dokploy-db.compose.yml  → proyecto Dokploy db (primero)
+#   deploy/dokploy-app.compose.yml → proyecto Dokploy app (después)
+#
+# Dominio/HTTPS: UI Dokploy, servicio app, puerto interno 3033.
 # Postgres admin: puerto host 4043 (bind 127.0.0.1 por defecto; túnel SSH o POSTGRES_PUBLISH_BIND).
 services:
   postgres:

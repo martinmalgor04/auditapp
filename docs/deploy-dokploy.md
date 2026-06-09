@@ -2,6 +2,17 @@
 
 Runbook operativo para desplegar auditapp en Dokploy con Postgres, HTTPS y PWA.
 
+## Arquitectura recomendada (dos servicios Dokploy)
+
+Igual que presupuestossys: **Postgres y app en proyectos Compose separados** en la misma red `dokploy-network`. La app resuelve la DB por hostname `postgres`.
+
+| Orden | Proyecto Dokploy | Compose | Env de referencia |
+|---|---|---|---|
+| 1 | `db` | `deploy/dokploy-db.compose.yml` | `deploy/db.env.example` |
+| 2 | `app` | `deploy/dokploy-app.compose.yml` | `deploy/app.env.example` |
+
+**Alternativa todo-en-uno:** `deploy/dokploy.compose.example.yml` (app + postgres en un solo stack; red interna `db` + `dokploy-network`).
+
 ## Dominio y HTTPS (UI Dokploy)
 
 - **Dominio producción:** `https://app.auditoriaserviciosysistemas.com.ar`
@@ -76,29 +87,46 @@ Imagen `docker/postgres` con:
 - **Reject** explícito para todo lo demás
 - Log de conexiones/desconexiones activado
 
-## Primer deploy
+## Primer deploy (dos servicios)
 
-1. Crear proyecto Compose en Dokploy desde este repo.
-2. Configurar variables de entorno (sin `DATABASE_URL`).
-3. Push → Dokploy construye imagen app + postgres y arranca.
-4. Entrypoint: migraciones → seed si DB vacía → `node build/index.js`.
-5. Verificar: `GET /health` → `{ "success": true, "data": { "status": "ok" } }`.
+### Paso 1 — Postgres (proyecto `db`)
 
-## Seed inicial (automático)
+1. Crear app **Docker Compose** en Dokploy apuntando a este repo (nombre: **db**).
+2. Compose path: `deploy/dokploy-db.compose.yml`.
+3. Variables desde `deploy/db.env.example` (mínimo `POSTGRES_PASSWORD`).
+4. Deploy y esperar healthcheck `pg_isready`.
 
-El entrypoint corre seed **solo si la DB está vacía** (sin usuarios en `app_user`).
+### Paso 2 — App (proyecto `app`)
+
+1. Crear segunda app **Docker Compose** en el mismo servidor Dokploy (nombre: **app**).
+2. Compose path: `deploy/dokploy-app.compose.yml`.
+3. Variables desde `deploy/app.env.example` — **misma `POSTGRES_PASSWORD`** que el proyecto `db`.
+4. En UI Dokploy: dominio `app.auditoriaserviciosysistemas.com.ar`, puerto interno **3033**, HTTPS.
+5. Deploy → entrypoint: migraciones → seed si DB vacía → `node build/index.js`.
+6. Verificar: `GET /health` → `{ "success": true, "data": { "status": "ok" } }`.
+
+### Todo-en-uno (opcional)
+
+1. Un solo proyecto Compose con `deploy/dokploy.compose.example.yml`.
+2. Mismas variables que el paso 2 más `POSTGRES_PASSWORD` compartida con el servicio postgres del stack.
+
+## Seed inicial automático
+
+El entrypoint corre seed automáticamente **solo si la DB está vacía** (sin usuarios en `app_user`).
 
 Para desactivar: `AUTO_SEED=false`
 
 **Advertencia:** contraseñas seed de ejemplo (`changeme-admin`, `changeme-tech`). Cambiarlas en prod.
 
-## Gate pre-push
+## Gate pre-push (obligatorio antes de pushear)
+
+No pushear sin correr el gate local:
 
 ```bash
 ./scripts/pre-push.sh
 ```
 
-Alias: `pnpm run prepush`
+Incluye `pnpm test`, `pnpm run build` y `docker build`. Alias: `pnpm run prepush`
 
 ## Troubleshooting
 
@@ -114,4 +142,8 @@ Alias: `pnpm run prepush`
 
 ## Referencia compose
 
-`deploy/dokploy.compose.example.yml`
+| Archivo | Uso |
+|---|---|
+| `deploy/dokploy-db.compose.yml` | Postgres en `dokploy-network`, alias `postgres` |
+| `deploy/dokploy-app.compose.yml` | App SvelteKit (recomendado) |
+| `deploy/dokploy.compose.example.yml` | Stack combinado (alternativa) |

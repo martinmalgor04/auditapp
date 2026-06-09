@@ -1,0 +1,47 @@
+# Postgres auditapp — Dokploy (desplegar PRIMERO)
+#
+# 1. Crear app "Docker Compose" en Dokploy (nombre: db) → deploy/dokploy-db.compose.yml
+# 2. Variables: deploy/db.env.example
+# 3. Deploy
+#
+# La app (deploy/dokploy-app.compose.yml) se conecta por hostname `postgres`
+# en la red dokploy-network. NO publicar 5432 a internet salvo admin vía 4043.
+
+name: db
+
+services:
+  postgres:
+    build:
+      context: ..
+      dockerfile: docker/postgres/Dockerfile
+    image: auditapp-postgres
+    container_name: auditapp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: auditapp
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: auditapp
+      POSTGRES_ALLOWED_CIDRS: ${POSTGRES_ALLOWED_CIDRS:-}
+    volumes:
+      - auditapp_pgdata:/var/lib/postgresql/data
+    ports:
+      - '${POSTGRES_PUBLISH_BIND:-127.0.0.1}:4043:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U auditapp -d auditapp']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    shm_size: 256mb
+    networks:
+      dokploy-network:
+        aliases:
+          - postgres
+
+networks:
+  dokploy-network:
+    external: true
+    name: dokploy-network
+
+volumes:
+  auditapp_pgdata:

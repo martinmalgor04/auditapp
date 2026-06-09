@@ -4,15 +4,48 @@ import { describe, expect, it } from 'vitest';
 
 const root = resolve(import.meta.dirname, '..');
 
-describe('deploy dokploy compose example', () => {
-  const compose = readFileSync(resolve(root, 'deploy/dokploy.compose.example.yml'), 'utf8');
+function readCompose(name: string) {
+  return readFileSync(resolve(root, 'deploy', name), 'utf8');
+}
+
+describe('deploy dokploy split composes (recommended)', () => {
+  const dbCompose = readCompose('dokploy-db.compose.yml');
+  const appCompose = readCompose('dokploy-app.compose.yml');
+
+  it('postgres joins dokploy-network with hostname alias postgres', () => {
+    expect(dbCompose).toContain('dokploy-network');
+    expect(dbCompose).toContain('- postgres');
+    expect(dbCompose).toContain("4043:5432");
+    expect(dbCompose).toContain('POSTGRES_PUBLISH_BIND:-127.0.0.1');
+    expect(dbCompose).toContain('docker/postgres/Dockerfile');
+  });
+
+  it('app joins dokploy-network and passes POSTGRES_PASSWORD (no DATABASE_URL)', () => {
+    expect(appCompose).toContain('dokploy-network');
+    expect(appCompose).toContain('POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}');
+    expect(appCompose).not.toContain('DATABASE_URL:');
+    expect(appCompose).toContain('dockerfile: Dockerfile');
+    expect(appCompose).toContain("PORT: '3033'");
+    expect(appCompose).toContain(
+      'PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://app.auditoriaserviciosysistemas.com.ar'
+    );
+  });
+
+  it('builds from repository root via parent context', () => {
+    expect(dbCompose).toContain('context: ..');
+    expect(appCompose).toContain('context: ..');
+  });
+});
+
+describe('deploy dokploy combined compose example', () => {
+  const compose = readCompose('dokploy.compose.example.yml');
 
   it('postgres publishes admin port 4043 on localhost by default', () => {
     const postgresBlock = compose.slice(
       compose.indexOf('postgres:'),
       compose.indexOf('app:')
     );
-    expect(postgresBlock).toContain("4043:5432");
+    expect(postgresBlock).toContain('4043:5432');
     expect(postgresBlock).toContain('POSTGRES_PUBLISH_BIND:-127.0.0.1');
     expect(postgresBlock).toContain('db');
   });

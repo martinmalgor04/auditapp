@@ -10,7 +10,8 @@ describe('deploy dokploy documentation', () => {
   it('documents traefik domain', () => {
     expect(doc).toContain('app.auditoriaserviciosysistemas.com.ar');
     expect(doc).toMatch(/UI de Dokploy|UI Dokploy/i);
-    expect(doc).toContain('deploy/dokploy.compose.example.yml');
+    expect(doc).toContain('deploy/dokploy-db.compose.yml');
+    expect(doc).toContain('deploy/dokploy-app.compose.yml');
   });
 
   it('documents production seed procedure', () => {

@@ -1,7 +1,13 @@
+# Local dev — mismo usuario/DB que .env.example
+# DATABASE_URL=postgres://auditapp:changeme@localhost:5432/auditapp
+
+name: db
+
 services:
   db:
     build: ./docker/postgres
     image: auditapp-postgres-dev
+    restart: unless-stopped
     ports:
       - '5432:5432'
     volumes:
