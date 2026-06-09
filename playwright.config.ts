@@ -2,10 +2,9 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: 'e2e',
-  fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
   reporter: 'list',
   use: {
     baseURL: 'http://localhost:4173',
@@ -18,9 +17,17 @@ export default defineConfig({
     }
   ],
   webServer: {
-    command: 'pnpm run build && pnpm run preview --port 4173',
+    command:
+      'pnpm exec tsx e2e/ensure-audit.ts && pnpm run build && pnpm run preview --port 4173',
     url: 'http://localhost:4173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000
+    reuseExistingServer: false,
+    timeout: 120_000,
+    env: {
+      DATABASE_URL:
+        process.env.DATABASE_URL ?? 'postgres://auditapp:changeme@localhost:5432/auditapp',
+      SESSION_SECRET:
+        process.env.SESSION_SECRET ?? 'test-secret-min-32-characters-long!!',
+      PUBLIC_APP_URL: 'http://localhost:4173'
+    }
   }
 });

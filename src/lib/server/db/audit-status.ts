@@ -1,13 +1,6 @@
-export const AUDIT_STATUSES = [
-  'borrador',
-  'briefing_enviado',
-  'briefing_completo',
-  'en_relevamiento',
-  'en_cierre',
-  'cerrada'
-] as const;
+import { AUDIT_STATUSES, type AuditStatus } from '$lib/audit-status';
 
-export type AuditStatus = (typeof AUDIT_STATUSES)[number];
+export { AUDIT_STATUSES, type AuditStatus };
 
 const STATUS_SET = new Set<string>(AUDIT_STATUSES);
 

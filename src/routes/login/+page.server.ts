@@ -12,7 +12,7 @@ const loginSchema = z.object({
 
 export const load: PageServerLoad = async ({ locals }) => {
   if (locals.user) {
-    redirect(303, '/');
+    redirect(303, '/tablero');
   }
 };
 
@@ -45,6 +45,6 @@ export const actions: Actions = {
     const { id: sessionId } = await createSession(result.userId);
     setSessionCookie(cookies, sessionId);
 
-    redirect(303, '/');
+    redirect(303, '/tablero');
   }
 };

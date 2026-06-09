@@ -1,10 +1,8 @@
 # Sesión actual
 
 - **Feature en curso:** —
-- **Inicio:** —
+- **Estado:** —
 - **Agente:** —
-
-## Plan
 
 ## Bitácora
 

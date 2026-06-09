@@ -1,0 +1,85 @@
+<script lang="ts">
+  import type { PageData } from './$types';
+
+  let { data, form }: { data: PageData; form?: { error?: string; temporaryPassword?: string } } =
+    $props();
+</script>
+
+<svelte:head>
+  <title>Usuarios — auditapp</title>
+</svelte:head>
+
+<h1 class="text-2xl font-bold text-slate-900 mb-6">Usuarios</h1>
+
+{#if form?.error}
+  <p class="mb-4 text-sm text-red-600">{form.error}</p>
+{/if}
+
+{#if form?.temporaryPassword}
+  <p class="mb-4 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded p-3">
+    Contraseña temporal: <code>{form.temporaryPassword}</code>
+  </p>
+{/if}
+
+<section class="mb-8 rounded-lg border border-slate-200 bg-white p-4">
+  <h2 class="font-semibold mb-3">Alta de usuario</h2>
+  <form method="POST" action="?/create" class="grid gap-3 sm:grid-cols-2">
+    <input type="email" name="email" placeholder="Email" required class="rounded border px-3 py-2 text-sm" />
+    <input type="text" name="name" placeholder="Nombre" required class="rounded border px-3 py-2 text-sm" />
+    <select name="role" class="rounded border px-3 py-2 text-sm">
+      <option value="tecnico">Técnico</option>
+      <option value="admin">Admin</option>
+    </select>
+    <input
+      type="text"
+      name="temporaryPassword"
+      placeholder="Contraseña temporal (opcional)"
+      class="rounded border px-3 py-2 text-sm"
+    />
+    <button type="submit" class="sm:col-span-2 rounded bg-slate-900 px-4 py-2 text-sm text-white w-fit">
+      Crear usuario
+    </button>
+  </form>
+</section>
+
+<div class="space-y-4">
+  {#each data.users as user}
+    <article class="rounded-lg border border-slate-200 bg-white p-4">
+      <form method="POST" action="?/update" class="grid gap-3 sm:grid-cols-4 items-end">
+        <input type="hidden" name="userId" value={user.id} />
+        <label class="space-y-1">
+          <span class="text-xs text-slate-500">Email</span>
+          <input type="email" name="email" value={user.email} class="w-full rounded border px-2 py-1.5 text-sm" />
+        </label>
+        <label class="space-y-1">
+          <span class="text-xs text-slate-500">Nombre</span>
+          <input type="text" name="name" value={user.name} class="w-full rounded border px-2 py-1.5 text-sm" />
+        </label>
+        <label class="space-y-1">
+          <span class="text-xs text-slate-500">Rol</span>
+          <select name="role" class="w-full rounded border px-2 py-1.5 text-sm">
+            <option value="tecnico" selected={user.role === 'tecnico'}>Técnico</option>
+            <option value="admin" selected={user.role === 'admin'}>Admin</option>
+          </select>
+        </label>
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="active" checked={user.active} /> Activo
+        </label>
+        <button type="submit" class="rounded border px-3 py-1.5 text-sm hover:bg-slate-50">Guardar</button>
+      </form>
+      <div class="flex gap-4 mt-3 pt-3 border-t border-slate-100">
+        <form method="POST" action="?/resetPassword">
+          <input type="hidden" name="userId" value={user.id} />
+          <input type="hidden" name="email" value={user.email} />
+          <button type="submit" class="text-xs text-blue-700 underline">Reset contraseña</button>
+        </form>
+        {#if user.active}
+          <form method="POST" action="?/deactivate">
+            <input type="hidden" name="userId" value={user.id} />
+            <button type="submit" class="text-xs text-red-700 underline">Desactivar</button>
+          </form>
+        {/if}
+      </div>
+    </article>
+  {/each}
+</div>

@@ -29,3 +29,10 @@
 - **Resultado:** Auth argon2id, sesiones cookie HttpOnly/Secure/SameSite=Lax, hooks con renovación sliding, guards admin/técnico, rate limit login (5/60s), validación token briefing por `audit.status`, rutas `/login`, `/logout`, `(app)/`, `/briefing/[token]`. 51 tests nuevos en `tests/auth/` (85 total). `./init.sh`, `pnpm run check`, `pnpm run build` verdes.
 - **Veredicto:** APPROVED (`progress/review_03_auth_roles.md`)
 - **Próximo paso:** `/leader` → feature #4 `04_backoffice` (spec en `spec_ready`, pendiente aprobación humana)
+
+## 2026-06-09 — 04_backoffice (#4) done
+
+- **Agente:** implementer → reviewer
+- **Resultado:** Backoffice bajo `(app)/`: tablero (filtros/búsqueda/orden/paginación 50), CRUD auditorías con congelado de plantillas, briefing link generate/regenerate/copy, ABM usuarios admin, editor plantillas acotado, layout responsive tabla/cards. Migración `002_backoffice.sql` (`archived_at`). 30 tests nuevos (115 vitest total). 2 e2e backoffice verdes. `./init.sh`, `pnpm run check`, `pnpm test`, playwright backoffice OK.
+- **Veredicto:** APPROVED (`progress/review_04_backoffice.md`)
+- **Próximo paso:** `/leader` → feature #5 `05_briefing_externo` (spec en `spec_ready`, pendiente aprobación humana)
