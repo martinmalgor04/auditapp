@@ -106,7 +106,7 @@ if [ -f package.json ]; then
     EXIT_CODE=1
   fi
 else
-  warn "package.json no existe todavía (feature stack_scaffolding pendiente)"
+  warn "package.json no existe todavía (feature 01_stack_scaffolding pendiente)"
 fi
 
 echo ""

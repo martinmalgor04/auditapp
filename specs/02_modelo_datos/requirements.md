@@ -1,8 +1,8 @@
-# Requirements — modelo_datos
+# Requirements — #2 02_modelo_datos
 
 > Schema Postgres completo, constraints, seed inicial y tests de integridad.
-> Depende de `stack_scaffolding` (#1) para postgres.js, vitest y carpeta `migrations/`.
-> Fuentes: `docs/source-specs/specs-07/07a-modelo-datos/spec.md`, `docs/source-specs/prds/auditapp-07a-modelo-datos.prd.md`.
+> Depende de `01_stack_scaffolding` (#1) para postgres.js, vitest y carpeta `migrations/`.
+> Fuentes: `docs/source-specs/specs-07/02-modelo-datos/spec.md`, `docs/source-specs/prds/auditapp-02-modelo-datos.prd.md`.
 
 ## R1 — Tablas de definición de plantillas
 

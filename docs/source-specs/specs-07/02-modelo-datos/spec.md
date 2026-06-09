@@ -52,7 +52,7 @@ AUTH                                     └────────────
 
 ## 3. Tablas
 
-Convenciones: PK `id` = `uuid` (default `gen_random_uuid()`), timestamps `timestamptz` (`created_at`/`updated_at`), borrado lógico con `archived_at` donde aplica. Tipos abajo en pseudo-SQL (la migración real la define [SPEC-07h](../07h-stack-deploy/spec.md)).
+Convenciones: PK `id` = `uuid` (default `gen_random_uuid()`), timestamps `timestamptz` (`created_at`/`updated_at`), borrado lógico con `archived_at` donde aplica. Tipos abajo en pseudo-SQL (la migración real la define [SPEC-07h](../10-deploy-dokploy/spec.md)).
 
 ### 3.1 Definición de plantillas (data-driven)
 
@@ -184,7 +184,7 @@ Convenciones: PK `id` = `uuid` (default `gen_random_uuid()`), timestamps `timest
 | closed_by | uuid FK → app_user | |
 | closed_at | timestamptz | |
 
-**`attachment`** — foto/export en R2 (detalle en [SPEC-07g](../07g-storage-r2/spec.md)).
+**`attachment`** — foto/export en R2 (detalle en [SPEC-07g](../06-storage-r2/spec.md)).
 | Col | Tipo | Notas |
 |---|---|---|
 | id | uuid PK | |
@@ -211,7 +211,7 @@ Convenciones: PK `id` = `uuid` (default `gen_random_uuid()`), timestamps `timest
 | active | boolean | |
 | created_at | timestamptz | |
 
-**`session`** — sesión por cookie (detalle en [SPEC-07b](../07b-auth-roles/spec.md)).
+**`session`** — sesión por cookie (detalle en [SPEC-07b](../03-auth-roles/spec.md)).
 | Col | Tipo | Notas |
 |---|---|---|
 | id | text PK | token de sesión (hash) |
@@ -257,9 +257,9 @@ El briefing es **opcional**: si el cliente no responde, el admin/técnico carga 
 
 ## 6. Dependencias
 
-- **Define el contrato** que consumen [07c backoffice](../07c-backoffice/spec.md), [07d briefing](../07d-briefing-externo/spec.md), [07e form técnico](../07e-form-tecnico-mobile/spec.md) y [07f cierre](../07f-cierre-auditoria/spec.md).
+- **Define el contrato** que consumen [07c backoffice](../04-backoffice/spec.md), [07d briefing](../05-briefing-externo/spec.md), [07e form técnico](../07-form-tecnico-mobile/spec.md) y [07f cierre](../08-cierre-auditoria/spec.md).
 - **Traducción 1:1** de las plantillas [SPEC-04](../../../specs/04-plantillas-auditoria/spec.md) (columnas Registrar/Cómo → `field_type`/`method`).
-- **Migraciones y ORM:** [SPEC-07h](../07h-stack-deploy/spec.md).
+- **Migraciones y ORM:** [SPEC-07h](../10-deploy-dokploy/spec.md).
 
 ---
 
@@ -275,6 +275,6 @@ El briefing es **opcional**: si el cliente no responde, el admin/técnico carga 
 
 ## 8. Estado y pendientes
 
-- [ ] Definir el mapa `weight → factor numérico` para el índice (ver [07f](../07f-cierre-auditoria/spec.md)).
+- [ ] Definir el mapa `weight → factor numérico` para el índice (ver [07f](../08-cierre-auditoria/spec.md)).
 - [ ] Decidir si `client` guarda más campos de cabecera o si todo va como `audit_response` de la sección `CAB` (v1: cabecera = sección `CAB` data-driven; `client` mínimo para reuso/listado).
 - [ ] Índices de performance: `audit(status)`, `audit(client_id)`, `audit_response(audit_id)`.

@@ -1,0 +1,552 @@
+{
+  "code": "erp-estandar",
+  "name": "Auditoría ERP Estándar",
+  "version": "v1",
+  "status": "active",
+  "sections": [
+    {
+      "code": "CAB",
+      "title": "Cabecera ERP",
+      "objective": "Datos generales del relevamiento ERP",
+      "weight": "bajo",
+      "has_score": false,
+      "sort_order": 0,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "Razón social",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "admin",
+          "required": true,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "CUIT",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "admin",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Rubro / actividad",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 3,
+          "label": "Cantidad de empleados",
+          "field_type": "number",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 4,
+          "label": "Referente principal",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 5,
+          "label": "Contacto referente",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 6,
+          "label": "ERP actual",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 7,
+          "label": "Proveedor de correo",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 8,
+          "label": "Soporte IT actual",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 9,
+          "label": "Fecha programada de visita",
+          "field_type": "date",
+          "method": [
+            "O"
+          ],
+          "filled_by": "admin",
+          "scores": false,
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "E1",
+      "title": "Parametrización general",
+      "objective": "Parametrización general",
+      "standard_ref": "ERP E1",
+      "weight": "muy_alto",
+      "has_score": true,
+      "sort_order": 1,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Parametrización general documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Parametrización general?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Parametrización general",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "E2",
+      "title": "Circuito comercial",
+      "objective": "Circuito comercial",
+      "standard_ref": "ERP E2",
+      "weight": "muy_alto",
+      "has_score": true,
+      "sort_order": 2,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Circuito comercial documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Circuito comercial?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Circuito comercial",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "E3",
+      "title": "Compras y pagos",
+      "objective": "Compras y pagos",
+      "standard_ref": "ERP E3",
+      "weight": "muy_alto",
+      "has_score": true,
+      "sort_order": 3,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Compras y pagos documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Compras y pagos?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Compras y pagos",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "E4",
+      "title": "Stock",
+      "objective": "Stock",
+      "standard_ref": "ERP E4",
+      "weight": "alto",
+      "has_score": true,
+      "sort_order": 4,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Stock documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Stock?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Stock",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "E5",
+      "title": "Contabilidad",
+      "objective": "Contabilidad",
+      "standard_ref": "ERP E5",
+      "weight": "alto",
+      "has_score": true,
+      "sort_order": 5,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Contabilidad documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Contabilidad?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Contabilidad",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "E6",
+      "title": "Reportes gerenciales",
+      "objective": "Reportes gerenciales",
+      "standard_ref": "ERP E6",
+      "weight": "alto",
+      "has_score": true,
+      "sort_order": 6,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Reportes gerenciales documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Reportes gerenciales?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Reportes gerenciales",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "E7",
+      "title": "Usuarios y permisos",
+      "objective": "Usuarios y permisos",
+      "standard_ref": "ERP E7",
+      "weight": "medio",
+      "has_score": true,
+      "sort_order": 7,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Usuarios y permisos documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Usuarios y permisos?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Usuarios y permisos",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "E8",
+      "title": "Integraciones",
+      "objective": "Integraciones",
+      "standard_ref": "ERP E8",
+      "weight": "medio",
+      "has_score": true,
+      "sort_order": 8,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Integraciones documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Integraciones?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Integraciones",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

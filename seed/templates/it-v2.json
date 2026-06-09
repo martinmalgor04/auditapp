@@ -1,0 +1,726 @@
+{
+  "code": "it",
+  "name": "Auditoría Técnica IT",
+  "version": "v2",
+  "status": "active",
+  "sections": [
+    {
+      "code": "CAB",
+      "title": "Cabecera / datos generales",
+      "objective": "Información contextual del cliente",
+      "weight": "bajo",
+      "has_score": false,
+      "sort_order": 0,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "Razón social",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "admin",
+          "required": true,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "CUIT",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "admin",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Rubro / actividad",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 3,
+          "label": "Cantidad de empleados",
+          "field_type": "number",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 4,
+          "label": "Referente principal",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 5,
+          "label": "Contacto referente",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 6,
+          "label": "ERP actual",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 7,
+          "label": "Proveedor de correo",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 8,
+          "label": "Soporte IT actual",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 9,
+          "label": "Fecha programada de visita",
+          "field_type": "date",
+          "method": [
+            "O"
+          ],
+          "filled_by": "admin",
+          "scores": false,
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "A1",
+      "title": "Inventario de activos / hardware",
+      "objective": "Inventario de activos / hardware",
+      "standard_ref": "CIS 1 · NIST: Identify",
+      "weight": "muy_alto",
+      "has_score": true,
+      "sort_order": 1,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Existe inventario documentado de equipos?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿El inventario está actualizado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Tabla de equipos relevados",
+          "field_type": "table",
+          "method": [
+            "O",
+            "C"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "columns": [
+              {
+                "key": "tipo",
+                "label": "Tipo",
+                "type": "select"
+              },
+              {
+                "key": "marca",
+                "label": "Marca",
+                "type": "text"
+              },
+              {
+                "key": "modelo",
+                "label": "Modelo",
+                "type": "text"
+              },
+              {
+                "key": "antiguedad",
+                "label": "Antigüedad (años)",
+                "type": "number"
+              },
+              {
+                "key": "estado_eol",
+                "label": "Estado EOL",
+                "type": "select"
+              }
+            ],
+            "eol_rules": {
+              "vigente": 100,
+              "extendido": 50,
+              "eol": 0
+            }
+          }
+        },
+        {
+          "sort_order": 3,
+          "label": "Captura del inventario",
+          "field_type": "file_ref",
+          "method": [
+            "C"
+          ],
+          "filled_by": "tecnico",
+          "scores": false,
+          "options": {
+            "max_files": 3
+          }
+        }
+      ]
+    },
+    {
+      "code": "A2",
+      "title": "Software / licencias",
+      "objective": "Software / licencias",
+      "standard_ref": "CIS 2 · NIST: Identify",
+      "weight": "alto",
+      "has_score": true,
+      "sort_order": 2,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Existe registro de software instalado?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "Nivel de control de licencias",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Controlado",
+              "Parcial",
+              "Sin control"
+            ],
+            "score_map": {
+              "Controlado": 100,
+              "Parcial": 50,
+              "Sin control": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "A3",
+      "title": "Gestión de datos",
+      "objective": "Gestión de datos",
+      "standard_ref": "CIS 3 · NIST: Protect",
+      "weight": "alto",
+      "has_score": true,
+      "sort_order": 3,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Hay política de clasificación de datos?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Se aplican permisos por rol en carpetas críticas?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "A4",
+      "title": "Configuración segura",
+      "objective": "Configuración segura",
+      "standard_ref": "CIS 4 · NIST: Protect",
+      "weight": "alto",
+      "has_score": true,
+      "sort_order": 4,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "Endurecimiento de servidores",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Aplicado",
+              "Parcial",
+              "No aplicado"
+            ],
+            "score_map": {
+              "Aplicado": 100,
+              "Parcial": 50,
+              "No aplicado": 0
+            }
+          }
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Se deshabilitan servicios innecesarios?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "A5",
+      "title": "Control de acceso",
+      "objective": "Control de acceso",
+      "standard_ref": "CIS 5 · NIST: Protect",
+      "weight": "muy_alto",
+      "has_score": true,
+      "sort_order": 5,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Existe proceso formal de altas/bajas de usuarios?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Se revisan permisos periódicamente?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "A6",
+      "title": "Protección de cuentas",
+      "objective": "Protección de cuentas",
+      "standard_ref": "CIS 6 · NIST: Protect",
+      "weight": "muy_alto",
+      "has_score": true,
+      "sort_order": 6,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "Política de contraseñas",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Fuerte",
+              "Media",
+              "Débil"
+            ],
+            "score_map": {
+              "Fuerte": 100,
+              "Media": 50,
+              "Débil": 0
+            }
+          }
+        },
+        {
+          "sort_order": 1,
+          "label": "¿MFA habilitado en servicios críticos?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "A7",
+      "title": "Gestión de vulnerabilidades",
+      "objective": "Gestión de vulnerabilidades",
+      "standard_ref": "CIS 7 · NIST: Detect",
+      "weight": "alto",
+      "has_score": true,
+      "sort_order": 7,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Se aplican parches de seguridad periódicamente?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "Días promedio de demora en parches críticos",
+          "field_type": "number",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "unit": "días",
+            "thresholds": [
+              {
+                "min": 0,
+                "max": 7,
+                "score": 100
+              },
+              {
+                "min": 8,
+                "max": 30,
+                "score": 50
+              },
+              {
+                "min": 31,
+                "max": 9999,
+                "score": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "code": "A8",
+      "title": "Registro y monitoreo",
+      "objective": "Registro y monitoreo",
+      "standard_ref": "CIS 8 · NIST: Detect",
+      "weight": "alto",
+      "has_score": true,
+      "sort_order": 8,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Hay centralización de logs?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Se revisan alertas de seguridad?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "A9",
+      "title": "Protección contra malware",
+      "objective": "Protección contra malware",
+      "standard_ref": "CIS 10 · NIST: Protect",
+      "weight": "alto",
+      "has_score": true,
+      "sort_order": 9,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "Antivirus/EDR en endpoints",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "100% cubierto",
+              "Parcial",
+              "Sin cobertura"
+            ],
+            "score_map": {
+              "100% cubierto": 100,
+              "Parcial": 50,
+              "Sin cobertura": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "A10",
+      "title": "Recuperación de datos / backups",
+      "objective": "Recuperación de datos / backups",
+      "standard_ref": "CIS 11 · NIST: Recover",
+      "weight": "muy_alto",
+      "has_score": true,
+      "sort_order": 10,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Existen backups automatizados?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Se prueban restauraciones periódicamente?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Lista de gaps de backup detectados",
+          "field_type": "list",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "scores": false,
+          "options": {
+            "max_items": 10
+          }
+        }
+      ]
+    },
+    {
+      "code": "A11",
+      "title": "Seguridad de red",
+      "objective": "Seguridad de red",
+      "standard_ref": "CIS 12 · NIST: Protect",
+      "weight": "muy_alto",
+      "has_score": true,
+      "sort_order": 11,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "Segmentación de red",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "VLANs definidas",
+              "Parcial",
+              "Plana"
+            ],
+            "score_map": {
+              "VLANs definidas": 100,
+              "Parcial": 50,
+              "Plana": 0
+            }
+          }
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Firewall perimetral activo?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "A12",
+      "title": "Seguridad perimetral",
+      "objective": "Seguridad perimetral",
+      "standard_ref": "CIS 13 · NIST: Protect",
+      "weight": "alto",
+      "has_score": true,
+      "sort_order": 12,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Reglas de firewall documentadas y revisadas?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Hay filtrado de salida a internet?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "A13",
+      "title": "Seguridad wireless",
+      "objective": "Seguridad wireless",
+      "standard_ref": "CIS 15 · NIST: Protect",
+      "weight": "medio",
+      "has_score": true,
+      "sort_order": 13,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "Estándar WiFi corporativo",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "WPA3-Enterprise",
+              "WPA2-Enterprise",
+              "WPA2-PSK",
+              "Abierto"
+            ],
+            "score_map": {
+              "WPA3-Enterprise": 100,
+              "WPA2-Enterprise": 100,
+              "WPA2-PSK": 50,
+              "Abierto": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "A14",
+      "title": "Formación y concienciación",
+      "objective": "Formación y concienciación",
+      "standard_ref": "CIS 14 · NIST: Protect",
+      "weight": "medio",
+      "has_score": true,
+      "sort_order": 14,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Capacitación periódica en ciberseguridad?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "Costo mensual estimado shadow IT",
+          "field_type": "money",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "currency": "ARS",
+            "thresholds": [
+              {
+                "min": 0,
+                "max": 0,
+                "score": 100
+              },
+              {
+                "min": 1,
+                "max": 50000,
+                "score": 50
+              },
+              {
+                "min": 50001,
+                "max": 999999999,
+                "score": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

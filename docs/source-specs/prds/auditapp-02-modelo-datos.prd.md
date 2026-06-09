@@ -77,7 +77,7 @@ Creemos que un esquema con dos mitades (definición data-driven: `template → s
 
 **`template_item`** — `id · section_id FK · label · help_text · method text[] · field_type · options jsonb · is_prefillable bool · prefill_source · filled_by(admin/cliente/tecnico) · allow_na bool · required bool · item_weight numeric default 1 · scores bool default true · sort_order`
 
-> `options` también guarda la **rúbrica de scoring determinístico** según `field_type` (ver [07f](auditapp-07f-cierre-auditoria.prd.md)): `score_map` para `select`, `thresholds` para `number`, reglas EOL para `table` de equipos. `item_weight` = peso del ítem dentro de su sección. `scores=false` para ítems informativos que no puntúan.
+> `options` también guarda la **rúbrica de scoring determinístico** según `field_type` (ver [07f](auditapp-08-cierre-auditoria.prd.md)): `score_map` para `select`, `thresholds` para `number`, reglas EOL para `table` de equipos. `item_weight` = peso del ítem dentro de su sección. `scores=false` para ítems informativos que no puntúan.
 
 **`client`** — `id · razon_social · cuit · rubro · empleados int · puestos int · sedes int · referente_nombre · referente_cargo · referente_contacto · erp_actual · proveedor_correo · soporte_it_actual · created_at · updated_at`
 
@@ -91,7 +91,7 @@ Creemos que un esquema con dos mitades (definición data-driven: `template → s
 
 **`audit_section_score`** — `id · audit_id FK · section_id FK · score int(0-100) **calculado** · score_breakdown jsonb · observations · UNIQUE(audit_id, section_id)`
 
-> `score` es **calculado** automáticamente desde los ítems (no ingresado por el técnico — ver [07f](auditapp-07f-cierre-auditoria.prd.md)). `score_breakdown` guarda el aporte de cada ítem (`score_contribution`) para transparencia y para el JSON canónico (07i). `observations` sí es libre del técnico.
+> `score` es **calculado** automáticamente desde los ítems (no ingresado por el técnico — ver [07f](auditapp-08-cierre-auditoria.prd.md)). `score_breakdown` guarda el aporte de cada ítem (`score_contribution`) para transparencia y para el JSON canónico (07i). `observations` sí es libre del técnico.
 
 **`audit_closure`** — `audit_id PK FK · indice_it int · indice_erp int · top_risks jsonb · quick_wins jsonb · upsell_findings jsonb · next_step text · closed_by FK · closed_at`
 
@@ -115,4 +115,4 @@ Creemos que un esquema con dos mitades (definición data-driven: `template → s
 
 ---
 
-*Status: DRAFT. Spec de referencia completa en [`specs/07a-modelo-datos/spec.md`](../../specs/07a-modelo-datos/spec.md).*
+*Status: DRAFT. Spec de referencia completa en [`specs/02_modelo_datos/requirements.md`](../../specs/02_modelo_datos/requirements.md).*

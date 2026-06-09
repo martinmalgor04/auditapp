@@ -1,0 +1,656 @@
+{
+  "code": "erp-tango",
+  "name": "Auditoría ERP Tango",
+  "version": "v2",
+  "status": "active",
+  "sections": [
+    {
+      "code": "CAB",
+      "title": "Cabecera ERP",
+      "objective": "Datos generales del relevamiento ERP",
+      "weight": "bajo",
+      "has_score": false,
+      "sort_order": 0,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "Razón social",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "admin",
+          "required": true,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "CUIT",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "admin",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Rubro / actividad",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 3,
+          "label": "Cantidad de empleados",
+          "field_type": "number",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 4,
+          "label": "Referente principal",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 5,
+          "label": "Contacto referente",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 6,
+          "label": "ERP actual",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 7,
+          "label": "Proveedor de correo",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 8,
+          "label": "Soporte IT actual",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 9,
+          "label": "Fecha programada de visita",
+          "field_type": "date",
+          "method": [
+            "O"
+          ],
+          "filled_by": "admin",
+          "scores": false,
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "B1",
+      "title": "Administración y parametrización",
+      "objective": "Administración y parametrización",
+      "standard_ref": "ERP B1",
+      "weight": "muy_alto",
+      "has_score": true,
+      "sort_order": 1,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Administración y parametrización documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Administración y parametrización?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Administración y parametrización",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "B2",
+      "title": "Ventas y facturación",
+      "objective": "Ventas y facturación",
+      "standard_ref": "ERP B2",
+      "weight": "muy_alto",
+      "has_score": true,
+      "sort_order": 2,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Ventas y facturación documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Ventas y facturación?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Ventas y facturación",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "B3",
+      "title": "Compras y proveedores",
+      "objective": "Compras y proveedores",
+      "standard_ref": "ERP B3",
+      "weight": "muy_alto",
+      "has_score": true,
+      "sort_order": 3,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Compras y proveedores documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Compras y proveedores?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Compras y proveedores",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "B4",
+      "title": "Stock e inventarios",
+      "objective": "Stock e inventarios",
+      "standard_ref": "ERP B4",
+      "weight": "alto",
+      "has_score": true,
+      "sort_order": 4,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Stock e inventarios documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Stock e inventarios?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Stock e inventarios",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "B5",
+      "title": "Contabilidad",
+      "objective": "Contabilidad",
+      "standard_ref": "ERP B5",
+      "weight": "alto",
+      "has_score": true,
+      "sort_order": 5,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Contabilidad documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Contabilidad?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Contabilidad",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "B6",
+      "title": "Tesorería y bancos",
+      "objective": "Tesorería y bancos",
+      "standard_ref": "ERP B6",
+      "weight": "alto",
+      "has_score": true,
+      "sort_order": 6,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Tesorería y bancos documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Tesorería y bancos?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Tesorería y bancos",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "B7",
+      "title": "Sueldos y RRHH",
+      "objective": "Sueldos y RRHH",
+      "standard_ref": "ERP B7",
+      "weight": "medio",
+      "has_score": true,
+      "sort_order": 7,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Sueldos y RRHH documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Sueldos y RRHH?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Sueldos y RRHH",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "B8",
+      "title": "Producción / costos",
+      "objective": "Producción / costos",
+      "standard_ref": "ERP B8",
+      "weight": "medio",
+      "has_score": true,
+      "sort_order": 8,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Producción / costos documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Producción / costos?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Producción / costos",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "B9",
+      "title": "Integraciones y Nexo",
+      "objective": "Integraciones y Nexo",
+      "standard_ref": "ERP B9",
+      "weight": "medio",
+      "has_score": true,
+      "sort_order": 9,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Integraciones y Nexo documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Integraciones y Nexo?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Integraciones y Nexo",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "code": "B10",
+      "title": "Seguridad y usuarios Tango",
+      "objective": "Seguridad y usuarios Tango",
+      "standard_ref": "ERP B10",
+      "weight": "medio",
+      "has_score": true,
+      "sort_order": 10,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Proceso Seguridad y usuarios Tango documentado?",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Controles internos aplicados en Seguridad y usuarios Tango?",
+          "field_type": "bool",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Madurez operativa — Seguridad y usuarios Tango",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Optimizado",
+              "En desarrollo",
+              "Manual"
+            ],
+            "score_map": {
+              "Optimizado": 100,
+              "En desarrollo": 50,
+              "Manual": 0
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

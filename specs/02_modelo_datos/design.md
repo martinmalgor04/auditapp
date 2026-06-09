@@ -1,4 +1,4 @@
-# Design — modelo_datos
+# Design — #2 02_modelo_datos
 
 ## Alcance
 
@@ -12,7 +12,7 @@ Schema Postgres 16, migraciones SQL versionadas, runner propio, seed de usuarios
 | Seed admin/técnicos/plantillas/clientes | Deploy Docker/entrypoint (#10) |
 | Índices de performance | Presigned R2 (#6) |
 
-**Prerequisito:** feature `stack_scaffolding` (#1) completada (`postgres.js`, vitest, `migrations/`).
+**Prerequisito:** feature `01_stack_scaffolding` (#1) completada (`postgres.js`, vitest, `migrations/`).
 
 ## Archivos a crear
 
@@ -417,4 +417,4 @@ export async function runSeed(sql: postgres.Sql, opts?: { users?: boolean; templ
 - Usar transacciones en seed; tests con DB dedicada (`DATABASE_URL` test) o schema aislado.
 - Los tests de schema NO mockean postgres.js (ver `docs/verification.md` nivel 2).
 - Peso de sección → factor numérico (`bajo=1, medio=2, alto=3, muy_alto=5`) se documenta aquí para #8; no requiere columna extra.
-- `progress/impl_modelo_datos.md` debe listar trazabilidad R→test al cerrar.
+- `progress/impl_02_modelo_datos.md` debe listar trazabilidad R→test al cerrar.

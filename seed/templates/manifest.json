@@ -1,0 +1,25 @@
+{
+  "templates": [
+    {
+      "file": "it-v2.json",
+      "code": "it",
+      "version": "v2",
+      "sections": 15,
+      "items": 39
+    },
+    {
+      "file": "erp-tango-v2.json",
+      "code": "erp-tango",
+      "version": "v2",
+      "sections": 11,
+      "items": 40
+    },
+    {
+      "file": "erp-estandar-v1.json",
+      "code": "erp-estandar",
+      "version": "v1",
+      "sections": 9,
+      "items": 34
+    }
+  ]
+}
