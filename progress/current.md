@@ -1,21 +1,13 @@
 # Sesión actual
 
-## Feature en curso
+- **Feature en curso:** #7 `07_form_tecnico`
+- **Estado:** `in_progress` (spec aprobado por humano 2026-06-09)
+- **Agente:** implementer
 
-_Ninguna — última cerrada: **06_storage_r2**._
+## Bitácora
 
-## Plantilla
+- 2026-06-09 — Spec #7 aprobado por Martín. Puerta humana cerrada; inicio implementación según `specs/07_form_tecnico/tasks.md`.
 
-```markdown
-## Feature en curso
+## Próximo paso
 
-**<id>_<name>** — <estado breve>
-
-## Notas
-
-- ...
-
-## Verificación
-
-- [ ] `./init.sh` verde
-```
+Implementer: T1–T8 (scoring + dominio server), luego API y componentes.

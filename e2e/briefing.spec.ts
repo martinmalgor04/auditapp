@@ -1,12 +1,15 @@
 import { expect, test } from '@playwright/test';
-
-const VALID_TOKEN = 'e2e-briefing-token-demo';
+import { E2E_BRIEFING_TOKEN, ensureE2eBriefingAudit } from './ensure-audit';
 
 test.describe('briefing externo', () => {
   test.use({ viewport: { width: 375, height: 667 } });
 
+  test.beforeAll(async () => {
+    await ensureE2eBriefingAudit();
+  });
+
   test('flujo feliz: cargar, completar campo, enviar, confirmación', async ({ page }) => {
-    await page.goto(`/briefing/${VALID_TOKEN}`);
+    await page.goto(`/briefing/${E2E_BRIEFING_TOKEN}`);
 
     await expect(page.getByRole('img', { name: 'Servicios y Sistemas' })).toBeVisible();
     await expect(page.getByText(/Hola,/)).toBeVisible();

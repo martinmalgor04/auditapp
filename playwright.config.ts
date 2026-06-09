@@ -18,8 +18,7 @@ export default defineConfig({
   ],
   globalSetup: 'e2e/global-setup.ts',
   webServer: {
-    command:
-      'pnpm run build && pnpm exec tsx e2e/ensure-audit.ts && pnpm run preview --port 4173',
+    command: 'pnpm run build && pnpm run preview --port 4173',
     url: 'http://localhost:4173',
     reuseExistingServer: false,
     timeout: 120_000,

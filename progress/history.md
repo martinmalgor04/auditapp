@@ -25,10 +25,10 @@
 
 ## 2026-06-09 — 05_briefing_externo (#5) done
 
-- **Agente:** implementer
-- **Resultado:** Briefing externo completo (dominio, API PATCH, UI mobile-first, e2e). Infra tests estabilizada (mutex globalThis + advisory lock, hooks setup beforeAll/afterEach).
-- **Veredicto:** cerrado tras `./init.sh` verde
-- **Próximo paso:** #6 `06_storage_r2`
+- **Agente:** implementer → reviewer (re-review post-fix E2E)
+- **Resultado:** Formulario público `/briefing/[token]`: dominio briefing, PATCH autosave, envío a `briefing_completo`, UI mobile-first SyS, wizard condicional. 160 vitest + 2 e2e briefing. Advisory lock vitest/e2e.
+- **Veredicto:** APPROVED (`progress/review_05_briefing_externo.md`)
+- **Próximo paso:** `/leader` → #7 `07_form_tecnico` (spec_ready, aprobación humana)
 
 ## 2026-06-09 — 06_storage_r2 (#6) done
 

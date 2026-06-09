@@ -2,6 +2,7 @@ import type postgres from 'postgres';
 import { seedUsers } from '../../src/lib/server/db/seed/users';
 import { runSeed, type SeedOptions } from '../../src/lib/server/db/seed';
 import { clearSqlForTests, createSql, setSqlForTests } from '../../src/lib/server/db/client';
+import { withDbSuiteLock } from './db-lock';
 
 /** Mutex en globalThis: sobrevive duplicación de módulos en vitest. */
 const TEST_DB_STATE_KEY = '__auditapp_test_db_state__';
@@ -44,7 +45,7 @@ export async function withTestDbSerial<T>(
   await previous;
   setSqlForTests(sql);
   try {
-    return await fn(sql);
+    return await withDbSuiteLock(sql, fn);
   } finally {
     release();
   }
