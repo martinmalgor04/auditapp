@@ -13,12 +13,14 @@ describe('deploy dokploy compose example', () => {
       compose.indexOf('app:')
     );
     expect(postgresBlock).not.toMatch(/^\s*ports:/m);
-    expect(postgresBlock).toContain('internal');
+    expect(postgresBlock).toContain('db');
   });
 
-  it('does not include traefik labels (domain configured in Dokploy UI)', () => {
-    expect(compose).not.toContain('traefik.');
-    expect(compose).not.toMatch(/^\s*labels:/m);
+  it('app joins dokploy network for reverse proxy (not internal-only)', () => {
+    const appBlock = compose.slice(compose.indexOf('app:'));
+    expect(appBlock).toContain('dokploy');
+    expect(appBlock).toContain('dokploy-network');
+    expect(appBlock).toContain('db');
   });
 
   it('documents production domain via PUBLIC_APP_URL env', () => {
