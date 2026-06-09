@@ -1,8 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { authenticate } from '../../src/lib/server/auth/login';
 import { actions } from '../../src/routes/login/+page.server';
-import { setupTestDb, teardownTestDb, truncateSeedTables } from '../helpers/db';
-import { seedAuthUsers } from '../helpers/auth';
+import { setupTestDb, teardownTestDb } from '../helpers/db';
 import { createTrackingCookies } from '../helpers/cookies';
 import { resetLoginRateLimit } from '../../src/lib/server/auth/rate-limit';
 import type postgres from 'postgres';
@@ -20,8 +19,6 @@ describe('auth logging safety', () => {
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation(() => {});
-    await truncateSeedTables(sql);
-    await seedAuthUsers(sql);
   });
 
   afterAll(async () => {

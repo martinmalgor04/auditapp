@@ -2,8 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { computeStepCount, loadBriefingForm } from '../src/lib/server/briefing/load-form';
 import { validateBriefingToken } from '../src/lib/server/briefing/validate-token';
 import { load as briefingLoad } from '../src/routes/briefing/[token]/+page.server';
-import { setupTestDb, teardownTestDb, truncateSeedTables } from './helpers/db';
-import { runSeed } from '../src/lib/server/db/seed';
+import { setupTestDb, teardownTestDb } from './helpers/db';
 import {
   BRIEFING_FIXTURE_TOKEN,
   listClienteItemIds,
@@ -20,8 +19,6 @@ describe('briefing form load', () => {
   });
 
   beforeEach(async () => {
-    await truncateSeedTables(sql);
-    await runSeed(sql);
   });
 
   afterAll(async () => {

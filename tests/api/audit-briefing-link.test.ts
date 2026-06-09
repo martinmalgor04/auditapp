@@ -6,8 +6,7 @@ import {
 import { findAuditByPublicToken } from '../../src/lib/server/db/audits';
 import { InvalidStateTransitionError } from '../../src/lib/server/backoffice/errors';
 import { actions as tableroActions } from '../../src/routes/(app)/tablero/+page.server';
-import { setupTestDb, teardownTestDb, truncateSeedTables } from '../helpers/db';
-import { runSeed } from '../../src/lib/server/db/seed';
+import { setupTestDb, teardownTestDb } from '../helpers/db';
 import { findUserIdByEmail } from '../helpers/auth';
 import { insertTestAuditRow } from '../helpers/backoffice';
 import type postgres from 'postgres';
@@ -21,8 +20,6 @@ describe('audit briefing link', () => {
   });
 
   beforeEach(async () => {
-    await truncateSeedTables(sql);
-    await runSeed(sql);
     adminId = await findUserIdByEmail(sql, 'admin@serviciosysistemas.com.ar');
   });
 

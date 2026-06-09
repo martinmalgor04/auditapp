@@ -2,8 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { BriefingItemNotAllowedError } from '../../src/lib/server/briefing/errors';
 import { saveBriefingResponse } from '../../src/lib/server/briefing/save-response';
 import { PATCH } from '../../src/routes/api/briefing/[token]/responses/+server';
-import { setupTestDb, teardownTestDb, truncateSeedTables } from '../helpers/db';
-import { runSeed } from '../../src/lib/server/db/seed';
+import { setupTestDb, teardownTestDb } from '../helpers/db';
 import {
   BRIEFING_FIXTURE_TOKEN,
   listClienteItemIds,
@@ -20,8 +19,6 @@ describe('briefing save', () => {
   });
 
   beforeEach(async () => {
-    await truncateSeedTables(sql);
-    await runSeed(sql);
   });
 
   afterAll(async () => {

@@ -8,8 +8,8 @@ import {
 } from '../../src/lib/server/auth/guards';
 import { load as appLayoutLoad } from '../../src/routes/(app)/+layout.server';
 import { createSession } from '../../src/lib/server/auth/session';
-import { setupTestDb, teardownTestDb, truncateSeedTables } from '../helpers/db';
-import { seedAuthUsers, findUserIdByEmail } from '../helpers/auth';
+import { findUserIdByEmail } from '../helpers/auth';
+import { setupTestDb, teardownTestDb } from '../helpers/db';
 import type { AppUser } from '../../src/lib/server/auth/types';
 import type postgres from 'postgres';
 
@@ -33,9 +33,6 @@ describe('auth guards', () => {
   });
 
   beforeEach(async () => {
-    await truncateSeedTables(sql);
-    await seedAuthUsers(sql);
-
     const adminId = await findUserIdByEmail(sql, 'admin@serviciosysistemas.com.ar');
     const tecnicoId = await findUserIdByEmail(sql, 'facu@serviciosysistemas.com.ar');
 

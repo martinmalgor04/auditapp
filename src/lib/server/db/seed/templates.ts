@@ -52,7 +52,11 @@ export async function seedTemplates(sql: DbExecutor): Promise<void> {
 
   for (const file of files) {
     const fixture = await loadTemplateFixture(file);
+    await seedTemplateFixture(sql, fixture);
+  }
+}
 
+async function seedTemplateFixture(sql: DbExecutor, fixture: TemplateFixture): Promise<void> {
     let templateId: string;
     const [existingTemplate] = await sql<{ id: string }[]>`
       SELECT id FROM template
@@ -145,5 +149,4 @@ export async function seedTemplates(sql: DbExecutor): Promise<void> {
         `;
       }
     }
-  }
 }

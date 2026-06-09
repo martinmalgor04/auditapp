@@ -2,16 +2,20 @@
 
 ## Feature en curso
 
-**05_briefing_externo** — implementación completa, pendiente review.
+_Ninguna — última cerrada: **06_storage_r2**._
 
-## Plan ejecutado (T1–T29)
+## Plantilla
 
-- Dominio: errors, db/briefing, validate-token, load-form, schemas, save, submit, rate-limit
-- API PATCH + page server load/submit
-- UI: brand, layout, componentes briefing, field renderers, wizard, autosave
-- Tests unitarios + API + e2e
-- `./init.sh` verde
+```markdown
+## Feature en curso
 
-## Estado
+**<id>_<name>** — <estado breve>
 
-Listo para reviewer. No marcar `done` hasta aprobación.
+## Notas
+
+- ...
+
+## Verificación
+
+- [ ] `./init.sh` verde
+```

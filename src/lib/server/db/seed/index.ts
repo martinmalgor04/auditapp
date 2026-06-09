@@ -9,9 +9,11 @@ export type SeedOptions = {
   clients?: boolean;
 };
 
+type DbExecutor = postgres.Sql | postgres.TransactionSql;
+
 /** Seed idempotente de usuarios, plantillas y clientes. */
 export async function runSeed(
-  sql: postgres.Sql,
+  sql: DbExecutor,
   opts: SeedOptions = { users: true, templates: true, clients: true }
 ): Promise<void> {
   if (opts.users !== false) {

@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { handle } from '../../src/hooks.server';
 import { createSession } from '../../src/lib/server/auth/session';
-import { setupTestDb, teardownTestDb, truncateSeedTables } from '../helpers/db';
-import { seedAuthUsers, findUserIdByEmail } from '../helpers/auth';
+import { findUserIdByEmail } from '../helpers/auth';
+import { setupTestDb, teardownTestDb } from '../helpers/db';
 import { createTrackingCookies } from '../helpers/cookies';
 import type postgres from 'postgres';
 
@@ -15,8 +15,6 @@ describe('hooks.server session resolution', () => {
   });
 
   beforeEach(async () => {
-    await truncateSeedTables(sql);
-    await seedAuthUsers(sql);
     adminId = await findUserIdByEmail(sql, 'admin@serviciosysistemas.com.ar');
   });
 

@@ -6,7 +6,7 @@ import {
 } from '../../src/lib/server/auth/briefing-token';
 import { load as briefingLoad } from '../../src/routes/briefing/[token]/+page.server';
 import { AUDIT_STATUSES } from '../../src/lib/server/db/audit-status';
-import { setupTestDb, teardownTestDb, truncateSeedTables } from '../helpers/db';
+import { setupTestDb, teardownTestDb } from '../helpers/db';
 import { insertTestAudit } from '../helpers/auth';
 import type postgres from 'postgres';
 
@@ -20,7 +20,6 @@ describe('briefing public token', () => {
   });
 
   beforeEach(async () => {
-    await truncateSeedTables(sql);
     await insertTestAudit(sql, { status: 'briefing_enviado', publicToken: validToken });
     await insertTestAudit(sql, { status: 'cerrada', publicToken: closedToken });
   });

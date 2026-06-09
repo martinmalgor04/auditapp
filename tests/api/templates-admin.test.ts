@@ -5,8 +5,7 @@ import {
   load as templateLoad,
   actions as templateActions
 } from '../../src/routes/(app)/plantillas/[id]/+page.server';
-import { setupTestDb, teardownTestDb, truncateSeedTables } from '../helpers/db';
-import { runSeed } from '../../src/lib/server/db/seed';
+import { setupTestDb, teardownTestDb } from '../helpers/db';
 import { findUserIdByEmail } from '../helpers/auth';
 import { getFirstTemplateItemId, getTemplateIdByCode } from '../helpers/backoffice';
 import type postgres from 'postgres';
@@ -38,8 +37,6 @@ describe('templates admin', () => {
   });
 
   beforeEach(async () => {
-    await truncateSeedTables(sql);
-    await runSeed(sql);
     adminId = await findUserIdByEmail(sql, 'admin@serviciosysistemas.com.ar');
     tecnicoId = await findUserIdByEmail(sql, 'facu@serviciosysistemas.com.ar');
     templateId = await getTemplateIdByCode(sql, 'it');

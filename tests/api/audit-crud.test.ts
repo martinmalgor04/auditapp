@@ -9,9 +9,8 @@ import {
 import { AuditClosedError } from '../../src/lib/server/backoffice/errors';
 import { listDashboardAudits } from '../../src/lib/server/backoffice/dashboard';
 import { actions as auditDetailActions } from '../../src/routes/(app)/auditorias/[id]/+page.server';
-import { setupTestDb, teardownTestDb, truncateSeedTables } from '../helpers/db';
-import { runSeed } from '../../src/lib/server/db/seed';
-import { findUserIdByEmail, seedAuthUsers } from '../helpers/auth';
+import { setupTestDb, teardownTestDb } from '../helpers/db';
+import { findUserIdByEmail } from '../helpers/auth';
 import { getCabItemId, insertTestAuditRow } from '../helpers/backoffice';
 import type postgres from 'postgres';
 
@@ -25,8 +24,6 @@ describe('audit CRUD', () => {
   });
 
   beforeEach(async () => {
-    await truncateSeedTables(sql);
-    await runSeed(sql);
     adminId = await findUserIdByEmail(sql, 'admin@serviciosysistemas.com.ar');
     tecnicoId = await findUserIdByEmail(sql, 'facu@serviciosysistemas.com.ar');
   });
@@ -138,7 +135,6 @@ describe('audit CRUD', () => {
 
   it('archive action rejects tecnico with 403', async () => {
     const { auditId } = await insertTestAuditRow(sql, { razonSocial: 'Admin only' });
-    await seedAuthUsers(sql);
 
     const tecnicoUser = {
       id: tecnicoId,

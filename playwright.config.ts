@@ -16,9 +16,10 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] }
     }
   ],
+  globalSetup: 'e2e/global-setup.ts',
   webServer: {
     command:
-      'pnpm exec tsx e2e/ensure-audit.ts && pnpm run build && pnpm run preview --port 4173',
+      'pnpm run build && pnpm exec tsx e2e/ensure-audit.ts && pnpm run preview --port 4173',
     url: 'http://localhost:4173',
     reuseExistingServer: false,
     timeout: 120_000,

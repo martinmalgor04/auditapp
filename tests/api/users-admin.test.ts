@@ -3,8 +3,8 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { authenticate } from '../../src/lib/server/auth/login';
 import { createUser, listUsers, resetUserPassword } from '../../src/lib/server/backoffice/users';
 import { load as usuariosLoad, actions as usuariosActions } from '../../src/routes/(app)/usuarios/+page.server';
-import { setupTestDb, teardownTestDb, truncateSeedTables } from '../helpers/db';
-import { seedAuthUsers, findUserIdByEmail } from '../helpers/auth';
+import { findUserIdByEmail } from '../helpers/auth';
+import { setupTestDb, teardownTestDb } from '../helpers/db';
 import type postgres from 'postgres';
 
 describe('users admin', () => {
@@ -33,8 +33,6 @@ describe('users admin', () => {
   });
 
   beforeEach(async () => {
-    await truncateSeedTables(sql);
-    await seedAuthUsers(sql);
     adminId = await findUserIdByEmail(sql, 'admin@serviciosysistemas.com.ar');
     tecnicoId = await findUserIdByEmail(sql, 'facu@serviciosysistemas.com.ar');
   });

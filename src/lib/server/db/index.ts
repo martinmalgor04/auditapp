@@ -1,4 +1,4 @@
-export { createSql, getSql, resetSqlForTests } from './client';
+export { createSql, getSql, resetSqlForTests, setSqlForTests } from './client';
 export { runMigrations, resetDatabase, type MigrationResult } from './migrate';
 export {
   FIELD_TYPES,

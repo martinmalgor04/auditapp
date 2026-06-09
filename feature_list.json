@@ -97,7 +97,7 @@
         "Tests y e2e básico de briefing pasan"
       ],
       "sdd": true,
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "id": 6,
@@ -113,7 +113,7 @@
         "Tests con mock o sandbox R2 pasan"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 7,

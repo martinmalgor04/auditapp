@@ -1,5 +1,6 @@
 import type postgres from 'postgres';
 import type { AuditStatus } from '../../src/lib/server/db/audit-status';
+import { setSqlForTests } from '../../src/lib/server/db/client';
 import { findUserIdByEmail } from './auth';
 
 export async function getTemplateIdByCode(
@@ -27,6 +28,7 @@ export async function insertTestAuditRow(
     assignedTechEmail?: string;
   }
 ): Promise<{ auditId: string; clientId: string }> {
+  setSqlForTests(sql);
   const techId = await findUserIdByEmail(
     sql,
     opts.assignedTechEmail ?? 'facu@serviciosysistemas.com.ar'

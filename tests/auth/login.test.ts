@@ -5,8 +5,8 @@ import { createSession, getSessionIdFromCookies } from '../../src/lib/server/aut
 import { isLoginRateLimited, resetLoginRateLimit } from '../../src/lib/server/auth/rate-limit';
 import { actions } from '../../src/routes/login/+page.server';
 import { POST as logoutPost } from '../../src/routes/logout/+server';
-import { setupTestDb, teardownTestDb, truncateSeedTables } from '../helpers/db';
-import { seedAuthUsers, findUserIdByEmail } from '../helpers/auth';
+import { setupTestDb, teardownTestDb } from '../helpers/db';
+import { findUserIdByEmail } from '../helpers/auth';
 import { createTrackingCookies } from '../helpers/cookies';
 import type postgres from 'postgres';
 
@@ -19,8 +19,6 @@ describe('login flow', () => {
 
   beforeEach(async () => {
     resetLoginRateLimit();
-    await truncateSeedTables(sql);
-    await seedAuthUsers(sql);
   });
 
   afterAll(async () => {
@@ -47,19 +45,25 @@ describe('login flow', () => {
   });
 
   it('rejects inactive user with same reason as invalid credentials', async () => {
-    await sql`
-      UPDATE app_user SET active = false
-      WHERE email = 'facu@serviciosysistemas.com.ar'
-    `;
+    const facuEmail = 'facu@serviciosysistemas.com.ar';
+    try {
+      await sql`
+        UPDATE app_user SET active = false WHERE email = ${facuEmail}
+      `;
 
-    const result = await authenticate('facu@serviciosysistemas.com.ar', 'changeme-tech');
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(['invalid_credentials', 'inactive']).toContain(result.reason);
+      const result = await authenticate(facuEmail, 'changeme-tech');
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(['invalid_credentials', 'inactive']).toContain(result.reason);
+      }
+
+      const sessions = await sql`SELECT id FROM session`;
+      expect(sessions).toHaveLength(0);
+    } finally {
+      await sql`
+        UPDATE app_user SET active = true WHERE email = ${facuEmail}
+      `;
     }
-
-    const sessions = await sql`SELECT id FROM session`;
-    expect(sessions).toHaveLength(0);
   });
 
   it('login action creates session and sets cookie on success', async () => {

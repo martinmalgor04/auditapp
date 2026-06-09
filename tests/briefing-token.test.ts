@@ -6,8 +6,7 @@ import {
   validateBriefingToken
 } from '../src/lib/server/briefing/validate-token';
 import { isBriefingStatusValid } from '../src/lib/server/auth/briefing-token';
-import { setupTestDb, teardownTestDb, truncateSeedTables } from './helpers/db';
-import { runSeed } from '../src/lib/server/db/seed';
+import { setupTestDb, teardownTestDb } from './helpers/db';
 import { insertTestAuditRow } from './helpers/backoffice';
 import type postgres from 'postgres';
 
@@ -19,8 +18,6 @@ describe('briefing token validation', () => {
   });
 
   beforeEach(async () => {
-    await truncateSeedTables(sql);
-    await runSeed(sql);
   });
 
   afterAll(async () => {

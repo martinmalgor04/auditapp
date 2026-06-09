@@ -29,9 +29,24 @@ Feature: formulario público `/briefing/[token]` con autosave, envío y UX mobil
 - R14 → suite `tests/api/briefing-*` + `tests/briefing-*`
 - R15 → `e2e/briefing.spec.ts` flujo feliz
 
+## Fix aislamiento tests (post-review)
+
+Problema: `getSql()` y el cliente `sql` del test usaban conexiones distintas; `retry` re-ejecutaba tests que mutan DB; `global-setup` y hooks del worker hacían `runSeed` concurrente (FK `template_item_section_id_fkey`); e2e sembraba la auditoría antes del `build`.
+
+Cambios:
+
+- `src/lib/server/db/client.ts` — bridge `globalThis.__auditapp_test_sql_bridge__`; `setSqlForTests` / `clearSqlForTests` / `resetSqlForTests`.
+- `tests/helpers/db.ts` — conexión compartida `max:1`, mutex JS `withTestDbSerial`, `ensureBaselineSeed` (seed una vez + truncate volátil), `closeTestDb` en global-teardown.
+- `tests/setup.ts` — `beforeAll` seed por archivo; `beforeEach` truncate volátil + bridge; `afterEach` re-vincula bridge (full reset solo en `beforeAll` de `users-admin` / `templates-admin`).
+- `tests/global-setup.ts` — solo migraciones (sin seed duplicado en proceso padre).
+- `tests/fixtures/briefing-audit.ts` + `tests/helpers/backoffice.ts` — `setSqlForTests(sql)` antes de inserts.
+- `vite.config.ts` — `singleFork`, `retry: 0` (obligatorio: retry re-ejecuta tests que mutan DB), `hooks: 'list'`, `globalTeardown`.
+- `playwright.config.ts` — `build && ensure-audit && preview` (seed e2e inmediato antes del servidor).
+- `e2e/ensure-audit.ts` — TRUNCATE + `runSeed` + fila con token `e2e-briefing-token-demo`.
+
 ## Verificación
 
-- `pnpm test` — 145 tests verdes
+- `pnpm test` — 160 tests verdes (no correr vitest en paralelo con playwright/e2e)
 - `pnpm run check` — 0 errores
 - `pnpm exec playwright test e2e/briefing.spec.ts` — 2 tests verdes
 - `./init.sh` — exit 0

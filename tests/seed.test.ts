@@ -3,7 +3,14 @@ import { join } from 'node:path';
 import { parse } from 'csv-parse/sync';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { runSeed } from '../src/lib/server/db/seed';
-import { setupTestDb, teardownTestDb, truncateSeedTables } from './helpers/db';
+import { setSqlForTests } from '../src/lib/server/db/client';
+import {
+  flushTestDbSerial,
+  resetAndSeedForTests,
+  resetBaselineSeedFlag,
+  setupTestDb,
+  teardownTestDb
+} from './helpers/db';
 import type postgres from 'postgres';
 
 const MANIFEST_PATH = join(process.cwd(), 'seed', 'templates', 'manifest.json');
@@ -14,18 +21,15 @@ describe('database seed', () => {
 
   beforeAll(async () => {
     sql = await setupTestDb();
-    await truncateSeedTables(sql);
-    await runSeed(sql);
+    setSqlForTests(sql);
+    await flushTestDbSerial();
+    resetBaselineSeedFlag();
+    await resetAndSeedForTests(sql);
   }, 120_000);
 
   afterAll(async () => {
     await teardownTestDb();
   });
-
-  async function runFullSeed() {
-    await truncateSeedTables(sql);
-    await runSeed(sql);
-  }
 
   it('seeds one admin and two tecnicos', async () => {
     const users = await sql<{ role: string; active: boolean; password_hash: string }[]>`
@@ -57,7 +61,8 @@ describe('database seed', () => {
     expect(Number(items[0].count)).toBeGreaterThan(0);
   });
 
-  it('template item count matches fixture manifest', async () => {    const manifest = JSON.parse(await readFile(MANIFEST_PATH, 'utf8')) as {
+  it('template item count matches fixture manifest', async () => {
+    const manifest = JSON.parse(await readFile(MANIFEST_PATH, 'utf8')) as {
       templates: Array<{ code: string; version: string; sections: number; items: number }>;
     };
 
@@ -156,7 +161,6 @@ describe('database seed', () => {
   });
 
   it('seed is idempotent on second run', async () => {
-    await runFullSeed();
     const first = {
       users: Number((await sql`SELECT COUNT(*)::text AS c FROM app_user`)[0].c),
       templates: Number((await sql`SELECT COUNT(*)::text AS c FROM template`)[0].c),

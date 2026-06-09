@@ -23,6 +23,20 @@
 - **Notas:** Plantillas generadas sin SPEC-04 en repo (fixtures representativos). CSV 1895 registros lógicos.
 - **Próximo paso:** `/leader` → feature #3 `03_auth_roles` (spec ya en `spec_ready`, pendiente aprobación humana o implementación)
 
+## 2026-06-09 — 05_briefing_externo (#5) done
+
+- **Agente:** implementer
+- **Resultado:** Briefing externo completo (dominio, API PATCH, UI mobile-first, e2e). Infra tests estabilizada (mutex globalThis + advisory lock, hooks setup beforeAll/afterEach).
+- **Veredicto:** cerrado tras `./init.sh` verde
+- **Próximo paso:** #6 `06_storage_r2`
+
+## 2026-06-09 — 06_storage_r2 (#6) done
+
+- **Agente:** implementer → reviewer
+- **Resultado:** Módulo R2 con `aws4fetch`, presigned PUT/GET, keys, `attachment` + `audit_response`, 3 endpoints API, 15 tests mock. 160 tests vitest. `./init.sh` y `pnpm run check` verdes.
+- **Veredicto:** APPROVED (`progress/review_06_storage_r2.md`)
+- **Próximo paso:** `/leader` → #7 `07_form_tecnico` (spec_ready, aprobación humana)
+
 ## 2026-06-08 — 03_auth_roles (#3) done
 
 - **Agente:** implementer → reviewer

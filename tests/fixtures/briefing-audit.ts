@@ -1,4 +1,5 @@
 import type postgres from 'postgres';
+import { setSqlForTests } from '../../src/lib/server/db/client';
 import { getTemplateIdByCode, insertTestAuditRow } from '../helpers/backoffice';
 
 export const BRIEFING_FIXTURE_TOKEN = 'briefing-fixture-token-test';
@@ -7,6 +8,7 @@ export async function seedBriefingAuditFixture(
   sql: postgres.Sql,
   opts?: { razonSocial?: string; status?: 'briefing_enviado' | 'briefing_completo'; token?: string }
 ): Promise<{ auditId: string; clientId: string; templateId: string }> {
+  setSqlForTests(sql);
   const templateId = await getTemplateIdByCode(sql, 'it');
   const { auditId, clientId } = await insertTestAuditRow(sql, {
     razonSocial: opts?.razonSocial ?? 'Fixture Briefing SA',

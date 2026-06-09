@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { listDashboardAudits, DASHBOARD_PAGE_SIZE } from '../../src/lib/server/backoffice/dashboard';
-import { setupTestDb, teardownTestDb, truncateSeedTables } from '../helpers/db';
-import { runSeed } from '../../src/lib/server/db/seed';
+import { setupTestDb, teardownTestDb } from '../helpers/db';
 import { insertTestAuditRow } from '../helpers/backoffice';
 import type postgres from 'postgres';
 
@@ -13,8 +12,6 @@ describe('backoffice dashboard', () => {
   });
 
   beforeEach(async () => {
-    await truncateSeedTables(sql);
-    await runSeed(sql);
   });
 
   afterAll(async () => {

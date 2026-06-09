@@ -3,8 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { load as tableroLoad } from '../../src/routes/(app)/tablero/+page.server';
 import { load as usuariosLoad } from '../../src/routes/(app)/usuarios/+page.server';
 import { actions as auditActions } from '../../src/routes/(app)/auditorias/[id]/+page.server';
-import { setupTestDb, teardownTestDb, truncateSeedTables } from '../helpers/db';
-import { runSeed } from '../../src/lib/server/db/seed';
+import { setupTestDb, teardownTestDb } from '../helpers/db';
 import { findUserIdByEmail } from '../helpers/auth';
 import { insertTestAuditRow } from '../helpers/backoffice';
 import type postgres from 'postgres';
@@ -19,8 +18,6 @@ describe('backoffice routes auth', () => {
   });
 
   beforeEach(async () => {
-    await truncateSeedTables(sql);
-    await runSeed(sql);
     adminId = await findUserIdByEmail(sql, 'admin@serviciosysistemas.com.ar');
     tecnicoId = await findUserIdByEmail(sql, 'facu@serviciosysistemas.com.ar');
   });

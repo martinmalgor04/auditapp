@@ -1,8 +1,7 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { submitBriefing } from '../../src/lib/server/briefing/submit';
 import { actions } from '../../src/routes/briefing/[token]/+page.server';
-import { setupTestDb, teardownTestDb, truncateSeedTables } from '../helpers/db';
-import { runSeed } from '../../src/lib/server/db/seed';
+import { setupTestDb, teardownTestDb } from '../helpers/db';
 import { BRIEFING_FIXTURE_TOKEN, seedBriefingAuditFixture } from '../fixtures/briefing-audit';
 import type postgres from 'postgres';
 
@@ -11,11 +10,6 @@ describe('briefing submit', () => {
 
   beforeAll(async () => {
     sql = await setupTestDb();
-  });
-
-  beforeEach(async () => {
-    await truncateSeedTables(sql);
-    await runSeed(sql);
   });
 
   afterAll(async () => {

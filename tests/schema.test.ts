@@ -123,9 +123,10 @@ describe('database schema', () => {
   });
 
   it('rejects invalid field_type', async () => {
+    const code = `test-invalid-${Date.now()}`;
     const [template] = await sql<{ id: string }[]>`
       INSERT INTO template (code, name, version, status)
-      VALUES ('test-invalid', 'Test', 'v0', 'draft')
+      VALUES (${code}, 'Test', 'v0', 'draft')
       RETURNING id
     `;
     const [section] = await sql<{ id: string }[]>`

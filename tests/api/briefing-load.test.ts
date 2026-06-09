@@ -1,8 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { BRIEFING_UNAVAILABLE_MESSAGE } from '../../src/lib/server/auth/briefing-token';
 import { load as briefingLoad } from '../../src/routes/briefing/[token]/+page.server';
-import { setupTestDb, teardownTestDb, truncateSeedTables } from '../helpers/db';
-import { runSeed } from '../../src/lib/server/db/seed';
+import { setupTestDb, teardownTestDb } from '../helpers/db';
 import { BRIEFING_FIXTURE_TOKEN, seedBriefingAuditFixture } from '../fixtures/briefing-audit';
 import { insertTestAuditRow } from '../helpers/backoffice';
 import type postgres from 'postgres';
@@ -19,8 +18,6 @@ describe('briefing load API', () => {
   });
 
   beforeEach(async () => {
-    await truncateSeedTables(sql);
-    await runSeed(sql);
   });
 
   afterAll(async () => {
