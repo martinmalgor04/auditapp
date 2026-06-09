@@ -11,7 +11,8 @@ Este repo usa **harness-sdd** (Spec-Driven Development):
 | [`AGENTS.md`](AGENTS.md) | Mapa de navegación para agentes |
 | [`feature_list.json`](feature_list.json) | Backlog activo (10 features) |
 | [`ROADMAP.md`](ROADMAP.md) | Vista alto nivel + dependencias |
-| `specs/<feature>/` | Specs EARS vivos (se generan por etapa) |
+| [`specs/README.md`](specs/README.md) | Índice numerado #1–#10 de specs EARS |
+| `specs/<NN_feature>/` | Specs EARS vivos (`01_stack_scaffolding` … `10_deploy_dokploy`) |
 | [`docs/source-specs/`](docs/source-specs/) | PRDs y specs históricas (referencia) |
 
 **Empezar:** `./init.sh` → `/leader` en Cursor.
@@ -22,7 +23,7 @@ SvelteKit 5 · TypeScript · PostgreSQL · postgres.js · R2 · Docker · Tailwi
 
 Ver [`docs/architecture.md`](docs/architecture.md) y [`PROJECT.md`](PROJECT.md).
 
-## Comandos (tras stack_scaffolding)
+## Comandos (tras 01_stack_scaffolding)
 
 ```bash
 pnpm install
@@ -39,9 +40,9 @@ pnpm exec playwright test
 auditapp/
 ├── AGENTS.md, feature_list.json, init.sh
 ├── docs/              # arquitectura, convenciones, verificación, SDD
-├── docs/source-specs/ # specs/07* y PRDs archivados
-├── specs/             # specs EARS por feature (vivos)
+├── docs/source-specs/ # PRDs y specs históricas (01–10 en specs-07/)
+├── specs/             # specs EARS #1–#10 (ver specs/README.md)
 ├── progress/          # bitácora de sesiones
 ├── seed/              # datos de seed (clientes CSV)
-└── src/               # (tras feature #1 stack_scaffolding)
+└── src/               # (tras feature #1 01_stack_scaffolding)
 ```

@@ -1,5 +1,5 @@
 import type postgres from 'postgres';
-import { createSql } from '../../src/lib/server/db/client';
+import { createSql, resetSqlForTests, setSqlForTests } from '../../src/lib/server/db/client';
 
 let sharedSql: postgres.Sql | undefined;
 
@@ -15,14 +15,16 @@ export function getTestSql(): postgres.Sql {
 }
 
 export async function setupTestDb(): Promise<postgres.Sql> {
+  await resetSqlForTests();
   return getTestSql();
 }
 
 export async function teardownTestDb(): Promise<void> {
   if (sharedSql) {
-    await sharedSql.end();
+    await sharedSql.end({ timeout: 5 });
     sharedSql = undefined;
   }
+  await resetSqlForTests();
 }
 
 /** Trunca tablas de datos preservando schema_migration. */

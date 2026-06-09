@@ -1,0 +1,71 @@
+<script lang="ts">
+  import FieldRenderer, { type FieldItem } from '$lib/components/form/field-renderer.svelte';
+
+  let {
+    items,
+    stepCount,
+    onfieldchange
+  }: {
+    items: FieldItem[];
+    stepCount: 1 | 2 | 3;
+    onfieldchange?: (itemId: string, value: unknown) => void;
+  } = $props();
+
+  let currentStep = $state(0);
+
+  const steps = $derived.by(() => {
+    if (stepCount === 1) {
+      return [items];
+    }
+    const perStep = Math.ceil(items.length / stepCount);
+    const result: FieldItem[][] = [];
+    for (let i = 0; i < stepCount; i++) {
+      result.push(items.slice(i * perStep, (i + 1) * perStep));
+    }
+    return result;
+  });
+
+  const stepItems = $derived(steps[currentStep] ?? []);
+</script>
+
+{#if stepCount > 1}
+  <div class="flex justify-center gap-2 mb-4" aria-label="Progreso del formulario">
+    {#each Array(stepCount) as _, i}
+      <span
+        class="h-2 w-8 rounded-full {i <= currentStep ? 'bg-[var(--sys-primary)]' : 'bg-slate-200'}"
+      ></span>
+    {/each}
+  </div>
+{/if}
+
+<div class="space-y-6">
+  {#each stepItems as item (item.id)}
+    <FieldRenderer
+      {item}
+      onchange={(value) => onfieldchange?.(item.id, value)}
+    />
+  {/each}
+</div>
+
+{#if stepCount > 1}
+  <div class="flex gap-3 pt-4">
+    {#if currentStep > 0}
+      <button
+        type="button"
+        class="flex-1 min-h-[var(--sys-touch-min)] rounded-[var(--sys-radius)] border border-slate-300 text-sm font-medium"
+        onclick={() => (currentStep -= 1)}
+      >
+        Anterior
+      </button>
+    {/if}
+    {#if currentStep < stepCount - 1}
+      <button
+        type="button"
+        class="flex-1 min-h-[var(--sys-touch-min)] rounded-[var(--sys-radius)] bg-[var(--sys-primary)] text-white text-sm font-medium"
+        onclick={() => (currentStep += 1)}
+      >
+        Siguiente
+      </button>
+    {/if}
+  </div>
+{/if}

@@ -38,7 +38,7 @@ La salida estructurada de cada auditoría alimenta aguas abajo al sistema IA que
    estado: borrador          estado: briefing_*          estado: en_relevamiento     estado: cerrada
 ```
 
-Detalle de estados en [SPEC-07a §4](07a-modelo-datos/spec.md).
+Detalle de estados en [SPEC-07a §4](02-modelo-datos/spec.md).
 
 ---
 
@@ -56,18 +56,20 @@ Detalle de estados en [SPEC-07a §4](07a-modelo-datos/spec.md).
 
 ---
 
-## 4. Mapa de sub-specs
+## 4. Mapa de sub-specs (#1–#10)
 
-| # | Sub-spec | Cubre |
-|---|---|---|
-| 07a | [Modelo de datos](07a-modelo-datos/spec.md) | Esquema Postgres: plantillas data-driven, auditorías, respuestas, scores, adjuntos, usuarios, sesiones, tokens |
-| 07b | [Autenticación y roles](07b-auth-roles/spec.md) | Login user+pass, sesiones, roles admin/técnico, token público de cliente |
-| 07c | [Backoffice](07c-backoffice/spec.md) | CRUD de auditorías, tablero (tipo/estado/cliente), gestión de plantillas y usuarios |
-| 07d | [Briefing externo](07d-briefing-externo/spec.md) | Form público sin auth para que el cliente precargue datos básicos |
-| 07e | [Form técnico mobile](07e-form-tecnico-mobile/spec.md) | Render data-driven mobile-first, autosave, fotos, scoring, PWA |
-| 07f | [Cierre de auditoría](07f-cierre-auditoria/spec.md) | Índices ponderados, top riesgos, quick wins, próximo paso, salida para IA |
-| 07g | [Storage R2 y adjuntos](07g-storage-r2/spec.md) | Subida de fotos/exports a R2, presigned URLs, vinculación a ítems |
-| 07h | [Stack y deploy](07h-stack-deploy/spec.md) | SvelteKit, ORM, migraciones, env, PWA, deploy en Dokploy |
+| # | Sub-spec | SDD viva | Cubre |
+|---|---|---|---|
+| 1 | [Stack scaffolding](01-stack-scaffolding/spec.md) | [`01_stack_scaffolding`](../../../specs/01_stack_scaffolding/requirements.md) | SvelteKit 5, tooling local, Postgres dev |
+| 2 | [Modelo de datos](02-modelo-datos/spec.md) | [`02_modelo_datos`](../../../specs/02_modelo_datos/requirements.md) | Esquema Postgres, plantillas, auditorías, seed |
+| 3 | [Autenticación y roles](03-auth-roles/spec.md) | [`03_auth_roles`](../../../specs/03_auth_roles/requirements.md) | Login, sesiones, roles, token cliente |
+| 4 | [Backoffice](04-backoffice/spec.md) | [`04_backoffice`](../../../specs/04_backoffice/requirements.md) | CRUD auditorías, tablero, plantillas, usuarios |
+| 5 | [Briefing externo](05-briefing-externo/spec.md) | [`05_briefing_externo`](../../../specs/05_briefing_externo/requirements.md) | Form público cliente |
+| 6 | [Storage R2](06-storage-r2/spec.md) | [`06_storage_r2`](../../../specs/06_storage_r2/requirements.md) | Fotos/exports, presigned URLs |
+| 7 | [Form técnico mobile](07-form-tecnico-mobile/spec.md) | [`07_form_tecnico`](../../../specs/07_form_tecnico/requirements.md) | Carga en campo, autosave, PWA |
+| 8 | [Cierre de auditoría](08-cierre-auditoria/spec.md) | [`08_cierre_scoring`](../../../specs/08_cierre_scoring/requirements.md) | Scoring, índices, cierre |
+| 9 | [Contrato datos / IA](09-contrato-datos-ia/spec.md) | [`09_contrato_datos`](../../../specs/09_contrato_datos/requirements.md) | JSON canónico, pipeline SPEC-08 |
+| 10 | [Deploy Dokploy](10-deploy-dokploy/spec.md) | [`10_deploy_dokploy`](../../../specs/10_deploy_dokploy/requirements.md) | Docker, migraciones, prod |
 
 ---
 

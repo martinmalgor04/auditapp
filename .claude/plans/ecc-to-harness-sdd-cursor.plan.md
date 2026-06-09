@@ -6,20 +6,20 @@
 
 ## Summary
 
-Reemplazar ECC (~135M, 1700+ archivos) por harness-sdd adaptado a auditapp: SvelteKit + TypeScript + postgres.js + vitest/playwright. **Cursor es el harness primario** (`.cursor/agents`, `.cursor/hooks.json`, reglas mínimas). Metodología SDD con EARS, puerta humana en `spec_ready`, y `feature_list.json` como backlog único. Solo pre-migro feature #2 (`modelo_datos`) a EARS; resto queda `pending` para `spec_author`.
+Reemplazar ECC (~135M, 1700+ archivos) por harness-sdd adaptado a auditapp: SvelteKit + TypeScript + postgres.js + vitest/playwright. **Cursor es el harness primario** (`.cursor/agents`, `.cursor/hooks.json`, reglas mínimas). Metodología SDD con EARS, puerta humana en `spec_ready`, y `feature_list.json` como backlog único. Solo pre-migro feature #2 (`02_modelo_datos`) a EARS; resto queda `pending` para `spec_author`.
 
 ## Patterns to Mirror
 
 | Category | Source | Pattern |
 |---|---|---|
-| Naming | `specs/07a-modelo-datos/spec.md:1-10` | Specs con ID `SPEC-07X`, tablas de columnas, diagramas ASCII |
+| Naming | `specs/02_modelo_datos/spec.md:1-10` | Specs con ID `SPEC-07X`, tablas de columnas, diagramas ASCII |
 | Feature IDs | `/tmp/harness-sdd-inspect/feature_list.json:11-18` | `id` numérico, `name` snake_case, `acceptance[]` verificable |
 | EARS | `/tmp/harness-sdd-inspect/specs/cli_recent/requirements.md:9-38` | `R<n>` + patrones CUANDO/SI/MIENTRAS + `DEBE`/`NO DEBE` |
 | SDD flow | `/tmp/harness-sdd-inspect/AGENTS.md:48-64` | `pending → spec_author → spec_ready → ⏸ HUMANO → in_progress → implementer → reviewer → done` |
 | Errors | `/tmp/harness-sdd-inspect/init.sh:15-17` | `[OK]`/`[FAIL]`/`[WARN]` + exit code explícito |
 | Tests | `ROADMAP.md:17-19` | vitest unit + playwright e2e (aún sin scaffolding — init tolerante) |
 | Logging | N/A | Sin código app — definir en `docs/conventions.md` al instalar arnés |
-| Data access | `specs/07a-modelo-datos/spec.md:55` | postgres.js SQL puro, migraciones en `/migrations/` |
+| Data access | `specs/02_modelo_datos/spec.md:55` | postgres.js SQL puro, migraciones en `/migrations/` |
 
 ## Delta Cursor vs harness original
 
@@ -54,7 +54,7 @@ Harness original apunta a Claude Code (`.claude/agents/`, `.claude/settings.json
 | `progress/{current,history}.md` | CREATE | Bitácora de sesiones |
 | `docs/{architecture,conventions,verification,specs}.md` | CREATE | Docs del arnés (stack auditapp) |
 | `docs/source-specs/` | CREATE (MOVE) | PRDs + specs/07a–07i como referencia muerta |
-| `specs/modelo_datos/{requirements,design,tasks}.md` | CREATE | Único spec EARS pre-migrado (#2) |
+| `specs/02_modelo_datos/{requirements,design,tasks}.md` | CREATE | Único spec EARS pre-migrado (#2) |
 | `.cursor/agents/{leader,spec_author,implementer,reviewer}.md` | CREATE | Subagentes SDD |
 | `.cursor/hooks.json` | CREATE | Hooks slim (init + tests) |
 | `.cursor/hooks/{after-file-edit-harness,session-end-harness}.js` | CREATE | Scripts hook mínimos |
@@ -107,7 +107,7 @@ Harness original apunta a Claude Code (`.claude/agents/`, `.claude/settings.json
 - **Validate**: `node -e "JSON.parse(require('fs').readFileSync('feature_list.json'))"`
 
 ### Task 5: Pre-migrar solo modelo_datos (#2) a EARS
-- **Action**: `specs/modelo_datos/{requirements,design,tasks}.md` desde `specs/07a-modelo-datos/spec.md` + `.claude/prds/auditapp-07a-modelo-datos.prd.md`. Marcar #2 como `spec_ready` (ejemplo para revisión humana) o `pending` si preferís que spec_author lo genere — **default acordado: pre-migro completo, status `spec_ready`**.
+- **Action**: `specs/02_modelo_datos/{requirements,design,tasks}.md` desde `specs/02_modelo_datos/spec.md` + `.claude/prds/auditapp-02-modelo-datos.prd.md`. Marcar #2 como `spec_ready` (ejemplo para revisión humana) o `pending` si preferís que spec_author lo genere — **default acordado: pre-migro completo, status `spec_ready`**.
 - **Mirror**: EARS de `/tmp/harness-sdd-inspect/specs/cli_recent/requirements.md`
 - **Validate**: `./init.sh` pasa con specs presentes para #2
 
@@ -132,7 +132,7 @@ Harness original apunta a Claude Code (`.claude/agents/`, `.claude/settings.json
 chmod +x init.sh
 ./init.sh
 node -e "const d=require('./feature_list.json'); console.log(d.features.length, 'features')"
-test -f specs/modelo_datos/requirements.md
+test -f specs/02_modelo_datos/requirements.md
 test -f .cursor/agents/leader.md
 test ! -d _ecc
 ```
@@ -154,7 +154,7 @@ test ! -d _ecc
 - [ ] Arnés completo: AGENTS.md, init.sh, feature_list.json, progress/, docs/, CHECKPOINTS.md
 - [ ] Cursor: 4 agentes + hooks.json slim + 3 rules
 - [ ] 10 features en feature_list.json, todas `sdd: true`
-- [ ] Solo `specs/modelo_datos/` con EARS completo (resto pending)
+- [ ] Solo `specs/02_modelo_datos/` con EARS completo (resto pending)
 - [ ] Fuentes archivadas en `docs/source-specs/`
 - [ ] `./init.sh` exit 0
 - [ ] ROADMAP/PROJECT/CLAUDE actualizados

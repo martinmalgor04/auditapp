@@ -24,7 +24,7 @@
 | `feature_list.json` | Backlog con estado (`pending` / `spec_ready` / `in_progress` / `done` / `blocked`) | Siempre, al empezar |
 | `progress/current.md` | Estado de la sesión actual | Siempre, al empezar |
 | `progress/history.md` | Bitácora append-only de sesiones anteriores | Si necesitas contexto histórico |
-| `specs/<feature>/` | `requirements.md` + `design.md` + `tasks.md` (EARS) | Antes de implementar cualquier feature `sdd: true` |
+| `specs/<NN_feature>/` | `requirements.md` + `design.md` + `tasks.md` (EARS). Índice: `specs/README.md` | Antes de implementar cualquier feature `sdd: true` |
 | `docs/architecture.md` | Qué significa "hacer un buen trabajo" en auditapp | Antes de implementar |
 | `docs/conventions.md` | Estilo, nombres, estructura TypeScript/SvelteKit | Antes de escribir código |
 | `docs/specs.md` | Proceso SDD: EARS, los 3 archivos, puerta humana | Antes de redactar o leer un spec |

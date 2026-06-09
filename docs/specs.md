@@ -81,5 +81,5 @@ Pasos discretos en orden, checkbox, cada uno referencia `R<n>`:
 
 Al redactar specs, consultar (no copiar literal sin adaptar a EARS):
 
-- `docs/source-specs/prds/auditapp-07*.prd.md`
+- `docs/source-specs/prds/auditapp-0*.prd.md`
 - `docs/source-specs/specs-07/07*/spec.md`

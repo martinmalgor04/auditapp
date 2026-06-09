@@ -1,0 +1,10 @@
+:root {
+  --sys-primary: #1e4d8c;
+  --sys-primary-dark: #163a6b;
+  --sys-accent: #2b7de9;
+  --sys-surface: #f8fafc;
+  --sys-text: #0f172a;
+  --sys-text-muted: #64748b;
+  --sys-radius: 0.75rem;
+  --sys-touch-min: 44px;
+}

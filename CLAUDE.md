@@ -28,7 +28,7 @@ Specs históricos (referencia): `docs/source-specs/`. Specs vivos: `specs/<featu
 
 **SvelteKit 5 · TypeScript · PostgreSQL · postgres.js · Cloudflare R2 · Docker · Tailwind · Zod**
 
-> App aún sin scaffolding. Tras feature #1 `stack_scaffolding`:
+> App aún sin scaffolding. Tras feature #1 `01_stack_scaffolding`:
 
 - **Dev:** `pnpm run dev`
 - **Build:** `pnpm run build`

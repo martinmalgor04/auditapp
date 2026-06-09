@@ -111,4 +111,4 @@ Creemos que una app web mobile-first con briefing del cliente + carga data-drive
 
 *Status: DRAFT — specs detalladas en `specs/`. Milestones listos para `/plan`. Decisiones grandes cerradas (scoring estándar, contrato, dominio, seed). Pendientes menores no bloquean M1–M6.*
 
-**PRDs de cada milestone**: `.claude/prds/auditapp-07a-modelo-datos.prd.md` … `auditapp-07i-contrato-datos-ia.prd.md`
+**PRDs de cada milestone**: `.claude/prds/auditapp-02-modelo-datos.prd.md` … `auditapp-09-contrato-datos-ia.prd.md`

@@ -19,7 +19,15 @@ export function getSql(): postgres.Sql {
   return sqlInstance;
 }
 
-/** Reset interno para tests. */
-export function resetSqlForTests(): void {
-  sqlInstance = undefined;
+/** Apunta el singleton de app al cliente de tests (misma conexión). */
+export function setSqlForTests(sql: postgres.Sql): void {
+  sqlInstance = sql;
+}
+
+/** Reset interno para tests; cierra el singleton de app. */
+export async function resetSqlForTests(): Promise<void> {
+  if (sqlInstance) {
+    await sqlInstance.end({ timeout: 5 });
+    sqlInstance = undefined;
+  }
 }
