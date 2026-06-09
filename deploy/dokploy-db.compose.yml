@@ -4,8 +4,8 @@
 # 2. Variables: deploy/db.env.example
 # 3. Deploy
 #
-# La app (deploy/dokploy-app.compose.yml) se conecta por hostname `postgres`
-# en la red dokploy-network. NO publicar 5432 a internet salvo admin vía 4043.
+# Hostname único en dokploy-network: auditapp-postgres (NO usar alias `postgres`:
+# presupuestossys y otras apps en el mismo servidor también lo usan).
 
 name: db
 
@@ -36,7 +36,7 @@ services:
     networks:
       dokploy-network:
         aliases:
-          - postgres
+          - auditapp-postgres
 
 networks:
   dokploy-network:

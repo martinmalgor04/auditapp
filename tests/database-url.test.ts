@@ -13,7 +13,7 @@ describe('docker database-url', () => {
 
     const { resolveDatabaseUrl } = await import('../docker/database-url.mjs');
     expect(resolveDatabaseUrl()).toBe(
-      'postgres://auditapp:SySauditapp2026Prod@postgres:5432/auditapp'
+      'postgres://auditapp:SySauditapp2026Prod@auditapp-postgres:5432/auditapp'
     );
   });
 
@@ -22,7 +22,7 @@ describe('docker database-url', () => {
     delete process.env.DATABASE_URL;
 
     const { resolveDatabaseUrl } = await import('../docker/database-url.mjs');
-    expect(resolveDatabaseUrl()).toBe('postgres://auditapp:p%40ss%3Aword@postgres:5432/auditapp');
+    expect(resolveDatabaseUrl()).toBe('postgres://auditapp:p%40ss%3Aword@auditapp-postgres:5432/auditapp');
   });
 
   it('prefers POSTGRES_PASSWORD over DATABASE_URL', async () => {
@@ -30,6 +30,6 @@ describe('docker database-url', () => {
     process.env.DATABASE_URL = 'postgres://auditapp:wrong@postgres:5432/auditapp';
 
     const { resolveDatabaseUrl } = await import('../docker/database-url.mjs');
-    expect(resolveDatabaseUrl()).toBe('postgres://auditapp:from-password@postgres:5432/auditapp');
+    expect(resolveDatabaseUrl()).toBe('postgres://auditapp:from-password@auditapp-postgres:5432/auditapp');
   });
 });

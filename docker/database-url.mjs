@@ -2,7 +2,7 @@ import { pathToFileURL } from 'node:url';
 
 const DEFAULTS = {
   user: 'auditapp',
-  host: 'postgres',
+  host: 'auditapp-postgres',
   port: '5432',
   database: 'auditapp'
 };

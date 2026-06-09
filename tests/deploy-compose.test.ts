@@ -12,16 +12,18 @@ describe('deploy dokploy split composes (recommended)', () => {
   const dbCompose = readCompose('dokploy-db.compose.yml');
   const appCompose = readCompose('dokploy-app.compose.yml');
 
-  it('postgres joins dokploy-network with hostname alias postgres', () => {
+  it('postgres joins dokploy-network with unique hostname auditapp-postgres', () => {
     expect(dbCompose).toContain('dokploy-network');
-    expect(dbCompose).toContain('- postgres');
+    expect(dbCompose).toContain('- auditapp-postgres');
+    expect(dbCompose).not.toMatch(/aliases:\s*\n\s*- postgres\b/);
     expect(dbCompose).toContain("4043:5432");
     expect(dbCompose).toContain('POSTGRES_PUBLISH_BIND:-127.0.0.1');
     expect(dbCompose).toContain('docker/postgres/Dockerfile');
   });
 
-  it('app joins dokploy-network and passes POSTGRES_PASSWORD (no DATABASE_URL)', () => {
+  it('app joins dokploy-network and passes POSTGRES_HOST + POSTGRES_PASSWORD', () => {
     expect(appCompose).toContain('dokploy-network');
+    expect(appCompose).toContain('POSTGRES_HOST: auditapp-postgres');
     expect(appCompose).toContain('POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}');
     expect(appCompose).not.toContain('DATABASE_URL:');
     expect(appCompose).toContain('dockerfile: Dockerfile');

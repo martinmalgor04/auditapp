@@ -15,7 +15,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/pnpm-lock.yaml ./
 COPY . .
 ENV NODE_ENV=production
-ARG DATABASE_URL=postgres://auditapp:changeme@postgres:5432/auditapp
+ARG DATABASE_URL=postgres://auditapp:changeme@auditapp-postgres:5432/auditapp
 ARG SESSION_SECRET=build-time-placeholder-min-32-chars-long
 ARG PUBLIC_APP_URL=https://app.auditoriaserviciosysistemas.com.ar
 ENV DATABASE_URL=${DATABASE_URL}

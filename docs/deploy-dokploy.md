@@ -4,7 +4,7 @@ Runbook operativo para desplegar auditapp en Dokploy con Postgres, HTTPS y PWA.
 
 ## Arquitectura recomendada (dos servicios Dokploy)
 
-Igual que presupuestossys: **Postgres y app en proyectos Compose separados** en la misma red `dokploy-network`. La app resuelve la DB por hostname `postgres`.
+Igual que presupuestossys: **Postgres y app en proyectos Compose separados** en la misma red `dokploy-network`. La app resuelve la DB por hostname **`auditapp-postgres`** (no `postgres`: en el mismo servidor presupuestossys y otras apps también usan ese alias y Docker DNS colisiona).
 
 | Orden | Proyecto Dokploy | Compose | Env de referencia |
 |---|---|---|---|
@@ -51,7 +51,7 @@ Opcionales (Postgres admin):
 Postgres se publica en el **host** en el puerto **4043** → contenedor `5432`.
 
 - **Default:** bind `127.0.0.1:4043` — solo accesible desde el servidor (recomendado).
-- **App interna:** sigue usando `postgres:5432` en la red Docker (sin cambios).
+- **App interna:** usa `auditapp-postgres:5432` en `dokploy-network`.
 
 ### Conectar desde tu PC (túnel SSH)
 
@@ -134,7 +134,8 @@ Incluye `pnpm test`, `pnpm run build` y `docker build`. Alias: `pnpm run prepush
 |---|---|---|
 | `28P01 password authentication failed` | `DATABASE_URL` manual en Dokploy o password vieja en volumen | Quitar `DATABASE_URL`; borrar volumen `auditapp_pgdata`; redeploy |
 | Contenedor reinicia en loop | Migración SQL falló | Logs entrypoint |
-| Postgres unreachable desde app | Hostname incorrecto | App usa `postgres:5432`, no `localhost` |
+| Postgres unreachable desde app | Hostname incorrecto | App usa `auditapp-postgres:5432`, no `postgres` ni `localhost` |
+| `28P01` intermitente / migraciones en DB ajena | Alias `postgres` colisiona con presupuestossys | `POSTGRES_HOST=auditapp-postgres`; redeploy proyecto `db` |
 | No puedo conectar al 4043 | Bind en 127.0.0.1 | Usar túnel SSH o `POSTGRES_PUBLISH_BIND=0.0.0.0` + firewall |
 | Conexión rechazada en 4043 | IP no permitida en pg_hba | Agregar `POSTGRES_ALLOWED_CIDRS` |
 | 404 dominio app | App fuera de `dokploy-network` | Ver compose; redeploy |
@@ -144,6 +145,6 @@ Incluye `pnpm test`, `pnpm run build` y `docker build`. Alias: `pnpm run prepush
 
 | Archivo | Uso |
 |---|---|
-| `deploy/dokploy-db.compose.yml` | Postgres en `dokploy-network`, alias `postgres` |
+| `deploy/dokploy-db.compose.yml` | Postgres en `dokploy-network`, alias `auditapp-postgres` |
 | `deploy/dokploy-app.compose.yml` | App SvelteKit (recomendado) |
 | `deploy/dokploy.compose.example.yml` | Stack combinado (alternativa) |

@@ -10,7 +10,7 @@ describe('deploy production env', () => {
 
   it('production docs describe POSTGRES_PASSWORD and internal hostname', () => {
     expect(deployDoc).toContain('POSTGRES_PASSWORD');
-    expect(deployDoc).toContain('postgres:5432');
+    expect(deployDoc).toContain('auditapp-postgres:5432');
     expect(deployDoc).toContain('deploy/dokploy-db.compose.yml');
     expect(deployDoc).toContain('deploy/dokploy-app.compose.yml');
   });
