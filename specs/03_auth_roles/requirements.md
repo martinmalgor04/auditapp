@@ -1,7 +1,7 @@
-# Requirements — auth_roles
+# Requirements — #3 03_auth_roles
 
 > Autenticación interna (admin/técnico), sesiones por cookie y acceso público del cliente por token.
-> Milestone 2 de SPEC-07b. **Depende de:** `modelo_datos` (#2) — tablas `app_user`, `session`, columna `audit.public_token`.
+> Milestone 2 de SPEC-07b. **Depende de:** `02_modelo_datos` (#2) — tablas `app_user`, `session`, columna `audit.public_token`.
 > Fuera de alcance: UI completa de briefing (#5), backoffice (#4), OAuth/MFA/recovery por email.
 
 ## R1 — Hash de contraseñas con argon2id

@@ -28,7 +28,7 @@ Criterio rector: lo más simple que sea seguro. Nada de OAuth, magic links ni MF
 - **Sesión:** al loguear se crea fila en `session` (id = token aleatorio, ~32 bytes); el id se entrega en cookie `session` **HttpOnly, Secure, SameSite=Lax**.
 - **Validación:** un `hook.server.ts` lee la cookie en cada request, resuelve `session → app_user`, y deja `event.locals.user` (o `null`).
 - **Expiración:** sesión válida 30 días; se renueva (sliding) si quedan menos de 15. Logout borra la fila.
-- **Alta de usuarios:** solo admin desde backoffice ([07c](../07c-backoffice/spec.md)). No hay registro público.
+- **Alta de usuarios:** solo admin desde backoffice ([07c](../04-backoffice/spec.md)). No hay registro público.
 - **Rate limit** en `/login` (p. ej. 5 intentos/min por IP) para frenar fuerza bruta.
 
 ### Roles
@@ -70,8 +70,8 @@ La autorización se chequea **en el servidor** (load functions / actions), no so
 
 ## 5. Dependencias
 
-- Tablas `app_user`, `session`, `audit.public_token` → [SPEC-07a](../07a-modelo-datos/spec.md).
-- Implementación de hooks/cookies → [SPEC-07h](../07h-stack-deploy/spec.md).
+- Tablas `app_user`, `session`, `audit.public_token` → [SPEC-07a](../02-modelo-datos/spec.md).
+- Implementación de hooks/cookies → [SPEC-07h](../10-deploy-dokploy/spec.md).
 
 ---
 

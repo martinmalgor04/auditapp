@@ -111,4 +111,4 @@ event.locals.user = await resolveSession(cookies.get('session'))
 
 ---
 
-*Status: DRAFT. Spec de referencia completa en [`specs/07b-auth-roles/spec.md`](../../specs/07b-auth-roles/spec.md).*
+*Status: DRAFT. Spec de referencia completa en [`specs/03_auth_roles/requirements.md`](../../specs/03_auth_roles/requirements.md).*

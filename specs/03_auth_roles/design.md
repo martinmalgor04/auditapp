@@ -1,4 +1,4 @@
-# Design — auth_roles
+# Design — #3 03_auth_roles
 
 ## Alcance
 
@@ -16,12 +16,12 @@ Capa de autenticación y autorización server-side para auditapp. Implementa log
 
 | Feature | Qué aporta |
 |---|---|
-| `stack_scaffolding` (#1) | SvelteKit, vitest, estructura `src/lib/server/auth/`, `.env.example` con `SESSION_SECRET` |
-| `modelo_datos` (#2) | Tablas `app_user`, `session`, `audit.public_token`; seed admin + técnicos; máquina de estados `audit.status` |
+| `01_stack_scaffolding` (#1) | SvelteKit, vitest, estructura `src/lib/server/auth/`, `.env.example` con `SESSION_SECRET` |
+| `02_modelo_datos` (#2) | Tablas `app_user`, `session`, `audit.public_token`; seed admin + técnicos; máquina de estados `audit.status` |
 
 ### Decisión vigente: vigencia del token (PRD 07b)
 
-El token de briefing **no expira por tiempo**. La validez la controla únicamente `audit.status ∈ {briefing_enviado, briefing_completo}`. Si `modelo_datos` aún incluye `token_expires_at` en la spec legacy 07a, **no se usa** en esta feature; la columna puede omitirse o ignorarse hasta alinear schema en #2.
+El token de briefing **no expira por tiempo**. La validez la controla únicamente `audit.status ∈ {briefing_enviado, briefing_completo}`. Si `02_modelo_datos` aún incluye `token_expires_at` en la spec legacy 07a, **no se usa** en esta feature; la columna puede omitirse o ignorarse hasta alinear schema en #2.
 
 ## Modelo de permisos (v2 PRD)
 
@@ -85,7 +85,7 @@ Los guards se implementan server-side en load/actions; el UI solo refleja permis
 | `tests/auth/briefing-token.test.ts` | R13, R14, R15, R16 |
 | `tests/auth/logging.test.ts` | R18 |
 
-Tests de integración usan DB de test o transacciones con seed de `modelo_datos`; no mocks de SQL en guards críticos.
+Tests de integración usan DB de test o transacciones con seed de `02_modelo_datos`; no mocks de SQL en guards críticos.
 
 ## Firmas
 
@@ -273,7 +273,7 @@ Clases reutilizables: `AuthError` (guards). No exponer stack traces al cliente.
 
 ## Variables de entorno
 
-Reutiliza `SESSION_SECRET` de `.env.example` (stack_scaffolding) para firmar cookies opcionales futuras; la cookie de sesión v1 usa el `session.id` opaco de DB, no JWT.
+Reutiliza `SESSION_SECRET` de `.env.example` (`01_stack_scaffolding` #1) para firmar cookies opcionales futuras; la cookie de sesión v1 usa el `session.id` opaco de DB, no JWT.
 
 | Variable | Uso |
 |---|---|
@@ -317,5 +317,5 @@ Reutiliza `SESSION_SECRET` de `.env.example` (stack_scaffolding) para firmar coo
 - Cookie path `/`, max-age alineado a 30 días.
 - `(app)/+layout.server.ts` es el punto único de guard para rutas internas en esta feature; rutas admin-only específicas añaden `requireAdmin` cuando existan en #4.
 - `/briefing/[token]` NO debe pasar por `requireStaff`.
-- Documentar trazabilidad R→test en `progress/impl_auth_roles.md`.
+- Documentar trazabilidad R→test en `progress/impl_03_auth_roles.md`.
 - Ejecutar `./init.sh` verde antes de marcar `done`.

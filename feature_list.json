@@ -11,10 +11,10 @@
   "features": [
     {
       "id": 1,
-      "name": "stack_scaffolding",
+      "name": "01_stack_scaffolding",
       "title": "Scaffolding SvelteKit + tooling",
       "description": "Proyecto base SvelteKit 5, TypeScript, Tailwind, Zod, vitest, playwright, postgres.js, .env.example, Postgres local en Docker.",
-      "source": "docs/source-specs/specs-07/07h-stack-deploy/spec.md (fase inicial)",
+      "source": "docs/source-specs/specs-07/01-stack-scaffolding/spec.md",
       "acceptance": [
         "Existe package.json con scripts dev, build, check, test",
         "SvelteKit 5 + TypeScript + Tailwind configurados",
@@ -29,10 +29,10 @@
     },
     {
       "id": 2,
-      "name": "modelo_datos",
+      "name": "02_modelo_datos",
       "title": "Modelo de datos Postgres + seed",
       "description": "Schema completo, 12 field_type, máquina de estados audit, seed admin/técnicos/plantillas/clientes CSV.",
-      "source": "docs/source-specs/specs-07/07a-modelo-datos/spec.md",
+      "source": "docs/source-specs/specs-07/02-modelo-datos/spec.md",
       "acceptance": [
         "Migraciones SQL crean todas las tablas (template, section, template_item, client, audit, audit_response, audit_section_score, audit_closure, attachment, app_user, session)",
         "12 field_type con constraints y JSONB schemas",
@@ -44,14 +44,14 @@
         "Tests de schema y seed pasan"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 3,
-      "name": "auth_roles",
+      "name": "03_auth_roles",
       "title": "Auth, sesiones y roles",
       "description": "Login argon2id, cookie HttpOnly, hooks.server.ts, guards por rol, token briefing.",
-      "source": "docs/source-specs/specs-07/07b-auth-roles/spec.md",
+      "source": "docs/source-specs/specs-07/03-auth-roles/spec.md",
       "acceptance": [
         "Login user+pass con argon2id y sesión por cookie HttpOnly Secure",
         "hooks.server.ts resuelve session → user → event.locals.user",
@@ -61,14 +61,14 @@
         "Tests de auth y guards pasan"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 4,
-      "name": "backoffice",
+      "name": "04_backoffice",
       "title": "Backoffice admin + técnico",
       "description": "Tablero, CRUD auditorías, usuarios, editor plantillas (ítems existentes), layout responsive.",
-      "source": "docs/source-specs/specs-07/07c-backoffice/spec.md",
+      "source": "docs/source-specs/specs-07/04-backoffice/spec.md",
       "acceptance": [
         "Tablero con filtros tipo/estado/cliente, búsqueda, badges, % avance",
         "CRUD auditorías: crear cabecera+plantilla+técnico, editar, borrado lógico",
@@ -83,10 +83,10 @@
     },
     {
       "id": 5,
-      "name": "briefing_externo",
+      "name": "05_briefing_externo",
       "title": "Briefing externo (cliente)",
       "description": "Ruta pública /briefing/[token], ítems filled_by=cliente, autosave, enviar.",
-      "source": "docs/source-specs/specs-07/07d-briefing-externo/spec.md",
+      "source": "docs/source-specs/specs-07/05-briefing-externo/spec.md",
       "acceptance": [
         "Ruta /briefing/[token] sin auth",
         "Render solo ítems filled_by=cliente",
@@ -101,10 +101,10 @@
     },
     {
       "id": 6,
-      "name": "storage_r2",
+      "name": "06_storage_r2",
       "title": "Storage Cloudflare R2",
       "description": "Presigned PUT/GET con aws4fetch, bucket privado, convención de keys.",
-      "source": "docs/source-specs/specs-07/07g-storage-r2/spec.md",
+      "source": "docs/source-specs/specs-07/06-storage-r2/spec.md",
       "acceptance": [
         "Módulo storage con presigned PUT y GET via aws4fetch",
         "Bucket privado, TTL configurable en URLs",
@@ -117,10 +117,10 @@
     },
     {
       "id": 7,
-      "name": "form_tecnico",
+      "name": "07_form_tecnico",
       "title": "Form técnico mobile + PWA",
       "description": "Render 12 field_type, autosave, fotos R2, score en vivo lectura, PWA instalable.",
-      "source": "docs/source-specs/specs-07/07e-form-tecnico-mobile/spec.md",
+      "source": "docs/source-specs/specs-07/07-form-tecnico-mobile/spec.md",
       "acceptance": [
         "Render data-driven de 12 field_type mobile-first",
         "Datos briefing precargados visibles al técnico",
@@ -138,10 +138,10 @@
     },
     {
       "id": 8,
-      "name": "cierre_scoring",
+      "name": "08_cierre_scoring",
       "title": "Cierre + scoring determinístico",
       "description": "Motor scoring 3 niveles CIS/NIST, pantalla cierre, preview informe, confirmar cierre.",
-      "source": "docs/source-specs/specs-07/07f-cierre-auditoria/spec.md",
+      "source": "docs/source-specs/specs-07/08-cierre-auditoria/spec.md",
       "acceptance": [
         "Scoring determinístico: rúbrica ítem → sección → índices IT/ERP independientes",
         "Pesos automáticos bajo=1 medio=2 alto=3 muy_alto=5",
@@ -157,10 +157,10 @@
     },
     {
       "id": 9,
-      "name": "contrato_datos",
+      "name": "09_contrato_datos",
       "title": "Contrato JSON canónico / pipeline IA",
       "description": "JSON versionado, score_basis, market_data, endpoint protegido, puente SPEC-08.",
-      "source": "docs/source-specs/specs-07/07i-contrato-datos-ia/spec.md",
+      "source": "docs/source-specs/specs-07/09-contrato-datos-ia/spec.md",
       "acceptance": [
         "JSON canónico con schema_version en endpoint protegido",
         "Header X-Schema-Version en respuesta",
@@ -174,10 +174,10 @@
     },
     {
       "id": 10,
-      "name": "deploy_dokploy",
+      "name": "10_deploy_dokploy",
       "title": "Deploy Docker + Dokploy",
       "description": "Dockerfile, migraciones en entrypoint, HTTPS Traefik, Postgres red interna, seed prod.",
-      "source": "docs/source-specs/specs-07/07h-stack-deploy/spec.md (fase final)",
+      "source": "docs/source-specs/specs-07/10-deploy-dokploy/spec.md",
       "acceptance": [
         "Dockerfile multi-stage para SvelteKit",
         "Entrypoint ejecuta migraciones SQL antes de arrancar app",

@@ -1,0 +1,44 @@
+import { getSql } from './client';
+
+export type SessionRow = {
+  id: string;
+  user_id: string;
+  expires_at: Date;
+};
+
+export async function insertSession(
+  id: string,
+  userId: string,
+  expiresAt: Date
+): Promise<void> {
+  const sql = getSql();
+  await sql`
+    INSERT INTO session (id, user_id, expires_at)
+    VALUES (${id}, ${userId}, ${expiresAt})
+  `;
+}
+
+export async function findSessionById(id: string): Promise<SessionRow | null> {
+  const sql = getSql();
+  const [row] = await sql<SessionRow[]>`
+    SELECT id, user_id, expires_at
+    FROM session
+    WHERE id = ${id}
+    LIMIT 1
+  `;
+  return row ?? null;
+}
+
+export async function deleteSession(id: string): Promise<void> {
+  const sql = getSql();
+  await sql`DELETE FROM session WHERE id = ${id}`;
+}
+
+export async function touchSessionExpiry(id: string, expiresAt: Date): Promise<void> {
+  const sql = getSql();
+  await sql`
+    UPDATE session
+    SET expires_at = ${expiresAt}
+    WHERE id = ${id}
+  `;
+}
