@@ -53,6 +53,14 @@
         </form>
       {/if}
     {/if}
+    {#if data.audit.status === 'briefing_completo' || data.audit.status === 'en_relevamiento' || data.audit.status === 'en_cierre'}
+      <a
+        href="/auditorias/{data.audit.id}/form"
+        class="inline-flex min-h-[var(--sys-touch-min)] items-center rounded bg-[var(--sys-primary)] px-4 py-2 text-sm font-medium text-white"
+      >
+        Abrir relevamiento técnico
+      </a>
+    {/if}
   </section>
 
   {#if !data.readonly}

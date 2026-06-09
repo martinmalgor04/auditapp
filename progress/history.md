@@ -50,3 +50,11 @@
 - **Resultado:** Backoffice bajo `(app)/`: tablero (filtros/búsqueda/orden/paginación 50), CRUD auditorías con congelado de plantillas, briefing link generate/regenerate/copy, ABM usuarios admin, editor plantillas acotado, layout responsive tabla/cards. Migración `002_backoffice.sql` (`archived_at`). 30 tests nuevos (115 vitest total). 2 e2e backoffice verdes. `./init.sh`, `pnpm run check`, `pnpm test`, playwright backoffice OK.
 - **Veredicto:** APPROVED (`progress/review_04_backoffice.md`)
 - **Próximo paso:** `/leader` → feature #5 `05_briefing_externo` (spec en `spec_ready`, pendiente aprobación humana)
+
+## 2026-06-09 — 07_form_tecnico (#7) done
+
+- **Agente:** implementer → reviewer
+- **Resultado:** Form técnico PWA en `/auditorias/{id}/form`: 12 field_types, autosave debounced + cola IndexedDB, export/import JSON, fotos R2 (HEIC→JPEG 1600px), score en vivo, nav libre, transición `en_cierre`, manifest + SW. 34 tests nuevos form/pwa/api (194 vitest total). E2E `form-tecnico.spec.ts` 2/2. `./init.sh` verde.
+- **Veredicto:** APPROVED (`progress/review_07_form_tecnico.md`)
+- **Próximo paso:** `/leader` → #8 `08_cierre_scoring` (spec_ready, aprobación humana)
+

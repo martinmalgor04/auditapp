@@ -11,7 +11,11 @@ import {
 import { buildR2Key, isR2KeyForAudit, sanitizeSectionCode } from './r2-keys';
 import { presignGet, presignPut, type PresignGetResult, type PresignPutResult } from './presign';
 
-const EDITABLE_ATTACHMENT_STATUSES: AuditStatus[] = ['en_relevamiento', 'en_cierre'];
+const EDITABLE_ATTACHMENT_STATUSES: AuditStatus[] = [
+  'briefing_completo',
+  'en_relevamiento',
+  'en_cierre'
+];
 
 async function getAuditForStorage(auditId: string): Promise<{ id: string; status: AuditStatus }> {
   const sql = getSql();

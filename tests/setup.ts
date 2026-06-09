@@ -21,7 +21,7 @@ if (!process.env.PUBLIC_APP_URL) {
 }
 
 const SKIP_DB_RESET =
-  /(?:seed|migrate|schema|db-stub|smoke|docker-compose|audit-status|field-type-schemas|briefing-validation|backoffice-status-badge|backoffice-progress|password)\.test\.ts$/;
+  /(?:seed|migrate|schema|db-stub|smoke|docker-compose|audit-status|field-type-schemas|briefing-validation|backoffice-status-badge|backoffice-progress|password|form-field-renderer|form-item-ux|form-section-nav|form-save-indicator|form-image-compress|form-table-camera|form-live-score|form-autosave|form-retry-queue|pwa-manifest|pwa-sw)\.test\.ts$/;
 
 const FULL_DB_RESET = /(?:users-admin|templates-admin)\.test\.ts$/;
 

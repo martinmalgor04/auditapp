@@ -1,6 +1,16 @@
 import type postgres from 'postgres';
 import { seedUsers } from '../../src/lib/server/db/seed/users';
 import type { AuditStatus } from '../../src/lib/server/db/audit-status';
+import type { AppUser } from '../../src/lib/server/auth/types';
+
+export async function findUserByEmail(sql: postgres.Sql, email: string): Promise<AppUser | null> {
+  const [row] = await sql<
+    { id: string; email: string; name: string; role: 'admin' | 'tecnico'; active: boolean }[]
+  >`
+    SELECT id, email, name, role, active FROM app_user WHERE email = ${email} LIMIT 1
+  `;
+  return row ?? null;
+}
 
 export async function seedAuthUsers(sql: postgres.Sql): Promise<void> {
   await seedUsers(sql);

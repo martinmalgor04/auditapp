@@ -1,8 +1,14 @@
 <script lang="ts">
   import type { FieldType } from '$lib/server/db/field-schemas';
+  import MethodBadge from './method-badge.svelte';
+  import PreloadedBadge from './preloaded-badge.svelte';
   import BoolField from './fields/bool-field.svelte';
   import DateField from './fields/date-field.svelte';
+  import DatetimeField from './fields/datetime-field.svelte';
+  import FieldFileRef from './fields/field-file-ref.svelte';
+  import FieldTable, { type TableColumn, type TableRow } from './fields/field-table.svelte';
   import ListField from './fields/list-field.svelte';
+  import MoneyField from './fields/money-field.svelte';
   import MultiselectField from './fields/multiselect-field.svelte';
   import NumberField from './fields/number-field.svelte';
   import SelectField from './fields/select-field.svelte';
@@ -15,20 +21,41 @@
     helpText: string | null;
     fieldType: FieldType;
     options: unknown;
+    method?: 'O' | 'E' | 'C' | 'X';
     required: boolean;
+    allowNa?: boolean;
     value: unknown;
+    na?: boolean;
+    notes?: string | null;
+    preloaded?: boolean;
   };
 
   let {
     item,
-    onchange
+    onchange,
+    onnoteschange,
+    onnchange,
+    oncamera,
+    onphotocapture,
+    onphotogallery
   }: {
     item: FieldItem;
     onchange?: (value: unknown) => void;
+    onnoteschange?: (notes: string) => void;
+    onnchange?: (na: boolean) => void;
+    oncamera?: (rowId: string) => void;
+    onphotocapture?: () => void;
+    onphotogallery?: () => void;
   } = $props();
 
-  const opts = $derived((item.options ?? {}) as { choices?: string[] });
+  const opts = $derived((item.options ?? {}) as {
+    choices?: string[];
+    columns?: TableColumn[];
+    currency?: string;
+  });
   const choices = $derived(opts.choices ?? []);
+  const columns = $derived(opts.columns ?? []);
+  const currency = $derived(opts.currency ?? 'ARS');
 
   let textValue = $state('');
   let numberValue = $state<number | ''>('');
@@ -37,15 +64,47 @@
   let selectValue = $state('');
   let multiselectValue = $state<string[]>([]);
   let dateValue = $state('');
+  let datetimeValue = $state('');
   let listValue = $state<string[]>(['']);
+  let tableRows = $state<TableRow[]>([]);
+  let attachmentIds = $state<string[]>([]);
+  let notesValue = $state('');
+  let naValue = $state(false);
+
+  function parseTableValue(v: unknown): TableRow[] {
+    if (v && typeof v === 'object' && 'rows' in v && Array.isArray((v as { rows: unknown }).rows)) {
+      return (v as { rows: TableRow[] }).rows;
+    }
+    if (Array.isArray(v)) {
+      return v.map((cells) => ({
+        row_id: crypto.randomUUID(),
+        cells: cells as Record<string, unknown>,
+        attachment_ids: []
+      }));
+    }
+    return [];
+  }
+
+  function parseFileRef(v: unknown): string[] {
+    if (typeof v === 'string') return [v];
+    if (Array.isArray(v)) return v as string[];
+    if (v && typeof v === 'object' && 'attachment_ids' in v) {
+      return (v as { attachment_ids: string[] }).attachment_ids ?? [];
+    }
+    return [];
+  }
 
   $effect(() => {
     const v = item.value;
+    naValue = item.na ?? false;
+    notesValue = item.notes ?? '';
     switch (item.fieldType) {
       case 'text':
         textValue = typeof v === 'string' ? v : '';
         break;
       case 'number':
+        numberValue = typeof v === 'number' ? v : '';
+        break;
       case 'money':
         numberValue = typeof v === 'number' ? v : '';
         break;
@@ -62,16 +121,25 @@
         multiselectValue = Array.isArray(v) ? (v as string[]) : [];
         break;
       case 'date':
-      case 'datetime':
         dateValue = typeof v === 'string' ? v : '';
+        break;
+      case 'datetime':
+        datetimeValue = typeof v === 'string' ? v : '';
         break;
       case 'list':
         listValue = Array.isArray(v) && v.length > 0 ? (v as string[]) : [''];
+        break;
+      case 'table':
+        tableRows = parseTableValue(v);
+        break;
+      case 'file_ref':
+        attachmentIds = parseFileRef(v);
         break;
     }
   });
 
   function currentValue(): unknown {
+    if (naValue) return null;
     switch (item.fieldType) {
       case 'text':
         return textValue;
@@ -87,10 +155,15 @@
       case 'multiselect':
         return multiselectValue;
       case 'date':
-      case 'datetime':
         return dateValue || null;
+      case 'datetime':
+        return datetimeValue || null;
       case 'list':
         return listValue.filter((s) => s.trim() !== '');
+      case 'table':
+        return { rows: tableRows };
+      case 'file_ref':
+        return { attachment_ids: attachmentIds };
       default:
         return null;
     }
@@ -99,22 +172,85 @@
   function emitChange() {
     onchange?.(currentValue());
   }
+
+  function toggleNa() {
+    naValue = !naValue;
+    onnchange?.(naValue);
+    onchange?.(currentValue());
+  }
 </script>
 
-{#if item.fieldType === 'text'}
-  <TextField id={item.id} label={item.label} helpText={item.helpText} bind:value={textValue} required={item.required} onchange={emitChange} />
-{:else if item.fieldType === 'number' || item.fieldType === 'money'}
-  <NumberField id={item.id} label={item.label} helpText={item.helpText} bind:value={numberValue} required={item.required} onchange={emitChange} />
-{:else if item.fieldType === 'bool'}
-  <BoolField id={item.id} label={item.label} helpText={item.helpText} bind:value={boolValue} onchange={emitChange} />
-{:else if item.fieldType === 'tri'}
-  <TriField id={item.id} label={item.label} helpText={item.helpText} bind:value={triValue} onchange={emitChange} />
-{:else if item.fieldType === 'select'}
-  <SelectField id={item.id} label={item.label} helpText={item.helpText} {choices} bind:value={selectValue} required={item.required} onchange={emitChange} />
-{:else if item.fieldType === 'multiselect'}
-  <MultiselectField id={item.id} label={item.label} helpText={item.helpText} {choices} bind:value={multiselectValue} onchange={emitChange} />
-{:else if item.fieldType === 'date' || item.fieldType === 'datetime'}
-  <DateField id={item.id} label={item.label} helpText={item.helpText} bind:value={dateValue} required={item.required} onchange={emitChange} />
-{:else if item.fieldType === 'list'}
-  <ListField id={item.id} label={item.label} helpText={item.helpText} bind:value={listValue} onchange={emitChange} />
-{/if}
+<article class="space-y-2 rounded-lg border border-slate-100 p-3" data-field-type={item.fieldType}>
+  <div class="flex flex-wrap items-center gap-2">
+    {#if item.method}
+      <MethodBadge method={item.method} />
+    {/if}
+    <PreloadedBadge visible={item.preloaded ?? false} />
+    {#if item.allowNa}
+      <button
+        type="button"
+        class="min-h-[var(--sys-touch-min)] rounded-full border px-3 text-xs font-medium
+          {naValue ? 'border-amber-500 bg-amber-50 text-amber-800' : 'border-slate-300 text-slate-600'}"
+        onclick={toggleNa}
+      >
+        N/A
+      </button>
+    {/if}
+  </div>
+
+  {#if !naValue}
+    {#if item.fieldType === 'text'}
+      <TextField id={item.id} label={item.label} helpText={item.helpText} bind:value={textValue} required={item.required} onchange={emitChange} />
+    {:else if item.fieldType === 'number'}
+      <NumberField id={item.id} label={item.label} helpText={item.helpText} bind:value={numberValue} required={item.required} onchange={emitChange} />
+    {:else if item.fieldType === 'money'}
+      <MoneyField id={item.id} label={item.label} helpText={item.helpText} {currency} bind:value={numberValue} required={item.required} onchange={emitChange} />
+    {:else if item.fieldType === 'bool'}
+      <BoolField id={item.id} label={item.label} helpText={item.helpText} bind:value={boolValue} onchange={emitChange} />
+    {:else if item.fieldType === 'tri'}
+      <TriField id={item.id} label={item.label} helpText={item.helpText} bind:value={triValue} onchange={emitChange} />
+    {:else if item.fieldType === 'select'}
+      <SelectField id={item.id} label={item.label} helpText={item.helpText} {choices} bind:value={selectValue} required={item.required} onchange={emitChange} />
+    {:else if item.fieldType === 'multiselect'}
+      <MultiselectField id={item.id} label={item.label} helpText={item.helpText} {choices} bind:value={multiselectValue} onchange={emitChange} />
+    {:else if item.fieldType === 'date'}
+      <DateField id={item.id} label={item.label} helpText={item.helpText} bind:value={dateValue} required={item.required} onchange={emitChange} />
+    {:else if item.fieldType === 'datetime'}
+      <DatetimeField id={item.id} label={item.label} helpText={item.helpText} bind:value={datetimeValue} required={item.required} onchange={emitChange} />
+    {:else if item.fieldType === 'list'}
+      <ListField id={item.id} label={item.label} helpText={item.helpText} bind:value={listValue} onchange={emitChange} />
+    {:else if item.fieldType === 'table'}
+      <FieldTable
+        id={item.id}
+        label={item.label}
+        helpText={item.helpText}
+        {columns}
+        bind:rows={tableRows}
+        onchange={emitChange}
+        oncamera={oncamera}
+      />
+    {:else if item.fieldType === 'file_ref'}
+      <FieldFileRef
+        id={item.id}
+        label={item.label}
+        helpText={item.helpText}
+        bind:attachmentIds
+        oncapture={onphotocapture}
+        ongallery={onphotogallery}
+      />
+    {/if}
+  {:else}
+    <p class="text-sm font-medium text-slate-500">{item.label} — N/A</p>
+  {/if}
+
+  <details class="text-sm">
+    <summary class="cursor-pointer text-slate-600 min-h-[var(--sys-touch-min)] flex items-center">
+      Observaciones
+    </summary>
+    <textarea
+      class="mt-2 w-full rounded border border-slate-300 p-2 text-sm min-h-[4rem]"
+      bind:value={notesValue}
+      onchange={() => onnoteschange?.(notesValue)}
+    ></textarea>
+  </details>
+</article>
