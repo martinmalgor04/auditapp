@@ -28,7 +28,8 @@ host    all       all       0.0.0.0/0         reject
 host    all       all       ::/0              reject
 EOF
 
-chmod 600 "$HBA_FILE"
+chown postgres:postgres "$HBA_FILE"
+chmod 640 "$HBA_FILE"
 
 exec docker-entrypoint.sh postgres \
   -c "hba_file=${HBA_FILE}" \

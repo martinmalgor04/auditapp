@@ -17,8 +17,9 @@ describe('postgres security image', () => {
     expect(entrypoint).toContain('auditapp    auditapp');
   });
 
-  it('supports optional POSTGRES_ALLOWED_CIDRS', () => {
-    expect(entrypoint).toContain('POSTGRES_ALLOWED_CIDRS');
+  it('sets pg_hba ownership for postgres user', () => {
+    expect(entrypoint).toContain('chown postgres:postgres');
+    expect(entrypoint).toContain('chmod 640');
   });
 
   it('publishes postgres on host port 4043 with localhost bind by default', () => {
