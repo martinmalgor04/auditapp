@@ -22,7 +22,18 @@ SvelteKit 5 · TypeScript · PostgreSQL · postgres.js · R2 · Docker · Tailwi
 
 Ver [`docs/architecture.md`](docs/architecture.md) y [`PROJECT.md`](PROJECT.md).
 
-## Estructura
+## Comandos (tras stack_scaffolding)
+
+```bash
+pnpm install
+pnpm run dev          # http://localhost:5173
+pnpm run db:up        # Postgres 16 local (Docker)
+pnpm run db:down      # detiene contenedor db
+pnpm test             # vitest
+pnpm exec playwright test
+./init.sh
+```
+
 
 ```
 auditapp/

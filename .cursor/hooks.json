@@ -5,7 +5,7 @@
       {
         "command": "node .cursor/hooks/after-file-edit-harness.js",
         "event": "afterFileEdit",
-        "description": "Tras editar archivos, corre npm test si existe package.json"
+        "description": "Tras editar archivos, corre pnpm test si existe package.json"
       }
     ],
     "sessionEnd": [

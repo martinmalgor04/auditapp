@@ -24,7 +24,7 @@
 ## C4 — La verificación es real
 
 - [ ] `tests/` cubre funciones públicas de `src/lib/`.
-- [ ] `npx vitest run` muestra > 0 tests y todos verdes (cuando exista scaffolding).
+- [ ] `pnpm exec vitest run` muestra > 0 tests y todos verdes (cuando exista scaffolding).
 - [ ] Flujos críticos tienen spec playwright en `e2e/` (post-MVP features).
 
 ## C5 — La sesión se cerró bien

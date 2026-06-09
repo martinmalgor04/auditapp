@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "test -f package.json && npm test 2>&1 | tail -5 || true",
+            "command": "test -f package.json && pnpm test 2>&1 | tail -5 || true",
             "description": "Tras editar, corre tests si hay package.json"
           }
         ]
@@ -27,9 +27,9 @@
   "permissions": {
     "allow": [
       "Bash(./init.sh)",
-      "Bash(npm test*)",
-      "Bash(npx vitest*)",
-      "Bash(npx playwright*)"
+      "Bash(pnpm test*)",
+      "Bash(pnpm exec vitest*)",
+      "Bash(pnpm exec playwright*)"
     ]
   }
 }

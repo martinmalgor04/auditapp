@@ -13,7 +13,7 @@
       "id": 1,
       "name": "stack_scaffolding",
       "title": "Scaffolding SvelteKit + tooling",
-      "description": "Proyecto base SvelteKit 5, TypeScript, Tailwind, Zod, vitest, playwright, postgres.js, .env.example.",
+      "description": "Proyecto base SvelteKit 5, TypeScript, Tailwind, Zod, vitest, playwright, postgres.js, .env.example, Postgres local en Docker.",
       "source": "docs/source-specs/specs-07/07h-stack-deploy/spec.md (fase inicial)",
       "acceptance": [
         "Existe package.json con scripts dev, build, check, test",
@@ -21,10 +21,11 @@
         "vitest y playwright configurados con al menos 1 test smoke",
         "postgres.js instalado y módulo db stub en src/lib/server/db/",
         "Existe .env.example sin secretos",
-        "npm run build y npm test pasan"
+        "Dockerfile + compose mínimos levantan Postgres 16 local para desarrollo",
+        "pnpm run build y pnpm test pasan"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": 2,
@@ -43,7 +44,7 @@
         "Tests de schema y seed pasan"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 3,
@@ -60,7 +61,7 @@
         "Tests de auth y guards pasan"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 4,
@@ -78,7 +79,7 @@
         "Tests de rutas backoffice pasan"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 5,
@@ -96,7 +97,7 @@
         "Tests y e2e básico de briefing pasan"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 6,
@@ -112,7 +113,7 @@
         "Tests con mock o sandbox R2 pasan"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 7,
@@ -133,7 +134,7 @@
         "Tests y e2e form pasan"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 8,
@@ -152,7 +153,7 @@
         "Mismo input → mismo output (tests determinismo)"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 9,
@@ -169,7 +170,7 @@
         "Tests de contrato y snapshot schema pasan"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 10,
@@ -187,7 +188,7 @@
         "CI: build+tests pre-push"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     }
   ]
 }

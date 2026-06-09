@@ -24,7 +24,7 @@ Auth propia (argon2id + cookie). Scoring automático determinístico. PWA instal
 |--------|--------|-------------|
 | Siguiente feature SDD | `/leader` | Rol `leader` automático |
 | Verificar entorno | `./init.sh` | `./init.sh` |
-| Tests (post-scaffolding) | `npm test` | `npm test` |
+| Tests (post-scaffolding) | `pnpm test` | `pnpm test` |
 
 ## Notas del proyecto
 

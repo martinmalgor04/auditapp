@@ -1,0 +1,7 @@
+import { expect, test } from '@playwright/test';
+
+test('home page loads with auditapp title', async ({ page }) => {
+  const response = await page.goto('/');
+  expect(response?.status()).toBe(200);
+  await expect(page.locator('h1')).toHaveText('auditapp');
+});

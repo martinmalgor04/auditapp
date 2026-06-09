@@ -31,11 +31,11 @@ if [ "$NODE_MAJOR" -lt 20 ]; then
 fi
 ok "Versión de Node compatible (>= 20)"
 
-if ! command -v npm >/dev/null 2>&1; then
-  fail "npm no está instalado"
+if ! command -v pnpm >/dev/null 2>&1; then
+  fail "pnpm no está instalado (corepack enable pnpm)"
   exit 1
 fi
-ok "npm -> $(npm --version)"
+ok "pnpm -> $(pnpm --version)"
 
 echo ""
 echo "── 2. Verificando archivos base del arnés ──────────────"
@@ -99,7 +99,7 @@ echo ""
 echo "── 4. Ejecutando tests ─────────────────────────────────"
 
 if [ -f package.json ]; then
-  if npm test 2>&1; then
+  if pnpm test 2>&1; then
     ok "Todos los tests pasan"
   else
     fail "Hay tests rotos"

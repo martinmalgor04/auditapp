@@ -30,10 +30,10 @@ Specs históricos (referencia): `docs/source-specs/`. Specs vivos: `specs/<featu
 
 > App aún sin scaffolding. Tras feature #1 `stack_scaffolding`:
 
-- **Dev:** `npm run dev`
-- **Build:** `npm run build`
-- **Typecheck:** `npm run check` · `npx tsc --noEmit`
-- **Test:** `npm test` (vitest) · `npx playwright test` (e2e)
+- **Dev:** `pnpm run dev`
+- **Build:** `pnpm run build`
+- **Typecheck:** `pnpm run check` · `pnpm exec tsc --noEmit`
+- **Test:** `pnpm test` (vitest) · `pnpm exec playwright test` (e2e)
 - **Gate arnés:** `./init.sh`
 - **DB:** SQL en `migrations/` + runner propio
 

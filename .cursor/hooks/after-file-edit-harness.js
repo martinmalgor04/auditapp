@@ -10,9 +10,9 @@ if (!fs.existsSync('package.json')) {
 }
 
 try {
-  execSync('npm test', { stdio: 'pipe', encoding: 'utf8' });
+  execSync('pnpm test', { stdio: 'pipe', encoding: 'utf8' });
 } catch (e) {
   const out = (e.stdout || '') + (e.stderr || '');
-  console.error('[harness] npm test failed after edit:\n' + out.slice(-1500));
+  console.error('[harness] pnpm test failed after edit:\n' + out.slice(-1500));
   process.exit(1);
 }

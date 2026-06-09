@@ -12,7 +12,7 @@ Toda función pública en `src/lib/` tiene al menos un test en `tests/` que:
 2. Cubre al menos un camino de error si puede fallar.
 
 ```bash
-npx vitest run
+pnpm exec vitest run
 ```
 
 ### Nivel 2 — Tests de integración (obligatorio para API/DB)
@@ -20,7 +20,7 @@ npx vitest run
 Features que tocan Postgres o API routes:
 
 ```bash
-npx vitest run tests/api/
+pnpm exec vitest run tests/api/
 ```
 
 Usar DB de test o transacciones con rollback. No mocks del query layer.
@@ -30,7 +30,7 @@ Usar DB de test o transacciones con rollback. No mocks del query layer.
 Briefing, form técnico, cierre:
 
 ```bash
-npx playwright test
+pnpm exec playwright test
 ```
 
 ### Nivel 4 — Trazabilidad requirements (obligatorio para `sdd: true`)
@@ -49,9 +49,9 @@ El reviewer rechaza si falta cobertura.
 ### Nivel 5 — Typecheck y lint
 
 ```bash
-npm run check    # svelte-check
-npx tsc --noEmit
-npx eslint .
+ppnpm run check    # svelte-check
+pnpm exec tsc --noEmit
+pnpm exec eslint .
 ```
 
 ## Anti-patrones

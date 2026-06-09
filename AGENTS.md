@@ -72,6 +72,7 @@ pending → [spec_author] → spec_ready → ⏸ HUMANO → in_progress → [imp
 3. Mueve el resumen de `progress/current.md` al final de `progress/history.md`.
 4. Vacía `progress/current.md` dejando solo la plantilla.
 5. No dejes archivos temporales, `console.log` de debug, ni TODOs sin contexto.
+6. Tras marcar una feature `done` con `./init.sh`, `pnpm run check`, `pnpm run build` y `pnpm test` verdes: **commit + push** al remoto (una feature por commit cuando sea posible).
 
 ## 6. Si te bloqueas
 

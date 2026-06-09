@@ -1,0 +1,16 @@
+services:
+  db:
+    build: ./docker/postgres
+    image: auditapp-postgres-dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - auditapp_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U auditapp -d auditapp']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  auditapp_pgdata:
