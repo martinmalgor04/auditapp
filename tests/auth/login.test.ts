@@ -1,3 +1,4 @@
+import { dev } from '$app/environment';
 import { isRedirect } from '@sveltejs/kit';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { authenticate, GENERIC_LOGIN_ERROR } from '../../src/lib/server/auth/login';
@@ -87,7 +88,7 @@ describe('login flow', () => {
     expect(setCalls.some((c) => c.name === 'session')).toBe(true);
     const sessionCall = setCalls.find((c) => c.name === 'session');
     expect(sessionCall?.options.httpOnly).toBe(true);
-    expect(sessionCall?.options.secure).toBe(true);
+    expect(sessionCall?.options.secure).toBe(!dev);
     expect(sessionCall?.options.sameSite).toBe('lax');
 
     const sessionId = getSessionIdFromCookies(cookies);

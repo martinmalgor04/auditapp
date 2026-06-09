@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import { dev } from '$app/environment';
 import type { Cookies } from '@sveltejs/kit';
 import { findUserById } from '../db/users';
 import {
@@ -85,7 +86,7 @@ export function setSessionCookie(cookies: Cookies, sessionId: string): void {
   cookies.set(SESSION_COOKIE, sessionId, {
     path: '/',
     httpOnly: true,
-    secure: true,
+    secure: !dev,
     sameSite: 'lax',
     maxAge: SESSION_MAX_AGE_SECONDS
   });
