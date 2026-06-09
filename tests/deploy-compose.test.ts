@@ -7,12 +7,13 @@ const root = resolve(import.meta.dirname, '..');
 describe('deploy dokploy compose example', () => {
   const compose = readFileSync(resolve(root, 'deploy/dokploy.compose.example.yml'), 'utf8');
 
-  it('postgres service has no host port mapping', () => {
+  it('postgres publishes admin port 4043 on localhost by default', () => {
     const postgresBlock = compose.slice(
       compose.indexOf('postgres:'),
       compose.indexOf('app:')
     );
-    expect(postgresBlock).not.toMatch(/^\s*ports:/m);
+    expect(postgresBlock).toContain("4043:5432");
+    expect(postgresBlock).toContain('POSTGRES_PUBLISH_BIND:-127.0.0.1');
     expect(postgresBlock).toContain('db');
   });
 
@@ -28,8 +29,10 @@ describe('deploy dokploy compose example', () => {
     expect(compose).toContain("PORT: '3033'");
   });
 
-  it('uses internal postgres hostname in DATABASE_URL', () => {
-    expect(compose).toContain('@postgres:5432/auditapp');
+  it('passes POSTGRES_PASSWORD to app (URL built in entrypoint)', () => {
+    const appBlock = compose.slice(compose.indexOf('app:'));
+    expect(appBlock).toContain('POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}');
+    expect(appBlock).not.toContain('DATABASE_URL:');
   });
 
   it('builds app from repository root Dockerfile', () => {

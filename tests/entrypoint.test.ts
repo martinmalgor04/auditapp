@@ -48,13 +48,18 @@ describe('docker entrypoint', () => {
     expect(second.skipped).toEqual(first.skipped);
   });
 
-  it('exits non-zero when migration fails', () => {
+  it('exits non-zero when database credentials are missing', () => {
     const result = spawnSync('node', [resolve(root, 'docker/migrate-cli.mjs')], {
       cwd: root,
-      env: { ...process.env, DATABASE_URL: '' },
+      env: { ...process.env, DATABASE_URL: '', POSTGRES_PASSWORD: '' },
       encoding: 'utf8'
     });
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('DATABASE_URL is not set');
+  });
+
+  it('entrypoint exports DATABASE_URL from POSTGRES_PASSWORD', () => {
+    const entrypoint = readFileSync(resolve(root, 'docker/entrypoint.sh'), 'utf8');
+    expect(entrypoint).toContain('export DATABASE_URL="$(node docker/database-url.mjs)"');
   });
 });

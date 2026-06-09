@@ -1,6 +1,10 @@
-const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
-  console.error('DATABASE_URL is not set');
+import { resolveDatabaseUrl } from './database-url.mjs';
+
+let connectionString;
+try {
+  connectionString = resolveDatabaseUrl();
+} catch (error) {
+  console.error(error instanceof Error ? error.message : error);
   process.exit(1);
 }
 

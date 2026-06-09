@@ -1,6 +1,8 @@
 #!/usr/bin/env sh
 set -eu
 
+export DATABASE_URL="$(node docker/database-url.mjs)"
+
 echo "[entrypoint] applying SQL migrations..."
 node docker/migrate-cli.mjs
 

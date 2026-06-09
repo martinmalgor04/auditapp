@@ -1,6 +1,6 @@
 FROM postgres:16-bookworm
 
-# Credenciales de dev — NO usar en producción (prod: Dokploy #10)
-ENV POSTGRES_USER=auditapp
-ENV POSTGRES_PASSWORD=changeme
-ENV POSTGRES_DB=auditapp
+COPY docker/postgres/docker-entrypoint.sh /usr/local/bin/auditapp-postgres-entrypoint.sh
+RUN chmod +x /usr/local/bin/auditapp-postgres-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/auditapp-postgres-entrypoint.sh"]
