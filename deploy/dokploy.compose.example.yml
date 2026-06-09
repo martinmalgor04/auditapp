@@ -1,5 +1,5 @@
 # deploy/dokploy.compose.example.yml — referencia Dokploy, sin secretos reales
-# Dominio/HTTPS: configurar en la UI de Dokploy (servicio app, puerto 3000).
+# Dominio/HTTPS: configurar en la UI de Dokploy (servicio app, puerto 3033).
 services:
   postgres:
     image: postgres:16-bookworm
@@ -32,7 +32,7 @@ services:
       R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
       R2_BUCKET: ${R2_BUCKET}
       R2_ENDPOINT: ${R2_ENDPOINT}
-      PORT: '3000'
+      PORT: '3033'
     depends_on:
       postgres:
         condition: service_healthy

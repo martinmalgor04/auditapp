@@ -45,8 +45,8 @@ describe('Docker production image', () => {
 
   it('container listens on PORT env', () => {
     const dockerfile = readDockerfile();
-    expect(dockerfile).toContain('ENV PORT=3000');
-    expect(dockerfile).toContain('EXPOSE 3000');
+    expect(dockerfile).toContain('ENV PORT=3033');
+    expect(dockerfile).toContain('EXPOSE 3033');
   });
 
   it('client bundle does not contain SESSION_SECRET or R2_SECRET', () => {

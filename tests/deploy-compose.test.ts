@@ -25,7 +25,7 @@ describe('deploy dokploy compose example', () => {
 
   it('documents production domain via PUBLIC_APP_URL env', () => {
     expect(compose).toContain('PUBLIC_APP_URL: https://app.auditoriaserviciosysistemas.com.ar');
-    expect(compose).toContain("PORT: '3000'");
+    expect(compose).toContain("PORT: '3033'");
   });
 
   it('uses internal postgres hostname in DATABASE_URL', () => {

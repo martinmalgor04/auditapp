@@ -6,7 +6,7 @@ Runbook operativo para desplegar auditapp en Dokploy con Postgres en red interna
 
 - **Dominio producción:** `https://app.auditoriaserviciosysistemas.com.ar`
 - **Terminación TLS:** configurar en la UI de Dokploy (Let's Encrypt), **no** en el compose
-- En Dokploy: servicio **app** → dominio custom → puerto interno **3000** (no cambiar a 3033 salvo que cambies `PORT` en el compose) → HTTPS automático
+- En Dokploy: servicio **app** → dominio custom → puerto interno **3033** → HTTPS automático
 - `PUBLIC_APP_URL` debe coincidir con el dominio HTTPS
 
 ## Variables de entorno (producción)
@@ -23,7 +23,7 @@ Configurar en Dokploy (placeholders en `.env.example`):
 | `R2_SECRET_ACCESS_KEY` | Cloudflare R2 |
 | `R2_BUCKET` | Nombre del bucket |
 | `R2_ENDPOINT` | URL del endpoint R2 |
-| `PORT` | `3000` (interno al contenedor) |
+| `PORT` | `3033` (interno al contenedor; mismo valor en UI Dokploy) |
 
 **Importante:** Postgres no expone puerto al host. Solo la app y Traefik son accesibles desde internet.
 
@@ -101,7 +101,7 @@ Traefik: evitar cache agresivo del SW (`Cache-Control: no-cache` para `/sw.js` s
 | `DATABASE_URL is not set` | Env faltante en Dokploy | Configurar variable |
 | Postgres unreachable | Red interna / hostname | Usar `postgres` como host, no `localhost` |
 | Cookie de sesión no persiste | `PUBLIC_APP_URL` sin `https://` | Alinear URL pública con Traefik |
-| Healthcheck falla | App no escucha en `PORT` | Verificar `PORT=3000` en compose y puerto **3000** en UI Dokploy |
+| Healthcheck falla | App no escucha en `PORT` | Verificar `PORT=3033` en compose y puerto **3033** en UI Dokploy |
 | 404 / dominio no llega a la app | App solo en red `internal` | Compose debe unir `app` a `dokploy-network`; redeploy |
 | PWA manifest 404 | Build incompleto | Re-ejecutar pre-push gate |
 
