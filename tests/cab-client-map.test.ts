@@ -16,42 +16,32 @@ const cabItems = [
 ];
 
 describe('cab-client-map', () => {
-  it('maps client fields to CAB item ids by label', () => {
-    const values = clientToCabValues(
-      {
-        razonSocial: 'Playadito SA',
-        cuit: '30-12345678-9',
-        rubro: 'Yerba',
-        empleados: 120,
-        referenteNombre: null,
-        referenteContacto: null,
-        erpActual: null,
-        proveedorCorreo: null,
-        soporteItActual: null
-      },
-      cabItems,
-      '2026-07-15'
-    );
+  it('scope completo: client → CAB, merge de overrides y CAB → client', () => {
+    const client = {
+      razonSocial: 'Playadito SA',
+      cuit: '30-12345678-9',
+      rubro: 'Yerba',
+      empleados: 120,
+      referenteNombre: null,
+      referenteContacto: null,
+      erpActual: null,
+      proveedorCorreo: null,
+      soporteItActual: null
+    };
 
-    expect(values).toEqual({
+    const defaults = clientToCabValues(client, cabItems, '2026-07-15');
+    expect(defaults).toEqual({
       a: 'Playadito SA',
       b: '30-12345678-9',
       c: 'Yerba',
       d: 120,
       e: '2026-07-15'
     });
-  });
 
-  it('merge keeps explicit CAB responses over defaults', () => {
-    const merged = mergeCabResponses(
-      { a: 'Default SA', b: '30-00000000-0' },
-      { a: 'Override SA' }
-    );
+    const merged = mergeCabResponses(defaults, { a: 'Override SA' });
+    expect(merged.a).toBe('Override SA');
+    expect(merged.b).toBe('30-12345678-9');
 
-    expect(merged).toEqual({ a: 'Override SA', b: '30-00000000-0' });
-  });
-
-  it('applyCabDefaultsToItems fills empty values only', () => {
     const items = applyCabDefaultsToItems(
       [
         { id: 'a', label: 'Razón social', fieldType: 'text', value: 'Manual' },
@@ -59,21 +49,11 @@ describe('cab-client-map', () => {
       ],
       newClientToCabFields({ razonSocial: 'Seed SA', cuit: '30-11111111-1' })
     );
-
     expect(items[0].value).toBe('Manual');
     expect(items[1].value).toBe('30-11111111-1');
-  });
 
-  it('cabResponsesToClientPatch maps CAB back to client columns', () => {
-    const patch = cabResponsesToClientPatch(cabItems, {
-      a: 'Nuevo SA',
-      d: '45',
-      e: '2026-08-01'
-    });
-
-    expect(patch).toEqual({
-      razonSocial: 'Nuevo SA',
-      empleados: 45
-    });
+    expect(
+      cabResponsesToClientPatch(cabItems, { a: 'Nuevo SA', d: '45', e: '2026-08-01' })
+    ).toEqual({ razonSocial: 'Nuevo SA', empleados: 45 });
   });
 });

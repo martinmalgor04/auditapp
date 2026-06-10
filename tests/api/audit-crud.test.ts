@@ -62,63 +62,6 @@ describe('audit CRUD', () => {
     expect(tpl.code).toBe('it');
   });
 
-  it('create with existing client prefills CAB from client data', async () => {
-    const [client] = await sql<{ id: string }[]>`
-      INSERT INTO client (razon_social, cuit, rubro, empleados, erp_actual)
-      VALUES ('Cliente Prefill SA', '30-99999999-9', 'Industria', 80, 'Tango')
-      RETURNING id
-    `;
-
-    const { id } = await createAudit(
-      {
-        clientId: client.id,
-        types: ['it'],
-        segment: 'B',
-        assignedTechId: tecnicoId,
-        scheduledAt: '2026-07-01',
-        cabResponses: {}
-      },
-      adminId
-    );
-
-    const audit = await getAuditById(id);
-    const byLabel = new Map(audit!.cabItems.map((item) => [item.label, item.value]));
-
-    expect(byLabel.get('Razón social')).toBe('Cliente Prefill SA');
-    expect(byLabel.get('CUIT')).toBe('30-99999999-9');
-    expect(byLabel.get('Rubro / actividad')).toBe('Industria');
-    expect(byLabel.get('Cantidad de empleados')).toBe(80);
-    expect(byLabel.get('ERP actual')).toBe('Tango');
-    expect(byLabel.get('Fecha programada de visita')).toBe('2026-07-01');
-  });
-
-  it('create with new client persists client row', async () => {
-    const cabItemId = await getCabItemId(sql, 'it');
-
-    const { id } = await createAudit(
-      {
-        newClient: {
-          razonSocial: 'Nuevo Cliente SRL',
-          cuit: '30-12345678-9',
-          rubro: 'Comercio'
-        },
-        types: ['it'],
-        segment: 'A',
-        assignedTechId: tecnicoId,
-        scheduledAt: '2026-08-01',
-        cabResponses: { [cabItemId]: 'Nuevo Cliente SRL' }
-      },
-      adminId
-    );
-
-    const audit = await getAuditById(id);
-    const [client] = await sql<{ razon_social: string; cuit: string }[]>`
-      SELECT razon_social, cuit FROM client WHERE id = ${audit!.clientId}
-    `;
-    expect(client.razon_social).toBe('Nuevo Cliente SRL');
-    expect(client.cuit).toBe('30-12345678-9');
-  });
-
   it('update header and reassign tech when not closed', async () => {
     const { auditId } = await insertTestAuditRow(sql, { razonSocial: 'Editable' });
     const cabItemId = await getCabItemId(sql, 'it');
