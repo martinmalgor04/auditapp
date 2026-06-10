@@ -1,3 +1,12 @@
+import {
+  applyCabDefaultsToItems,
+  cabResponsesToClientPatch,
+  clientToCabValues,
+  isEmptyCabValue,
+  mergeCabResponses,
+  newClientToCabFields,
+  type ClientCabFields
+} from '$lib/backoffice/cab-client-map';
 import { getSql } from '$lib/server/db/client';
 import type postgres from 'postgres';
 
@@ -89,6 +98,75 @@ export async function resolveTemplateIdsForTypes(types: string[]): Promise<strin
   return ids;
 }
 
+type ClientCabRow = {
+  razon_social: string;
+  cuit: string | null;
+  rubro: string | null;
+  empleados: number | null;
+  referente_nombre: string | null;
+  referente_contacto: string | null;
+  erp_actual: string | null;
+  proveedor_correo: string | null;
+  soporte_it_actual: string | null;
+};
+
+function mapClientRow(row: ClientCabRow): ClientCabFields {
+  return {
+    razonSocial: row.razon_social,
+    cuit: row.cuit,
+    rubro: row.rubro,
+    empleados: row.empleados,
+    referenteNombre: row.referente_nombre,
+    referenteContacto: row.referente_contacto,
+    erpActual: row.erp_actual,
+    proveedorCorreo: row.proveedor_correo,
+    soporteItActual: row.soporte_it_actual
+  };
+}
+
+export async function getClientCabFields(clientId: string): Promise<ClientCabFields | null> {
+  const sql = getSql();
+  const [row] = await sql<ClientCabRow[]>`
+    SELECT
+      razon_social, cuit, rubro, empleados,
+      referente_nombre, referente_contacto,
+      erp_actual, proveedor_correo, soporte_it_actual
+    FROM client
+    WHERE id = ${clientId}
+    LIMIT 1
+  `;
+
+  return row ? mapClientRow(row) : null;
+}
+
+async function syncClientFromCab(
+  tx: DbExecutor,
+  clientId: string,
+  cabItems: Array<{ id: string; label: string; fieldType: string }>,
+  cabResponses: Record<string, unknown>
+): Promise<void> {
+  const patch = cabResponsesToClientPatch(cabItems, cabResponses);
+  if (Object.keys(patch).length === 0) {
+    return;
+  }
+
+  await tx`
+    UPDATE client
+    SET
+      razon_social = COALESCE(${patch.razonSocial ?? null}, razon_social),
+      cuit = COALESCE(${patch.cuit ?? null}, cuit),
+      rubro = COALESCE(${patch.rubro ?? null}, rubro),
+      empleados = COALESCE(${patch.empleados ?? null}, empleados),
+      referente_nombre = COALESCE(${patch.referenteNombre ?? null}, referente_nombre),
+      referente_contacto = COALESCE(${patch.referenteContacto ?? null}, referente_contacto),
+      erp_actual = COALESCE(${patch.erpActual ?? null}, erp_actual),
+      proveedor_correo = COALESCE(${patch.proveedorCorreo ?? null}, proveedor_correo),
+      soporte_it_actual = COALESCE(${patch.soporteItActual ?? null}, soporte_it_actual),
+      updated_at = now()
+    WHERE id = ${clientId}
+  `;
+}
+
 async function upsertCabResponses(
   tx: DbExecutor,
   auditId: string,
@@ -144,9 +222,11 @@ export async function createAudit(
   const sql = getSql();
   const templateIds = await resolveTemplateIdsForTypes(data.types);
   const scheduledAt = new Date(data.scheduledAt);
+  const cabItems = await getCabItemsForTypes(data.types);
 
   return sql.begin(async (tx) => {
     let clientId = data.clientId;
+    let clientFields: ClientCabFields | null = null;
 
     if (data.newClient) {
       const [client] = await tx<{ id: string }[]>`
@@ -159,11 +239,29 @@ export async function createAudit(
         RETURNING id
       `;
       clientId = client.id;
+      clientFields = newClientToCabFields(data.newClient);
     }
 
     if (!clientId) {
       throw new ValidationError('Cliente requerido');
     }
+
+    if (!clientFields) {
+      const [clientRow] = await tx<ClientCabRow[]>`
+        SELECT
+          razon_social, cuit, rubro, empleados,
+          referente_nombre, referente_contacto,
+          erp_actual, proveedor_correo, soporte_it_actual
+        FROM client
+        WHERE id = ${clientId}
+      `;
+      clientFields = clientRow ? mapClientRow(clientRow) : null;
+    }
+
+    const cabDefaults = clientFields
+      ? clientToCabValues(clientFields, cabItems, scheduledAt)
+      : {};
+    const mergedCabResponses = mergeCabResponses(cabDefaults, data.cabResponses);
 
     const [clientRow] = await tx<{ razon_social: string }[]>`
       SELECT razon_social FROM client WHERE id = ${clientId}
@@ -190,7 +288,8 @@ export async function createAudit(
       RETURNING id
     `;
 
-    await upsertCabResponses(tx, audit.id, templateIds, data.cabResponses, createdBy);
+    await upsertCabResponses(tx, audit.id, templateIds, mergedCabResponses, createdBy);
+    await syncClientFromCab(tx, clientId, cabItems, mergedCabResponses);
 
     return { id: audit.id };
   });
@@ -254,6 +353,30 @@ export async function getAuditById(auditId: string): Promise<AuditDetail | null>
 
   const progress = computeAuditProgress(allItems, responses);
 
+  const [clientRow] = await sql<ClientCabRow[]>`
+    SELECT
+      razon_social, cuit, rubro, empleados,
+      referente_nombre, referente_contacto,
+      erp_actual, proveedor_correo, soporte_it_actual
+    FROM client
+    WHERE id = ${row.client_id}
+  `;
+
+  const mappedCabItems = cabItems.map((i) => ({
+    id: i.id,
+    label: i.label,
+    fieldType: i.field_type,
+    filledBy: i.filled_by,
+    required: i.required,
+    options: i.options,
+    value: isEmptyCabValue(i.value) ? null : i.value,
+    na: i.na
+  }));
+
+  const cabItemsWithDefaults = clientRow
+    ? applyCabDefaultsToItems(mappedCabItems, mapClientRow(clientRow), row.scheduled_at)
+    : mappedCabItems;
+
   return {
     id: row.id,
     name: row.name,
@@ -269,16 +392,7 @@ export async function getAuditById(auditId: string): Promise<AuditDetail | null>
     templateIds: row.template_ids,
     archivedAt: row.archived_at,
     progress,
-    cabItems: cabItems.map((i) => ({
-      id: i.id,
-      label: i.label,
-      fieldType: i.field_type,
-      filledBy: i.filled_by,
-      required: i.required,
-      options: i.options,
-      value: i.value,
-      na: i.na
-    }))
+    cabItems: cabItemsWithDefaults
   };
 }
 
@@ -322,7 +436,16 @@ export async function updateAudit(
     `;
 
     if (data.cabResponses) {
-      await upsertCabResponses(tx, auditId, templateIds, data.cabResponses, userId);
+      const cabItems = await getCabItemsForTypes(audit.types);
+      const clientFields = await getClientCabFields(audit.clientId);
+      const cabDefaults = clientFields
+        ? clientToCabValues(clientFields, cabItems, data.scheduledAt ?? audit.scheduledAt)
+        : {};
+      const mergedCabResponses = mergeCabResponses(cabDefaults, data.cabResponses);
+
+      await upsertCabResponses(tx, auditId, templateIds, mergedCabResponses, userId);
+      const clientId = data.clientId ?? audit.clientId;
+      await syncClientFromCab(tx, clientId, cabItems, mergedCabResponses);
     }
   });
 }
@@ -382,6 +505,25 @@ export async function listClientsForPicker(): Promise<
     razonSocial: r.razon_social,
     cuit: r.cuit
   }));
+}
+
+export async function listClientsCabFieldsById(): Promise<Record<string, ClientCabFields>> {
+  const sql = getSql();
+  const rows = await sql<(ClientCabRow & { id: string })[]>`
+    SELECT
+      id, razon_social, cuit, rubro, empleados,
+      referente_nombre, referente_contacto,
+      erp_actual, proveedor_correo, soporte_it_actual
+    FROM client
+    ORDER BY razon_social ASC
+    LIMIT 500
+  `;
+
+  const byId: Record<string, ClientCabFields> = {};
+  for (const row of rows) {
+    byId[row.id] = mapClientRow(row);
+  }
+  return byId;
 }
 
 export async function getCabItemsForTypes(

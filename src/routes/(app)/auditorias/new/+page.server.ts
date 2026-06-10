@@ -4,6 +4,7 @@ import { requireStaff } from '$lib/server/auth/guards';
 import {
   createAudit,
   getCabItemsForTypes,
+  listClientsCabFieldsById,
   listClientsForPicker,
   listTechnicians
 } from '$lib/server/backoffice/audits';
@@ -13,15 +14,16 @@ import { failFromError } from '$lib/server/backoffice/route-helpers';
 export const load: PageServerLoad = async ({ locals }) => {
   requireStaff(locals);
 
-  const [clients, technicians] = await Promise.all([
+  const [clients, technicians, clientCabById] = await Promise.all([
     listClientsForPicker(),
-    listTechnicians()
+    listTechnicians(),
+    listClientsCabFieldsById()
   ]);
 
   const defaultTypes = ['it'];
   const cabItems = await getCabItemsForTypes(defaultTypes);
 
-  return { clients, technicians, cabItems, defaultTypes };
+  return { clients, technicians, cabItems, defaultTypes, clientCabById };
 };
 
 export const actions: Actions = {

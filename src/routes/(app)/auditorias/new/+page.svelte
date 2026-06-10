@@ -2,8 +2,57 @@
   import type { PageData } from './$types';
   import ClientPicker from '$lib/components/backoffice/client-picker.svelte';
   import CabSectionForm from '$lib/components/backoffice/cab-section-form.svelte';
+  import {
+    applyCabDefaultsToItems,
+    clientToCabValues,
+    newClientToCabFields
+  } from '$lib/backoffice/cab-client-map';
 
   let { data, form }: { data: PageData; form?: { error?: string } } = $props();
+
+  type CabItem = PageData['cabItems'][number] & { value?: unknown };
+
+  let cabItems = $state<CabItem[]>(data.cabItems.map((item) => ({ ...item })));
+  let scheduledAt = $state('');
+
+  function prefillCabFromClient(clientId: string) {
+    const client = data.clientCabById[clientId];
+    if (!client) return;
+    cabItems = applyCabDefaultsToItems(cabItems, client, scheduledAt || null);
+  }
+
+  function prefillCabFromNewClient(fields: { razonSocial: string; cuit: string; rubro: string }) {
+    if (!fields.razonSocial.trim()) return;
+    cabItems = applyCabDefaultsToItems(
+      cabItems,
+      newClientToCabFields(fields),
+      scheduledAt || null
+    );
+  }
+
+  function syncScheduledAtToCab() {
+    if (!scheduledAt) return;
+    const defaults = clientToCabValues(
+      {
+        razonSocial: '',
+        cuit: null,
+        rubro: null,
+        empleados: null,
+        referenteNombre: null,
+        referenteContacto: null,
+        erpActual: null,
+        proveedorCorreo: null,
+        soporteItActual: null
+      },
+      cabItems,
+      scheduledAt
+    );
+
+    cabItems = cabItems.map((item) => {
+      const next = defaults[item.id];
+      return next !== undefined ? { ...item, value: next } : item;
+    });
+  }
 </script>
 
 <svelte:head>
@@ -17,7 +66,11 @@
 {/if}
 
 <form method="POST" action="?/create" class="space-y-6 max-w-2xl">
-  <ClientPicker clients={data.clients} />
+  <ClientPicker
+    clients={data.clients}
+    onClientSelect={prefillCabFromClient}
+    onNewClientChange={prefillCabFromNewClient}
+  />
 
   <fieldset class="space-y-2">
     <legend class="text-sm font-semibold text-slate-800">Tipos</legend>
@@ -59,12 +112,14 @@
     <input
       type="date"
       name="scheduledAt"
+      bind:value={scheduledAt}
+      onchange={syncScheduledAtToCab}
       required
       class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
     />
   </label>
 
-  <CabSectionForm items={data.cabItems} />
+  <CabSectionForm items={cabItems} />
 
   <button
     type="submit"

@@ -32,7 +32,7 @@
 {#if items.length > 0}
   <fieldset class="space-y-3 rounded-lg border border-slate-200 p-4">
     <legend class="text-sm font-semibold text-slate-800 px-1">Cabecera (CAB)</legend>
-    {#each items as item}
+    {#each items as item (item.id)}
       <label class="block space-y-1">
         <span class="text-sm font-medium text-slate-700">
           {item.label}
@@ -41,22 +41,34 @@
         </span>
         {#if readonly}
           <p class="text-sm text-slate-800 py-2">{displayValue(item) || '—'}</p>
-        {:else if item.fieldType === 'number'}
-          <input
-            type="number"
-            name="cab_{item.id}"
-            value={displayValue(item)}
-            required={item.required}
-            class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-          />
         {:else}
-          <input
-            type="text"
-            name="cab_{item.id}"
-            value={displayValue(item)}
-            required={item.required}
-            class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-          />
+          {#key displayValue(item)}
+            {#if item.fieldType === 'number'}
+              <input
+                type="number"
+                name="cab_{item.id}"
+                value={displayValue(item)}
+                required={item.required}
+                class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+              />
+            {:else if item.fieldType === 'date'}
+              <input
+                type="date"
+                name="cab_{item.id}"
+                value={displayValue(item)}
+                required={item.required}
+                class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+              />
+            {:else}
+              <input
+                type="text"
+                name="cab_{item.id}"
+                value={displayValue(item)}
+                required={item.required}
+                class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+              />
+            {/if}
+          {/key}
         {/if}
       </label>
     {/each}

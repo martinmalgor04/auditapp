@@ -2,11 +2,17 @@
   let {
     clients,
     selectedClientId = '',
-    showNewClient = false
+    showNewClient = false,
+    onClientSelect,
+    onNewClientChange,
+    onClearClient
   }: {
     clients: Array<{ id: string; razonSocial: string; cuit: string | null }>;
     selectedClientId?: string;
     showNewClient?: boolean;
+    onClientSelect?: (clientId: string) => void;
+    onNewClientChange?: (data: { razonSocial: string; cuit: string; rubro: string }) => void;
+    onClearClient?: () => void;
   } = $props();
 
   let mode = $state<'existing' | 'new'>(showNewClient ? 'new' : 'existing');
@@ -14,6 +20,9 @@
   let query = $state('');
   let open = $state(false);
   let listboxId = 'client-picker-listbox';
+  let newRazonSocial = $state('');
+  let newCuit = $state('');
+  let newRubro = $state('');
 
   const selectedClient = $derived(clients.find((c) => c.id === selectedId));
 
@@ -40,11 +49,21 @@
     selectedId = id;
     query = clients.find((c) => c.id === id)?.razonSocial ?? '';
     open = false;
+    onClientSelect?.(id);
   }
 
   function clearSelection() {
     selectedId = '';
     query = '';
+    onClearClient?.();
+  }
+
+  function emitNewClientChange() {
+    onNewClientChange?.({
+      razonSocial: newRazonSocial,
+      cuit: newCuit,
+      rubro: newRubro
+    });
   }
 
   function onSearchFocus() {
@@ -182,6 +201,8 @@
         <input
           type="text"
           name="newRazonSocial"
+          bind:value={newRazonSocial}
+          oninput={emitNewClientChange}
           required={mode === 'new'}
           class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
         />
@@ -191,6 +212,8 @@
         <input
           type="text"
           name="newCuit"
+          bind:value={newCuit}
+          oninput={emitNewClientChange}
           class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
         />
       </label>
@@ -199,6 +222,8 @@
         <input
           type="text"
           name="newRubro"
+          bind:value={newRubro}
+          oninput={emitNewClientChange}
           class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
         />
       </label>
