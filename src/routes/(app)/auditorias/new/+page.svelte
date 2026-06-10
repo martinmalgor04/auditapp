@@ -5,7 +5,8 @@
   import {
     applyCabDefaultsToItems,
     clientToCabValues,
-    newClientToCabFields
+    newClientToCabFields,
+    type ClientCabFields
   } from '$lib/backoffice/cab-client-map';
 
   let { data, form }: { data: PageData; form?: { error?: string } } = $props();
@@ -15,9 +16,7 @@
   let cabItems = $state<CabItem[]>(data.cabItems.map((item) => ({ ...item })));
   let scheduledAt = $state('');
 
-  function prefillCabFromClient(clientId: string) {
-    const client = data.clientCabById[clientId];
-    if (!client) return;
+  function prefillCabFromClient(_clientId: string, client: ClientCabFields) {
     cabItems = applyCabDefaultsToItems(cabItems, client, scheduledAt || null);
   }
 
@@ -67,7 +66,6 @@
 
 <form method="POST" action="?/create" class="space-y-6 max-w-2xl">
   <ClientPicker
-    clients={data.clients}
     onClientSelect={prefillCabFromClient}
     onNewClientChange={prefillCabFromNewClient}
   />

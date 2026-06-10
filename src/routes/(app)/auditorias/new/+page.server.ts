@@ -4,9 +4,8 @@ import { requireStaff } from '$lib/server/auth/guards';
 import {
   createAudit,
   getCabItemsForTypes,
-  listClientsCabFieldsById,
-  listClientsForPicker,
-  listTechnicians
+  listTechnicians,
+  searchClientsForPicker
 } from '$lib/server/backoffice/audits';
 import { parseCreateAuditFromForm } from '$lib/server/backoffice/form-parsers';
 import { failFromError } from '$lib/server/backoffice/route-helpers';
@@ -14,16 +13,12 @@ import { failFromError } from '$lib/server/backoffice/route-helpers';
 export const load: PageServerLoad = async ({ locals }) => {
   requireStaff(locals);
 
-  const [clients, technicians, clientCabById] = await Promise.all([
-    listClientsForPicker(),
-    listTechnicians(),
-    listClientsCabFieldsById()
-  ]);
+  const [technicians] = await Promise.all([listTechnicians()]);
 
   const defaultTypes = ['it'];
   const cabItems = await getCabItemsForTypes(defaultTypes);
 
-  return { clients, technicians, cabItems, defaultTypes, clientCabById };
+  return { technicians, cabItems, defaultTypes };
 };
 
 export const actions: Actions = {
@@ -38,6 +33,14 @@ export const actions: Actions = {
     } catch (e) {
       return failFromError(e);
     }
+  },
+
+  searchClients: async ({ request, locals }) => {
+    requireStaff(locals);
+    const formData = await request.formData();
+    const q = String(formData.get('q') ?? '');
+    const clients = await searchClientsForPicker(q);
+    return { clients };
   },
 
   loadCab: async ({ request, locals }) => {

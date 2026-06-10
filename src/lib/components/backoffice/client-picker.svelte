@@ -1,60 +1,98 @@
 <script lang="ts">
+  import { deserialize } from '$app/forms';
+  import type { ClientCabFields } from '$lib/backoffice/cab-client-map';
+
+  type ClientRow = {
+    id: string;
+    razonSocial: string;
+    cuit: string | null;
+    cabFields?: ClientCabFields;
+  };
+
   let {
-    clients,
     selectedClientId = '',
     showNewClient = false,
     onClientSelect,
     onNewClientChange,
     onClearClient
   }: {
-    clients: Array<{ id: string; razonSocial: string; cuit: string | null }>;
     selectedClientId?: string;
     showNewClient?: boolean;
-    onClientSelect?: (clientId: string) => void;
+    onClientSelect?: (clientId: string, cabFields: ClientCabFields) => void;
     onNewClientChange?: (data: { razonSocial: string; cuit: string; rubro: string }) => void;
     onClearClient?: () => void;
   } = $props();
 
   let mode = $state<'existing' | 'new'>(showNewClient ? 'new' : 'existing');
   let selectedId = $state(selectedClientId);
+  let selectedClient = $state<ClientRow | null>(null);
   let query = $state('');
   let open = $state(false);
+  let searching = $state(false);
+  let searchResults = $state<ClientRow[]>([]);
   let listboxId = 'client-picker-listbox';
   let newRazonSocial = $state('');
   let newCuit = $state('');
   let newRubro = $state('');
+  let searchTimer: ReturnType<typeof setTimeout> | undefined;
 
-  const selectedClient = $derived(clients.find((c) => c.id === selectedId));
-
-  const filteredClients = $derived.by(() => {
-    const q = query.trim().toLowerCase();
-    const list = q
-      ? clients.filter(
-          (c) =>
-            c.razonSocial.toLowerCase().includes(q) ||
-            (c.cuit?.toLowerCase().includes(q) ?? false)
-        )
-      : clients;
-    return list.slice(0, 50);
-  });
+  const filteredClients = $derived(searchResults);
 
   $effect(() => {
     if (selectedClientId && selectedClientId !== selectedId) {
       selectedId = selectedClientId;
-      query = clients.find((c) => c.id === selectedClientId)?.razonSocial ?? '';
     }
   });
 
-  function selectClient(id: string) {
-    selectedId = id;
-    query = clients.find((c) => c.id === id)?.razonSocial ?? '';
+  async function runSearch(term: string) {
+    const q = term.trim();
+    if (q.length < 2) {
+      searchResults = [];
+      searching = false;
+      return;
+    }
+
+    searching = true;
+    const fd = new FormData();
+    fd.set('q', q);
+
+    try {
+      const res = await fetch('?/searchClients', { method: 'POST', body: fd });
+      const result = deserialize(await res.text());
+      if (result.type === 'success' && result.data?.clients) {
+        searchResults = result.data.clients as ClientRow[];
+      } else {
+        searchResults = [];
+      }
+    } catch {
+      searchResults = [];
+    } finally {
+      searching = false;
+    }
+  }
+
+  function scheduleSearch(term: string) {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      void runSearch(term);
+    }, 250);
+  }
+
+  function selectClient(client: ClientRow) {
+    selectedId = client.id;
+    selectedClient = client;
+    query = client.razonSocial;
     open = false;
-    onClientSelect?.(id);
+    if (client.cabFields) {
+      onClientSelect?.(client.id, client.cabFields);
+    }
   }
 
   function clearSelection() {
     selectedId = '';
+    selectedClient = null;
     query = '';
+    searchResults = [];
     onClearClient?.();
   }
 
@@ -68,6 +106,9 @@
 
   function onSearchFocus() {
     open = true;
+    if (query.trim().length >= 2) {
+      scheduleSearch(query);
+    }
   }
 
   function onSearchBlur() {
@@ -85,7 +126,9 @@
     open = true;
     if (selectedId && query !== selectedClient?.razonSocial) {
       selectedId = '';
+      selectedClient = null;
     }
+    scheduleSearch(query);
   }
 
   function onSearchKeydown(e: KeyboardEvent) {
@@ -112,7 +155,6 @@
     <div class="relative block space-y-1">
       <span class="text-sm font-medium text-slate-700">Cliente</span>
 
-      <!-- Select oculto para validación nativa del formulario -->
       <select
         name="clientId"
         bind:value={selectedId}
@@ -122,9 +164,9 @@
         aria-hidden="true"
       >
         <option value="">Seleccionar...</option>
-        {#each clients as c}
-          <option value={c.id}>{c.razonSocial}</option>
-        {/each}
+        {#if selectedClient}
+          <option value={selectedClient.id}>{selectedClient.razonSocial}</option>
+        {/if}
       </select>
 
       <div class="relative">
@@ -135,7 +177,7 @@
           onblur={onSearchBlur}
           oninput={onSearchInput}
           onkeydown={onSearchKeydown}
-          placeholder="Buscar por razón social o CUIT..."
+          placeholder="Buscar por razón social o CUIT (mín. 2 caracteres)..."
           autocomplete="off"
           role="combobox"
           aria-expanded={open}
@@ -155,7 +197,13 @@
           </button>
         {/if}
 
-        {#if open && filteredClients.length > 0}
+        {#if open && searching}
+          <p
+            class="absolute z-10 mt-1 w-full rounded border border-slate-200 bg-white px-3 py-2 text-sm text-slate-500 shadow-lg"
+          >
+            Buscando...
+          </p>
+        {:else if open && query.trim().length >= 2 && filteredClients.length > 0}
           <ul
             id={listboxId}
             role="listbox"
@@ -171,7 +219,7 @@
                     ? 'bg-blue-50 text-blue-900'
                     : 'text-slate-800'}"
                   onmousedown={(e) => e.preventDefault()}
-                  onclick={() => selectClient(c.id)}
+                  onclick={() => selectClient(c)}
                 >
                   <span class="block font-medium">{c.razonSocial}</span>
                   {#if c.cuit}
@@ -181,18 +229,20 @@
               </li>
             {/each}
           </ul>
-        {:else if open && query.trim() && filteredClients.length === 0}
+        {:else if open && query.trim().length >= 2 && !searching && filteredClients.length === 0}
           <p
             class="absolute z-10 mt-1 w-full rounded border border-slate-200 bg-white px-3 py-2 text-sm text-slate-500 shadow-lg"
           >
             Sin resultados para "{query.trim()}"
           </p>
+        {:else if open && query.trim().length > 0 && query.trim().length < 2}
+          <p
+            class="absolute z-10 mt-1 w-full rounded border border-slate-200 bg-white px-3 py-2 text-sm text-slate-500 shadow-lg"
+          >
+            Escribí al menos 2 caracteres para buscar
+          </p>
         {/if}
       </div>
-
-      {#if clients.length === 0}
-        <p class="text-xs text-amber-600">No hay clientes cargados. Usá "Cliente nuevo" o ejecutá el seed.</p>
-      {/if}
     </div>
   {:else}
     <div class="grid gap-3 sm:grid-cols-3">

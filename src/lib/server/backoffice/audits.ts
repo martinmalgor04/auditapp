@@ -490,40 +490,38 @@ export async function listTechnicians(): Promise<Array<{ id: string; name: strin
   return rows;
 }
 
-export async function listClientsForPicker(): Promise<
-  Array<{ id: string; razonSocial: string; cuit: string | null }>
-> {
-  const sql = getSql();
-  const rows = await sql<{ id: string; razon_social: string; cuit: string | null }[]>`
-    SELECT id, razon_social, cuit
-    FROM client
-    ORDER BY razon_social ASC
-    LIMIT 500
-  `;
-  return rows.map((r) => ({
-    id: r.id,
-    razonSocial: r.razon_social,
-    cuit: r.cuit
-  }));
-}
+export type ClientPickerRow = {
+  id: string;
+  razonSocial: string;
+  cuit: string | null;
+  cabFields: ClientCabFields;
+};
 
-export async function listClientsCabFieldsById(): Promise<Record<string, ClientCabFields>> {
+export async function searchClientsForPicker(query: string): Promise<ClientPickerRow[]> {
+  const q = query.trim();
+  if (q.length < 2) {
+    return [];
+  }
+
   const sql = getSql();
+  const pattern = `%${q}%`;
   const rows = await sql<(ClientCabRow & { id: string })[]>`
     SELECT
       id, razon_social, cuit, rubro, empleados,
       referente_nombre, referente_contacto,
       erp_actual, proveedor_correo, soporte_it_actual
     FROM client
+    WHERE razon_social ILIKE ${pattern} OR COALESCE(cuit, '') ILIKE ${pattern}
     ORDER BY razon_social ASC
-    LIMIT 500
+    LIMIT 50
   `;
 
-  const byId: Record<string, ClientCabFields> = {};
-  for (const row of rows) {
-    byId[row.id] = mapClientRow(row);
-  }
-  return byId;
+  return rows.map((row) => ({
+    id: row.id,
+    razonSocial: row.razon_social,
+    cuit: row.cuit,
+    cabFields: mapClientRow(row)
+  }));
 }
 
 export async function getCabItemsForTypes(
