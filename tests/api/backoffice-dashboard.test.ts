@@ -3,6 +3,7 @@ import { setSqlForTests } from '../../src/lib/server/db/client';
 import { listDashboardAudits, DASHBOARD_PAGE_SIZE } from '../../src/lib/server/backoffice/dashboard';
 import { setupTestDb, teardownTestDb, withTestDbSerial } from '../helpers/db';
 import { insertTestAuditRow } from '../helpers/backoffice';
+import { findUserByEmail } from '../helpers/auth';
 import type postgres from 'postgres';
 
 describe('backoffice dashboard', () => {
@@ -143,5 +144,21 @@ describe('backoffice dashboard', () => {
 
     const result = await listDashboardAudits({ page: 1, sort: 'last_activity_desc' });
     expect(result.rows.find((r) => r.razonSocial === 'Archivada')).toBeUndefined();
+  });
+
+  it('filters dashboard by tecnico audit specialties', async () => {
+    await insertTestAuditRow(sql, { razonSocial: 'Cliente IT', types: ['it'] });
+    await insertTestAuditRow(sql, { razonSocial: 'Cliente ERP', types: ['erp-tango'] });
+
+    const itTech = await findUserByEmail(sql, 'facu@serviciosysistemas.com.ar');
+    const erpTech = await findUserByEmail(sql, 'simon@serviciosysistemas.com.ar');
+
+    const itBoard = await listDashboardAudits({ page: 1, sort: 'last_activity_desc' }, itTech!);
+    expect(itBoard.rows.some((r) => r.razonSocial === 'Cliente IT')).toBe(true);
+    expect(itBoard.rows.some((r) => r.razonSocial === 'Cliente ERP')).toBe(false);
+
+    const erpBoard = await listDashboardAudits({ page: 1, sort: 'last_activity_desc' }, erpTech!);
+    expect(erpBoard.rows.some((r) => r.razonSocial === 'Cliente ERP')).toBe(true);
+    expect(erpBoard.rows.some((r) => r.razonSocial === 'Cliente IT')).toBe(false);
   });
 });

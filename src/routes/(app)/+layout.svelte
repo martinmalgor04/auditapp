@@ -1,5 +1,6 @@
 <script lang="ts">
   import SysShell from '$lib/components/brand/SysShell.svelte';
+  import { AUDIT_TYPE_LABELS } from '$lib/audit-types';
   import type { LayoutData } from './$types';
 
   let { data, children }: { data: LayoutData; children: import('svelte').Snippet } = $props();
@@ -21,7 +22,12 @@
 
   {#snippet headerActions()}
     <div class="flex shrink-0 items-center gap-2 text-sm text-[var(--sys-text-muted-light)] sm:gap-3">
-      <span class="hidden max-w-[10rem] truncate sm:inline sm:max-w-none">{data.user?.name} ({data.user?.role})</span>
+      <span class="hidden max-w-[10rem] truncate sm:inline sm:max-w-none">
+        {data.user?.name} ({data.user?.role})
+        {#if data.user?.role === 'tecnico' && data.user.auditTypes && data.user.auditTypes.length > 0}
+          · {data.user.auditTypes.map((t) => AUDIT_TYPE_LABELS[t]).join(', ')}
+        {/if}
+      </span>
       <form method="POST" action="/logout">
         <button type="submit" class="text-sys-medio underline hover:text-sys-electrico">Salir</button>
       </form>

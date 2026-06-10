@@ -39,12 +39,21 @@ describe('audit form load', () => {
     expect(form.sections[0]?.code).toBe('CAB');
   });
 
-  it('unassigned tecnico receives 403', async () => {
+  it('tecnico ERP cannot load IT-only audit form', async () => {
     const { auditId } = await seedAuditFormFixture(sql, {
       assignedTechEmail: 'facu@serviciosysistemas.com.ar'
     });
-    const other = await findUserByEmail(sql, 'simon@serviciosysistemas.com.ar');
-    await expect(loadAuditForm(auditId, other!)).rejects.toThrow(AuditFormNotAllowedError);
+    const erpTech = await findUserByEmail(sql, 'simon@serviciosysistemas.com.ar');
+    await expect(loadAuditForm(auditId, erpTech!)).rejects.toThrow(AuditFormNotAllowedError);
+  });
+
+  it('tecnico with matching specialty can load audit form', async () => {
+    const { auditId } = await seedAuditFormFixture(sql, {
+      assignedTechEmail: 'facu@serviciosysistemas.com.ar'
+    });
+    const itTech = await findUserByEmail(sql, 'facu@serviciosysistemas.com.ar');
+    const form = await loadAuditForm(auditId, itTech!);
+    expect(form.audit.id).toBe(auditId);
   });
 
   it('admin can load any audit form', async () => {

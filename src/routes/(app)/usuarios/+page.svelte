@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { PageData } from './$types';
+  import AuditTypeCheckboxes from '$lib/components/backoffice/audit-type-checkboxes.svelte';
+  import { AUDIT_TYPE_LABELS, type AuditType } from '$lib/audit-types';
 
   let { data, form }: { data: PageData; form?: { error?: string; temporaryPassword?: string } } =
     $props();
@@ -30,6 +32,12 @@
       <option value="tecnico">Técnico</option>
       <option value="admin">Admin</option>
     </select>
+    <div class="sm:col-span-2">
+      <AuditTypeCheckboxes
+        legend="Especialidades del técnico"
+        hint="Dejá todo desmarcado para acceso a todos los tipos. Los admins ignoran este campo."
+      />
+    </div>
     <input
       type="text"
       name="temporaryPassword"
@@ -65,6 +73,19 @@
         <label class="flex items-center gap-2 text-sm">
           <input type="checkbox" name="active" checked={user.active} /> Activo
         </label>
+        <div class="sm:col-span-4">
+          <AuditTypeCheckboxes
+            selected={user.auditTypes ?? []}
+            hint={user.role === 'admin'
+              ? 'Los admins ven todos los tipos; este campo no aplica.'
+              : 'Sin selección = ve todos los tipos.'}
+          />
+          {#if user.auditTypes && user.auditTypes.length > 0}
+            <p class="mt-1 text-xs text-slate-500">
+              Actual: {user.auditTypes.map((type) => AUDIT_TYPE_LABELS[type as AuditType]).join(', ')}
+            </p>
+          {/if}
+        </div>
         <button type="submit" class="rounded border px-3 py-1.5 text-sm hover:bg-slate-50">Guardar</button>
       </form>
       <div class="flex gap-4 mt-3 pt-3 border-t border-slate-100">

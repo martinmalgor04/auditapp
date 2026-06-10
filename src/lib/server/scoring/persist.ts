@@ -7,6 +7,7 @@ import {
   InvalidStateTransitionError
 } from '$lib/server/backoffice/errors';
 import type { AppUser } from '$lib/server/auth/types';
+import { auditMatchesUserScope } from '$lib/server/auth/audit-access';
 import { scoreAudit } from './score-audit';
 import { closureFieldsSchema, type ClosureFieldsParsed } from './schemas';
 import { ClosureValidationError } from './errors';
@@ -15,8 +16,11 @@ import type { AuditScoreResult, ClosureFieldsInput } from './types';
 
 export type { AuditScoreResult };
 
-function assertClosureAccess(ctx: NonNullable<Awaited<ReturnType<typeof loadScoringContext>>>, user: AppUser): void {
-  if (user.role !== 'admin' && ctx.assignedTechId !== user.id) {
+function assertClosureAccess(auditTypes: string[], user: AppUser): void {
+  if (user.role !== 'admin' && user.role !== 'tecnico') {
+    throw new ForbiddenError();
+  }
+  if (!auditMatchesUserScope(auditTypes, user)) {
     throw new ForbiddenError();
   }
 }
@@ -71,7 +75,7 @@ export async function saveClosureFields(
 ): Promise<void> {
   const ctx = await loadScoringContext(auditId);
   if (!ctx) throw new AuditNotFoundError();
-  assertClosureAccess(ctx, user);
+  assertClosureAccess(ctx.types, user);
 
   if (ctx.status === 'cerrada') {
     throw new AuditClosedError();
@@ -128,7 +132,7 @@ export async function confirmClosure(
 ): Promise<ConfirmClosureResult> {
   const ctx = await loadScoringContext(auditId);
   if (!ctx) throw new AuditNotFoundError();
-  assertClosureAccess(ctx, user);
+  assertClosureAccess(ctx.types, user);
 
   if (ctx.status !== 'en_cierre') {
     throw new InvalidStateTransitionError('Solo se puede confirmar desde en_cierre');

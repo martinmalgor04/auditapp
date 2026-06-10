@@ -61,7 +61,8 @@ describe('attachments presign API', () => {
       email: 'admin@serviciosysistemas.com.ar',
       name: 'Admin',
       role: 'admin',
-      active: true
+      active: true,
+      auditTypes: null
     };
 
     const row = await insertTestAuditRow(sql, {

@@ -2,6 +2,8 @@
   import type { PageData } from './$types';
   import ClientPicker from '$lib/components/backoffice/client-picker.svelte';
   import CabSectionForm from '$lib/components/backoffice/cab-section-form.svelte';
+  import AuditTypeCheckboxes from '$lib/components/backoffice/audit-type-checkboxes.svelte';
+  import { AUDIT_TYPE_LABELS, type AuditType } from '$lib/audit-types';
   import {
     applyCabDefaultsToItems,
     clientToCabValues,
@@ -15,6 +17,15 @@
 
   let cabItems = $state<CabItem[]>(data.cabItems.map((item) => ({ ...item })));
   let scheduledAt = $state('');
+
+  const selectableTypes = $derived(
+    data.allowedTypes ?? (Object.keys(AUDIT_TYPE_LABELS) as AuditType[])
+  );
+  const defaultSelectedTypes = $derived(
+    data.defaultTypes.filter((type): type is AuditType =>
+      selectableTypes.includes(type as AuditType)
+    )
+  );
 
   function prefillCabFromClient(_clientId: string, client: ClientCabFields) {
     cabItems = applyCabDefaultsToItems(cabItems, client, scheduledAt || null);
@@ -72,15 +83,17 @@
 
   <fieldset class="space-y-2">
     <legend class="text-sm font-semibold text-slate-800">Tipos</legend>
-    <label class="flex items-center gap-2 text-sm">
-      <input type="checkbox" name="types" value="it" checked /> IT
-    </label>
-    <label class="flex items-center gap-2 text-sm">
-      <input type="checkbox" name="types" value="erp-tango" /> ERP Tango
-    </label>
-    <label class="flex items-center gap-2 text-sm">
-      <input type="checkbox" name="types" value="erp-estandar" /> ERP Estándar
-    </label>
+    {#each selectableTypes as type}
+      <label class="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          name="types"
+          value={type}
+          checked={defaultSelectedTypes.includes(type)}
+        />
+        {AUDIT_TYPE_LABELS[type]}
+      </label>
+    {/each}
   </fieldset>
 
   <label class="block space-y-1">

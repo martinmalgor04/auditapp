@@ -3,6 +3,7 @@
   import AuditStatusBadge from './audit-status-badge.svelte';
   import AuditProgressBar from './audit-progress-bar.svelte';
   import CopyLinkButton from './copy-link-button.svelte';
+  import AuditRowActions from './audit-row-actions.svelte';
 
   let { rows }: { rows: DashboardAuditRow[] } = $props();
 
@@ -23,7 +24,7 @@
         <th class="px-4 py-3 text-left font-medium text-slate-600">Técnico</th>
         <th class="px-4 py-3 text-left font-medium text-slate-600">Visita</th>
         <th class="px-4 py-3 text-left font-medium text-slate-600">Actualización</th>
-        <th class="px-4 py-3 text-left font-medium text-slate-600"></th>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Acciones</th>
       </tr>
     </thead>
     <tbody class="divide-y divide-slate-100 bg-white">
@@ -42,9 +43,12 @@
           <td class="px-4 py-3 text-slate-600">{formatDate(row.scheduledAt)}</td>
           <td class="px-4 py-3 text-slate-600">{formatDate(row.lastActivity)}</td>
           <td class="px-4 py-3">
-            {#if row.briefingUrl}
-              <CopyLinkButton url={row.briefingUrl} />
-            {/if}
+            <div class="flex flex-col gap-2">
+              <AuditRowActions auditId={row.id} status={row.status} />
+              {#if row.briefingUrl}
+                <CopyLinkButton url={row.briefingUrl} />
+              {/if}
+            </div>
           </td>
         </tr>
       {:else}

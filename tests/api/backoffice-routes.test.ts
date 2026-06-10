@@ -52,7 +52,8 @@ describe('backoffice routes auth', () => {
           email: 'facu@serviciosysistemas.com.ar',
           name: 'Facu',
           role: 'tecnico',
-          active: true
+          active: true,
+          auditTypes: null
         }
       },
       url: new URL('http://localhost/tablero')
@@ -63,30 +64,34 @@ describe('backoffice routes auth', () => {
 
   it('role guards block tecnico from admin routes', async () => {
     try {
-      await usuariosLoad({ locals: { user: { id: tecnicoId, email: 'f', name: 'F', role: 'tecnico', active: true } } } as never);
+      await usuariosLoad({ locals: { user: { id: tecnicoId, email: 'f', name: 'F', role: 'tecnico', active: true, auditTypes: null } } } as never);
       expect.fail('should 403');
     } catch (e) {
       expect((e as { status: number }).status).toBe(403);
     }
   });
 
-  it('tecnico cannot archive audits', async () => {
+  it('tecnico can archive audits', async () => {
     const { auditId } = await insertTestAuditRow(sql, { razonSocial: 'Guard test' });
 
-    const result = await auditActions.archive({
-      locals: {
-        user: {
-          id: tecnicoId,
-          email: 'facu@serviciosysistemas.com.ar',
-          name: 'Facu',
-          role: 'tecnico',
-          active: true
-        }
-      },
-      params: { id: auditId }
-    } as never);
-
-    expect(result).toMatchObject({ status: 403 });
+    try {
+      await auditActions.archive({
+        locals: {
+          user: {
+            id: tecnicoId,
+            email: 'facu@serviciosysistemas.com.ar',
+            name: 'Facu',
+            role: 'tecnico',
+            active: true,
+            auditTypes: ['it']
+          }
+        },
+        params: { id: auditId }
+      } as never);
+      expect.fail('should redirect');
+    } catch (e) {
+      expect(isRedirect(e)).toBe(true);
+    }
   });
 
   it('admin can archive audits', async () => {
@@ -100,7 +105,8 @@ describe('backoffice routes auth', () => {
             email: 'admin@serviciosysistemas.com.ar',
             name: 'Admin',
             role: 'admin',
-            active: true
+            active: true,
+            auditTypes: null
           }
         },
         params: { id: auditId }

@@ -22,11 +22,11 @@ describe('closure routes', () => {
     await teardownTestDb();
   });
 
-  it('assigned tech and admin can load closure; others 403', async () => {
+  it('staff with matching specialty can load closure page', async () => {
     const { auditId } = await seedClosureAuditFixture(sql, { status: 'en_cierre' });
     const tech = await findUserByEmail(sql, 'facu@serviciosysistemas.com.ar');
     const admin = await findUserByEmail(sql, 'admin@serviciosysistemas.com.ar');
-    const other = await findUserByEmail(sql, 'simon@serviciosysistemas.com.ar');
+    const erpTech = await findUserByEmail(sql, 'simon@serviciosysistemas.com.ar');
 
     const techData = (await closureLoad({
       params: { id: auditId },
@@ -41,7 +41,7 @@ describe('closure routes', () => {
     expect(adminData.indices.it).not.toBeNull();
 
     await expect(
-      closureLoad({ params: { id: auditId }, locals: { user: other } } as never)
+      closureLoad({ params: { id: auditId }, locals: { user: erpTech } } as never)
     ).rejects.toThrow();
   });
 

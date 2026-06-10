@@ -1,5 +1,7 @@
 import { getSql } from '$lib/server/db/client';
 import type { AuditStatus } from '$lib/server/db/audit-status';
+import type { AppUser } from '$lib/server/auth/types';
+import { userAuditTypesScope } from '$lib/server/auth/audit-access';
 import type { DashboardAuditRow } from '$lib/backoffice/dashboard-types';
 import { computeAuditProgress, type AuditProgress } from './progress';
 import { canShowBriefingLink, getBriefingUrl } from './briefing-link';
@@ -100,7 +102,10 @@ async function fetchProgressForAudits(
   return progressMap;
 }
 
-export async function listDashboardAudits(filters: DashboardFilters): Promise<DashboardResult> {
+export async function listDashboardAudits(
+  filters: DashboardFilters,
+  viewer?: AppUser | null
+): Promise<DashboardResult> {
   const sql = getSql();
   const page = filters.page ?? 1;
   const offset = (page - 1) * DASHBOARD_PAGE_SIZE;
@@ -110,12 +115,14 @@ export async function listDashboardAudits(filters: DashboardFilters): Promise<Da
   const statusFilter = filters.status ?? null;
   const clientFilter = filters.clientId ?? null;
   const qFilter = filters.q?.trim() ? `%${filters.q.trim()}%` : null;
+  const scopeTypes = viewer ? userAuditTypesScope(viewer) : null;
 
   const [countRow] = await sql<{ count: string }[]>`
     SELECT COUNT(*)::text AS count
     FROM audit a
     JOIN client c ON c.id = a.client_id
     WHERE a.archived_at IS NULL
+      AND (${scopeTypes}::text[] IS NULL OR a.types && ${scopeTypes}::text[])
       AND (${typeFilter}::text IS NULL OR ${typeFilter} = ANY(a.types))
       AND (${statusFilter}::text IS NULL OR a.status = ${statusFilter})
       AND (${clientFilter}::uuid IS NULL OR a.client_id = ${clientFilter})
@@ -143,6 +150,7 @@ export async function listDashboardAudits(filters: DashboardFilters): Promise<Da
     JOIN app_user u ON u.id = a.assigned_tech_id
     LEFT JOIN audit_response ar ON ar.audit_id = a.id
     WHERE a.archived_at IS NULL
+      AND (${scopeTypes}::text[] IS NULL OR a.types && ${scopeTypes}::text[])
       AND (${typeFilter}::text IS NULL OR ${typeFilter} = ANY(a.types))
       AND (${statusFilter}::text IS NULL OR a.status = ${statusFilter})
       AND (${clientFilter}::uuid IS NULL OR a.client_id = ${clientFilter})

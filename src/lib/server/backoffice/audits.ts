@@ -12,6 +12,9 @@ import type postgres from 'postgres';
 
 type DbExecutor = postgres.Sql | postgres.TransactionSql;
 import type { AuditStatus } from '$lib/server/db/audit-status';
+import type { AppUser } from '$lib/server/auth/types';
+import { auditMatchesUserScope, userCanUseAuditTypes } from '$lib/server/auth/audit-access';
+import type { AuditType } from '$lib/audit-types';
 import {
   AuditClosedError,
   AuditNotFoundError,
@@ -211,7 +214,8 @@ async function upsertCabResponses(
 
 export async function createAudit(
   input: CreateAuditInput,
-  createdBy: string
+  createdBy: string,
+  actor?: AppUser
 ): Promise<{ id: string }> {
   const parsed = createAuditSchema.safeParse(input);
   if (!parsed.success) {
@@ -219,6 +223,9 @@ export async function createAudit(
   }
 
   const data = parsed.data;
+  if (actor && !userCanUseAuditTypes(data.types as AuditType[], actor)) {
+    throw new ForbiddenError('No tenés permiso para crear auditorías con esos tipos');
+  }
   const sql = getSql();
   const templateIds = await resolveTemplateIdsForTypes(data.types);
   const scheduledAt = new Date(data.scheduledAt);
@@ -295,7 +302,7 @@ export async function createAudit(
   });
 }
 
-export async function getAuditById(auditId: string): Promise<AuditDetail | null> {
+export async function getAuditById(auditId: string, viewer?: AppUser): Promise<AuditDetail | null> {
   const sql = getSql();
 
   const [row] = await sql<AuditRow[]>`
@@ -311,6 +318,10 @@ export async function getAuditById(auditId: string): Promise<AuditDetail | null>
   `;
 
   if (!row || row.archived_at) {
+    return null;
+  }
+
+  if (viewer && !auditMatchesUserScope(row.types, viewer)) {
     return null;
   }
 

@@ -108,22 +108,26 @@ describe('audit CRUD', () => {
     expect(dashboard.rows.find((r) => r.id === auditId)).toBeUndefined();
   });
 
-  it('archive action rejects tecnico with 403', async () => {
-    const { auditId } = await insertTestAuditRow(sql, { razonSocial: 'Admin only' });
+  it('archive action allows tecnico', async () => {
+    const { auditId } = await insertTestAuditRow(sql, { razonSocial: 'Staff archive' });
 
-    const tecnicoUser = {
-      id: tecnicoId,
-      email: 'facu@serviciosysistemas.com.ar',
-      name: 'Facu',
-      role: 'tecnico' as const,
-      active: true
-    };
-
-    const result = await auditDetailActions.archive({
-      locals: { user: tecnicoUser },
-      params: { id: auditId }
-    } as never);
-
-    expect(result).toMatchObject({ status: 403 });
+    try {
+      await auditDetailActions.archive({
+        locals: {
+          user: {
+            id: tecnicoId,
+            email: 'facu@serviciosysistemas.com.ar',
+            name: 'Facu',
+            role: 'tecnico',
+            active: true,
+            auditTypes: ['it']
+          }
+        },
+        params: { id: auditId }
+      } as never);
+      expect.fail('should redirect');
+    } catch (e) {
+      expect(isRedirect(e)).toBe(true);
+    }
   });
 });

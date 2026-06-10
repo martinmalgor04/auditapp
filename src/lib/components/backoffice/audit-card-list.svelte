@@ -3,6 +3,7 @@
   import AuditStatusBadge from './audit-status-badge.svelte';
   import AuditProgressBar from './audit-progress-bar.svelte';
   import CopyLinkButton from './copy-link-button.svelte';
+  import AuditRowActions from './audit-row-actions.svelte';
 
   let { rows }: { rows: DashboardAuditRow[] } = $props();
 
@@ -30,6 +31,7 @@
           <dt class="inline">Actualización: </dt><dd class="inline">{formatDate(row.lastActivity)}</dd>
         </div>
       </dl>
+      <AuditRowActions auditId={row.id} status={row.status} />
       {#if row.briefingUrl}
         <CopyLinkButton url={row.briefingUrl} />
       {/if}

@@ -1,4 +1,5 @@
 import { getSql } from './client';
+import type { AuditType } from '$lib/audit-types';
 import type { AppUser } from '../auth/types';
 
 type UserRow = {
@@ -7,6 +8,7 @@ type UserRow = {
   name: string;
   role: 'admin' | 'tecnico';
   active: boolean;
+  audit_types: AuditType[] | null;
 };
 
 function toAppUser(row: UserRow): AppUser {
@@ -15,7 +17,8 @@ function toAppUser(row: UserRow): AppUser {
     email: row.email,
     name: row.name,
     role: row.role,
-    active: row.active
+    active: row.active,
+    auditTypes: row.audit_types
   };
 }
 
@@ -24,7 +27,7 @@ export async function findUserByEmail(email: string): Promise<(AppUser & { passw
   const [row] = await sql<
     (UserRow & { password_hash: string })[]
   >`
-    SELECT id, email, name, role, active, password_hash
+    SELECT id, email, name, role, active, audit_types, password_hash
     FROM app_user
     WHERE email = ${email}
     LIMIT 1
@@ -43,7 +46,7 @@ export async function findUserByEmail(email: string): Promise<(AppUser & { passw
 export async function findUserById(id: string): Promise<AppUser | null> {
   const sql = getSql();
   const [row] = await sql<UserRow[]>`
-    SELECT id, email, name, role, active
+    SELECT id, email, name, role, active, audit_types
     FROM app_user
     WHERE id = ${id}
     LIMIT 1

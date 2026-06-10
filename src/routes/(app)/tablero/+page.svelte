@@ -22,7 +22,7 @@
     </a>
   </div>
 
-  <AuditFilters clients={data.clients} filters={data.filters} />
+  <AuditFilters clients={data.clients} filters={data.filters} allowedTypes={data.allowedTypes} />
 
   <AuditTable rows={data.dashboard.rows} />
   <AuditCardList rows={data.dashboard.rows} />

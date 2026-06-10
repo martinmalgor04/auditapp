@@ -1,6 +1,6 @@
 import { error, fail, isRedirect, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { requireAdmin, requireStaff } from '$lib/server/auth/guards';
+import { requireStaff } from '$lib/server/auth/guards';
 import {
   archiveAudit,
   getAuditById,
@@ -16,9 +16,9 @@ import { parseCabResponses } from '$lib/server/backoffice/form-parsers';
 import { failFromError } from '$lib/server/backoffice/route-helpers';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-  requireStaff(locals);
+  const user = requireStaff(locals);
 
-  const audit = await getAuditById(params.id);
+  const audit = await getAuditById(params.id, user);
   if (!audit) {
     error(404, 'Auditoría no encontrada');
   }
@@ -63,8 +63,8 @@ export const actions: Actions = {
 
   archive: async ({ locals, params }) => {
     try {
-      const admin = requireAdmin(locals);
-      await archiveAudit(params.id, admin.id);
+      const user = requireStaff(locals);
+      await archiveAudit(params.id, user.id);
       redirect(303, '/tablero');
     } catch (e) {
       if (isRedirect(e)) {

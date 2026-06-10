@@ -89,7 +89,8 @@ describe('audit briefing link', () => {
       email: 'admin@serviciosysistemas.com.ar',
       name: 'Admin',
       role: 'admin' as const,
-      active: true
+      active: true,
+      auditTypes: null
     };
 
     const result = await tableroActions.copyBriefingLink({

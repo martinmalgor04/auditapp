@@ -19,7 +19,8 @@ function userFixture(role: 'admin' | 'tecnico', email: string): AppUser {
     email,
     name: role === 'admin' ? 'Admin' : 'Técnico',
     role,
-    active: true
+    active: true,
+    auditTypes: null
   };
 }
 

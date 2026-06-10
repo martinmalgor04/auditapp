@@ -12,6 +12,7 @@ import type { FrozenTemplate } from './score-audit';
 export type ScoringAuditContext = {
   auditId: string;
   status: AuditStatus;
+  types: string[];
   assignedTechId: string | null;
   scheduledAt: Date | null;
   razonSocial: string;
@@ -29,6 +30,7 @@ export async function loadScoringContext(auditId: string): Promise<ScoringAuditC
     {
       id: string;
       status: AuditStatus;
+      types: string[];
       assigned_tech_id: string | null;
       scheduled_at: Date | null;
       template_ids: string[];
@@ -36,7 +38,7 @@ export async function loadScoringContext(auditId: string): Promise<ScoringAuditC
       cuit: string | null;
     }[]
   >`
-    SELECT a.id, a.status, a.assigned_tech_id, a.scheduled_at, a.template_ids,
+    SELECT a.id, a.status, a.types, a.assigned_tech_id, a.scheduled_at, a.template_ids,
            c.razon_social, c.cuit
     FROM audit a
     JOIN client c ON c.id = a.client_id
@@ -93,6 +95,7 @@ export async function loadScoringContext(auditId: string): Promise<ScoringAuditC
   return {
     auditId: audit.id,
     status: audit.status,
+    types: audit.types,
     assignedTechId: audit.assigned_tech_id,
     scheduledAt: audit.scheduled_at,
     razonSocial: audit.razon_social,

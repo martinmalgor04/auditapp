@@ -1,5 +1,6 @@
 import { getSql } from '$lib/server/db/client';
 import { hashPassword } from '$lib/server/auth/password';
+import type { AuditType } from '$lib/audit-types';
 import { ValidationError } from './errors';
 import {
   createUserSchema,
@@ -16,8 +17,22 @@ export type AppUserRow = {
   name: string;
   role: 'admin' | 'tecnico';
   active: boolean;
+  auditTypes: AuditType[] | null;
   createdAt: Date;
 };
+
+function normalizeAuditTypesForRole(
+  role: 'admin' | 'tecnico',
+  auditTypes: AuditType[] | undefined
+): AuditType[] | null {
+  if (role === 'admin') {
+    return null;
+  }
+  if (!auditTypes || auditTypes.length === 0) {
+    return null;
+  }
+  return auditTypes;
+}
 
 export async function listUsers(): Promise<AppUserRow[]> {
   const sql = getSql();
@@ -28,10 +43,11 @@ export async function listUsers(): Promise<AppUserRow[]> {
       name: string;
       role: 'admin' | 'tecnico';
       active: boolean;
+      audit_types: AuditType[] | null;
       created_at: Date;
     }[]
   >`
-    SELECT id, email, name, role, active, created_at
+    SELECT id, email, name, role, active, audit_types, created_at
     FROM app_user
     ORDER BY name ASC
   `;
@@ -42,6 +58,7 @@ export async function listUsers(): Promise<AppUserRow[]> {
     name: r.name,
     role: r.role,
     active: r.active,
+    auditTypes: r.audit_types,
     createdAt: r.created_at
   }));
 }
@@ -54,12 +71,13 @@ export async function createUser(input: CreateUserInput): Promise<{ id: string }
 
   const data = parsed.data;
   const passwordHash = await hashPassword(data.temporaryPassword);
+  const auditTypes = normalizeAuditTypesForRole(data.role, data.auditTypes);
   const sql = getSql();
 
   try {
     const [row] = await sql<{ id: string }[]>`
-      INSERT INTO app_user (email, name, password_hash, role, active)
-      VALUES (${data.email}, ${data.name}, ${passwordHash}, ${data.role}, true)
+      INSERT INTO app_user (email, name, password_hash, role, active, audit_types)
+      VALUES (${data.email}, ${data.name}, ${passwordHash}, ${data.role}, true, ${auditTypes})
       RETURNING id
     `;
     return { id: row.id };
@@ -78,6 +96,7 @@ export async function updateUser(input: UpdateUserInput): Promise<void> {
   }
 
   const data = parsed.data;
+  const auditTypes = normalizeAuditTypesForRole(data.role, data.auditTypes);
   const sql = getSql();
 
   await sql`
@@ -85,7 +104,8 @@ export async function updateUser(input: UpdateUserInput): Promise<void> {
     SET email = ${data.email},
         name = ${data.name},
         role = ${data.role},
-        active = ${data.active}
+        active = ${data.active},
+        audit_types = ${auditTypes}
     WHERE id = ${data.userId}
   `;
 }

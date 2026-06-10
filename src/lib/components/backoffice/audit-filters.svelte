@@ -1,9 +1,11 @@
 <script lang="ts">
   import { AUDIT_STATUSES } from '$lib/audit-status';
+  import { AUDIT_TYPE_LABELS, type AuditType } from '$lib/audit-types';
 
   let {
     clients,
-    filters
+    filters,
+    allowedTypes = null
   }: {
     clients: Array<{ id: string; razonSocial: string }>;
     filters: {
@@ -14,13 +16,15 @@
       sort?: string;
       page?: number;
     };
+    allowedTypes?: AuditType[] | null;
   } = $props();
 
-  const TYPE_OPTIONS = [
-    { value: 'it', label: 'IT' },
-    { value: 'erp-tango', label: 'ERP Tango' },
-    { value: 'erp-estandar', label: 'ERP Estándar' }
-  ];
+  const TYPE_OPTIONS = $derived(
+    (allowedTypes ?? (Object.keys(AUDIT_TYPE_LABELS) as AuditType[])).map((value) => ({
+      value,
+      label: AUDIT_TYPE_LABELS[value]
+    }))
+  );
 
   const SORT_OPTIONS = [
     { value: 'last_activity_desc', label: 'Última actividad ↓' },

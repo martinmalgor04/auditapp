@@ -9,7 +9,13 @@ import {
   setUserActive,
   updateUser
 } from '$lib/server/backoffice/users';
+import type { AuditType } from '$lib/audit-types';
+import { parseAuditTypes } from '$lib/audit-types';
 import { requireAdminPage, failFromError } from '$lib/server/backoffice/route-helpers';
+
+function auditTypesFromForm(formData: FormData): AuditType[] {
+  return parseAuditTypes(formData.getAll('auditTypes').map(String));
+}
 
 export const load: PageServerLoad = async ({ locals }) => {
   requireAdminPage(locals);
@@ -30,7 +36,8 @@ export const actions: Actions = {
         email: String(formData.get('email') ?? ''),
         name: String(formData.get('name') ?? ''),
         role: String(formData.get('role') ?? 'tecnico') as 'admin' | 'tecnico',
-        temporaryPassword
+        temporaryPassword,
+        auditTypes: auditTypesFromForm(formData)
       });
 
       return { success: true, userId: id, temporaryPassword };
@@ -49,7 +56,8 @@ export const actions: Actions = {
         email: String(formData.get('email') ?? ''),
         name: String(formData.get('name') ?? ''),
         role: String(formData.get('role') ?? 'tecnico') as 'admin' | 'tecnico',
-        active: formData.get('active') === 'on' || formData.get('active') === 'true'
+        active: formData.get('active') === 'on' || formData.get('active') === 'true',
+        auditTypes: auditTypesFromForm(formData)
       });
       return { success: true };
     } catch (e) {

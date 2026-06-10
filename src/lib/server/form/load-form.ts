@@ -1,4 +1,5 @@
 import type { AppUser } from '$lib/server/auth/types';
+import { auditMatchesUserScope } from '$lib/server/auth/audit-access';
 import {
   FORM_EDITABLE_STATUSES,
   getAuditFormHeader,
@@ -116,7 +117,10 @@ function mapResponse(r: {
 }
 
 export function assertFormAccess(audit: NonNullable<Awaited<ReturnType<typeof getAuditFormHeader>>>, user: AppUser): void {
-  if (user.role !== 'admin' && audit.assigned_tech_id !== user.id) {
+  if (user.role !== 'admin' && user.role !== 'tecnico') {
+    throw new AuditFormNotAllowedError();
+  }
+  if (!auditMatchesUserScope(audit.types, user)) {
     throw new AuditFormNotAllowedError();
   }
   if (!FORM_EDITABLE_STATUSES.includes(audit.status)) {

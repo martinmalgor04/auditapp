@@ -17,7 +17,8 @@ describe('users admin', () => {
     email: 'admin@serviciosysistemas.com.ar',
     name: 'Admin SyS',
     role: 'admin' as const,
-    active: true
+    active: true,
+    auditTypes: null
   });
 
   const tecnicoUser = () => ({
@@ -25,7 +26,8 @@ describe('users admin', () => {
     email: 'facu@serviciosysistemas.com.ar',
     name: 'Facu',
     role: 'tecnico' as const,
-    active: true
+    active: true,
+    auditTypes: ['it'] as const
   });
 
   beforeAll(async () => {

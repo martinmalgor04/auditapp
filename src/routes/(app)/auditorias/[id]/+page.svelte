@@ -116,7 +116,7 @@
     <CabSectionForm items={data.audit.cabItems} readonly />
   {/if}
 
-  {#if data.isAdmin && !data.audit.archivedAt}
+  {#if !data.audit.archivedAt}
     <form method="POST" action="?/archive" onsubmit={(e) => !confirm('¿Archivar esta auditoría?') && e.preventDefault()}>
       <button type="submit" class="text-sm text-red-700 underline">Archivar auditoría</button>
     </form>

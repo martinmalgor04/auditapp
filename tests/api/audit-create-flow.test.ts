@@ -50,7 +50,8 @@ describe('nueva auditoría — scope completo', () => {
           email: 'admin@serviciosysistemas.com.ar',
           name: 'Admin',
           role: 'admin',
-          active: true
+          active: true,
+          auditTypes: null
         }
       },
       request: new Request('http://localhost/auditorias/new', {

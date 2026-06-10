@@ -1,5 +1,6 @@
 import { getSql } from '$lib/server/db/client';
 import type { AppUser } from '$lib/server/auth/types';
+import { auditMatchesUserScope } from '$lib/server/auth/audit-access';
 import {
   AuditClosedError,
   AuditNotFoundError,
@@ -41,12 +42,11 @@ export type ClosureLoadResult = {
   isAdmin: boolean;
 };
 
-function assertClosurePageAccess(
-  assignedTechId: string | null,
-  status: string,
-  user: AppUser
-): void {
-  if (user.role !== 'admin' && assignedTechId !== user.id) {
+function assertClosurePageAccess(auditTypes: string[], status: string, user: AppUser): void {
+  if (user.role !== 'admin' && user.role !== 'tecnico') {
+    throw new ForbiddenError();
+  }
+  if (!auditMatchesUserScope(auditTypes, user)) {
     throw new ForbiddenError();
   }
   if (status !== 'en_cierre' && status !== 'cerrada') {
@@ -78,7 +78,7 @@ export async function loadClosurePage(auditId: string, user: AppUser): Promise<C
     throw new AuditNotFoundError();
   }
 
-  assertClosurePageAccess(audit.assigned_tech_id, audit.status, user);
+  assertClosurePageAccess(audit.types, audit.status, user);
 
   const canonical = await buildCanonicalAuditJson(auditId);
   const preview = buildReportPreview(canonical);

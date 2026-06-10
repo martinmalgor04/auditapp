@@ -1,7 +1,8 @@
 import { z } from 'zod';
+import { AUDIT_TYPES } from '$lib/audit-types';
 import { AUDIT_STATUSES } from '$lib/server/db/audit-status';
 
-export const auditTypeSchema = z.enum(['it', 'erp-tango', 'erp-estandar']);
+export const auditTypeSchema = z.enum(AUDIT_TYPES);
 export const auditSegmentSchema = z.enum(['A', 'B', 'C']);
 export const userRoleSchema = z.enum(['admin', 'tecnico']);
 export const filledBySchema = z.enum(['admin', 'cliente', 'tecnico']);
@@ -69,11 +70,14 @@ export const updateTemplateItemSchema = z.object({
 
 export type UpdateTemplateItemInput = z.infer<typeof updateTemplateItemSchema>;
 
+export const userAuditTypesSchema = z.array(auditTypeSchema);
+
 export const createUserSchema = z.object({
   email: z.string().email(),
   name: z.string().trim().min(1).max(200),
   role: userRoleSchema,
-  temporaryPassword: z.string().min(8).max(128)
+  temporaryPassword: z.string().min(8).max(128),
+  auditTypes: userAuditTypesSchema.optional().default([])
 });
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
@@ -83,7 +87,8 @@ export const updateUserSchema = z.object({
   email: z.string().email(),
   name: z.string().trim().min(1).max(200),
   role: userRoleSchema,
-  active: z.coerce.boolean()
+  active: z.coerce.boolean(),
+  auditTypes: userAuditTypesSchema.optional().default([])
 });
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;

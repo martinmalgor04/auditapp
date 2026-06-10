@@ -5,11 +5,27 @@ import type { AppUser } from '../../src/lib/server/auth/types';
 
 export async function findUserByEmail(sql: postgres.Sql, email: string): Promise<AppUser | null> {
   const [row] = await sql<
-    { id: string; email: string; name: string; role: 'admin' | 'tecnico'; active: boolean }[]
+    {
+      id: string;
+      email: string;
+      name: string;
+      role: 'admin' | 'tecnico';
+      active: boolean;
+      audit_types: AppUser['auditTypes'];
+    }[]
   >`
-    SELECT id, email, name, role, active FROM app_user WHERE email = ${email} LIMIT 1
+    SELECT id, email, name, role, active, audit_types FROM app_user WHERE email = ${email} LIMIT 1
   `;
-  return row ?? null;
+  return row
+    ? {
+        id: row.id,
+        email: row.email,
+        name: row.name,
+        role: row.role,
+        active: row.active,
+        auditTypes: row.audit_types
+      }
+    : null;
 }
 
 export async function seedAuthUsers(sql: postgres.Sql): Promise<void> {
