@@ -23,7 +23,7 @@
 </script>
 
 <div
-  class="min-h-screen font-sys {isDark
+  class="min-h-screen overflow-x-hidden font-sys {isDark
     ? 'sys-shell-dark text-[var(--sys-text-on-dark)]'
     : 'sys-shell-light bg-sys-offwhite text-[var(--sys-text-body-light)]'}"
   data-sys-shell={variant}
@@ -39,21 +39,30 @@
     </div>
   {:else}
     <header
-      class="sticky top-0 z-40 border-b border-black/[0.06] bg-sys-blanco"
+      class="sticky top-0 z-40 overflow-hidden border-b border-black/[0.06] bg-sys-blanco"
       data-sys-shell-header
     >
-      <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
-        <div class="flex min-w-0 items-center gap-6">
-          {#if logoHref}
-            <a href={logoHref} class="shrink-0">
-              <img src={logoSrc} alt="Servicios y Sistemas" class="h-8 w-auto" />
-            </a>
-          {:else}
-            <img src={logoSrc} alt="Servicios y Sistemas" class="h-8 w-auto shrink-0" />
-          {/if}
+      <div class="mx-auto max-w-7xl px-4 py-3">
+        <div class="flex min-w-0 items-center justify-between gap-4">
+          <div class="flex min-w-0 items-center gap-6">
+            {#if logoHref}
+              <a href={logoHref} class="shrink-0">
+                <img src={logoSrc} alt="Servicios y Sistemas" class="h-8 w-auto" />
+              </a>
+            {:else}
+              <img src={logoSrc} alt="Servicios y Sistemas" class="h-8 w-auto shrink-0" />
+            {/if}
+            <div class="hidden min-w-0 md:block">
+              {@render nav?.()}
+            </div>
+          </div>
+          <div class="shrink-0">
+            {@render headerActions?.()}
+          </div>
+        </div>
+        <div class="-mx-4 mt-2 overflow-x-auto px-4 pb-0.5 md:hidden">
           {@render nav?.()}
         </div>
-        {@render headerActions?.()}
       </div>
     </header>
     <main class="mx-auto w-full max-w-7xl px-4 py-6">

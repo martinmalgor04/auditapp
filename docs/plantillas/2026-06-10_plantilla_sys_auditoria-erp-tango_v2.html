@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auditoría ERP Tango — SyS</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+@page { size:A4 portrait; margin:0; }
+html, body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.35;
+  color: #111;
+  background: #e8e8e8;
+}
+.print-page {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto 10mm;
+  padding: 10mm 12mm 8mm;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,.12);
+  display: flex;
+  flex-direction: column;
+  page-break-after: always;
+  break-after: page;
+}
+.page-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 2px solid #111;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+  font-size: 8pt;
+}
+.page-header .brand { font-weight: 700; text-transform: uppercase; }
+.page-header .doc-title { flex: 1; text-align: center; color: #444; }
+.page-header .page-num { font-weight: 700; white-space: nowrap; }
+.page-body { flex: 1; }
+.page-footer {
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px solid #999;
+  font-size: 7.5pt;
+  text-align: center;
+  color: #444;
+}
+.doc-head {
+  border: 2px solid #111;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+.doc-head .brand { font-size: 11pt; font-weight: 700; text-transform: uppercase; }
+.doc-head h1 { font-size: 15pt; font-weight: 700; margin: 6px 0 4px; }
+.doc-head .meta { font-size: 9pt; color: #333; }
+.legend-box { border: 1px solid #111; padding: 8px 10px; margin-bottom: 12px; font-size: 9pt; }
+.legend-inline { margin-top: 4px; }
+h2 {
+  font-size: 12pt;
+  font-weight: 700;
+  margin: 0 0 8px;
+  padding: 4px 6px;
+  border: 1px solid #111;
+  background: #f2f2f2;
+}
+.section-gap + h2 { margin-top: 0; }
+h3 { font-size: 10.5pt; font-weight: 700; margin: 12px 0 6px; }
+h1.section-title { font-size: 13pt; margin: 0 0 10px; text-align: center; text-transform: uppercase; }
+p { margin: 0 0 8px; font-size: 9.5pt; }
+p.note { font-size: 9pt; font-style: italic; color: #333; }
+em { font-style: italic; }
+.section-gap { height: 14px; }
+.fields-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+  margin-bottom: 8px;
+}
+.field label { display: block; font-size: 8.5pt; font-weight: 700; margin-bottom: 2px; }
+.field .line { display: block; border-bottom: 1px solid #111; min-height: 22px; }
+table { width: 100%; border-collapse: collapse; margin: 8px 0 10px; font-size: 9pt; }
+table th, table td { border: 1px solid #111; padding: 6px 7px; vertical-align: top; }
+table th { background: #e8e8e8; font-weight: 700; }
+table .col-write { width: 42%; }
+table .met { width: 9%; text-align: center; font-size: 8pt; font-weight: 700; white-space: nowrap; }
+table .plan { width: 8%; text-align: center; font-size: 8pt; }
+table .chk, table .nivel { text-align: center; font-size: 8pt; white-space: nowrap; }
+table .write { min-height: 34px; height: 34px; }
+table .write.tall { min-height: 56px; height: 56px; }
+table .write:empty::after { content: '\00a0'; }
+@media print {
+  html, body { background: #fff; }
+  .print-page { margin: 0; box-shadow: none; min-height: 297mm; }
+  .print-page:last-child { page-break-after: auto; break-after: auto; }
+  h2, h3 { break-after: avoid; page-break-after: avoid; }
+  table thead { display: table-header-group; }
+  tr { break-inside: avoid; page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<div class="print-page">
+  <div class="page-header">
+    <span class="brand">Servicios y Sistemas SRL</span>
+    <span class="doc-title">Auditoría ERP Tango v2.1</span>
+    <span class="page-num">Pág. 1 / 8</span>
+  </div>
+  <div class="page-body">
+<div class="doc-head">
+  <div class="brand">Servicios y Sistemas SRL</div>
+  <h1>Planilla de relevamiento — Auditoría ERP Tango</h1>
+  <div class="meta">Versión v2.1 · Uso interno · Completar a mano en visita</div>
+</div>
+<div class="legend-box">
+  <strong>Instrucciones</strong>
+  <div class="legend-inline">Completá las casillas en blanco. Marcá ☐ según corresponda. Lo que no aplique: <strong>N/A</strong>.</div>
+  <div class="legend-inline"><strong>Cómo relevar:</strong> [O] Observación · [E] Entrevista · [C] Captura/foto · [X] Export · ⚡ Pre-cargable SyS</div>
+  <div class="legend-inline">El score y el índice se calculan después en auditapp.</div>
+</div>
+<h2>Cabecera del relevamiento</h2>
+<div class="fields-2col">
+  <div class="field"><label>Empresa / Razón social</label><span class="line"></span></div>
+  <div class="field"><label>CUIT</label><span class="line"></span></div>
+  <div class="field"><label>Rubro / actividad</label><span class="line"></span></div>
+  <div class="field"><label>Sede relevada (dirección)</label><span class="line"></span></div>
+  <div class="field"><label>Cantidad de empleados</label><span class="line"></span></div>
+  <div class="field"><label>Cantidad de terminales/puestos</label><span class="line"></span></div>
+  <div class="field"><label>Cantidad de sedes/sucursales</label><span class="line"></span></div>
+  <div class="field"><label>Referente del cliente (nombre + cargo)</label><span class="line"></span></div>
+</div>
+
+<div class="fields-2col">
+  <div class="field"><label>Auditores SyS presentes</label><span class="line"></span></div>
+  <div class="field"><label>Fecha y hora inicio / fin</label><span class="line"></span></div>
+  <div class="field"><label>Segmento (A / B / C)</label><span class="line"></span></div>
+  <div class="field"><label>¿Firmó NDA? ☐ Sí &nbsp; ☐ No</label><span class="line"></span></div>
+  <div class="field" style="grid-column:1/-1"><label>¿Quién da soporte ERP hoy? (SyS u otro)</label><span class="line"></span></div>
+</div>
+  </div>
+  <div class="page-footer">Uso interno · Completar a mano · Cargar datos en auditapp</div>
+</div>
+<div class="print-page">
+  <div class="page-header">
+    <span class="brand">Servicios y Sistemas SRL</span>
+    <span class="doc-title">Auditoría ERP Tango v2.1</span>
+    <span class="page-num">Pág. 2 / 8</span>
+  </div>
+  <div class="page-body">
+<h2>B1 · Identificación, licenciamiento y actores</h2>
+<p><strong>Identify</strong> — qué tienen, cómo lo pagan y quién decide.</p>
+<h3>Producto y modalidad</h3>
+<table><thead><tr><th>Ítem</th><th>Cómo</th><th class="col-write">Respuesta / notas</th></tr></thead><tbody>
+<tr><td>¿Usan Tango? (sí / otro ERP / ninguno)</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Si NO es Tango: ¿cuál? ¿por qué?</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Líneas de producto Tango en uso</td><td class="met">E/⚡</td><td class="write"></td></tr>
+<tr><td>Versión / generación instalada (clásica / Delta / Delta 2 / T-xx)</td><td class="met">O/C/⚡</td><td class="write"></td></tr>
+<tr><td>Modalidad (local instalado / Tango Nube / suscripción Nexo)</td><td class="met">E/⚡</td><td class="write"></td></tr>
+<tr><td>Antigüedad del sistema en la empresa</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>¿Quién administra Tango internamente? (usuario referente / key person)</td><td class="met">E</td><td class="write"></td></tr>
+</tbody></table>
+
+<h3>Licenciamiento <em>(el lever de upsell — detallar)</em></h3>
+<table><thead><tr><th>Ítem</th><th>Cómo</th><th class="col-write">Respuesta / notas</th></tr></thead><tbody>
+<tr><td>Tipo de licencia (perpetua / suscripción-abono)</td><td class="met">E/⚡</td><td class="write"></td></tr>
+<tr><td>Usuarios licenciados vs. usuarios activos reales</td><td class="met">E/⚡</td><td class="write"></td></tr>
+<tr><td><strong>Módulos licenciados vs. módulos realmente usados</strong> (la brecha = upsell o sobre-gasto)</td><td class="met">E/⚡</td><td class="write"></td></tr>
+<tr><td>Vencimiento de garantía de actualización / abono</td><td class="met">⚡</td><td class="write"></td></tr>
+<tr><td>Apps Nexo gratuitas disponibles sin activar</td><td class="met">E/⚡</td><td class="write"></td></tr>
+</tbody></table>
+<h3>Actores que influyen en la decisión</h3>
+<table><thead><tr><th>Ítem</th><th>Cómo</th><th class="col-write">Respuesta / notas</th></tr></thead><tbody>
+<tr><td><strong>¿Hay estudio contable externo?</strong></td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Si sí: ¿trabaja sobre el Tango del cliente o le exportan datos?</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Nombre del estudio + cuánto pesa en la decisión del ERP</td><td class="met">E</td><td class="write"></td></tr>
+</tbody></table>
+  </div>
+  <div class="page-footer">Uso interno · Completar a mano · Cargar datos en auditapp</div>
+</div>
+<div class="print-page">
+  <div class="page-header">
+    <span class="brand">Servicios y Sistemas SRL</span>
+    <span class="doc-title">Auditoría ERP Tango v2.1</span>
+    <span class="page-num">Pág. 3 / 8</span>
+  </div>
+  <div class="page-body">
+<h2>B2 · Módulos de Tango — implementados y uso real</h2>
+<p><strong>Identify</strong> — para cada módulo del catálogo Axoft: ¿lo licencian? ¿lo tienen instalado? ¿lo usan? ¿qué tan a fondo? La brecha <strong>licenciado → usado</strong> alimenta B1 (sobre-gasto o sub-uso).</p>
+<h3>Tango Gestión — módulos</h3>
+<table class="grid"><thead><tr><th>Módulo</th><th>¿Licenciado?</th><th>¿Instalado?</th><th>¿Lo usa?</th><th>Aprovechamiento (alto/medio/bajo)</th><th>Dolores / notas</th></tr></thead><tbody>
+<tr><td>Ventas / Facturación</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="nivel">☐ Alto &nbsp; ☐ Medio &nbsp; ☐ Bajo</td><td class="write"></td></tr>
+<tr><td>Compras / Proveedores</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="nivel">☐ Alto &nbsp; ☐ Medio &nbsp; ☐ Bajo</td><td class="write"></td></tr>
+<tr><td>Compras con Importaciones</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="nivel">☐ Alto &nbsp; ☐ Medio &nbsp; ☐ Bajo</td><td class="write"></td></tr>
+<tr><td>Stock / Inventario</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="nivel">☐ Alto &nbsp; ☐ Medio &nbsp; ☐ Bajo</td><td class="write"></td></tr>
+<tr><td>Tesorería / Cash Flow (Fondos)</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="nivel">☐ Alto &nbsp; ☐ Medio &nbsp; ☐ Bajo</td><td class="write"></td></tr>
+<tr><td>I.V.A. + Ingresos Brutos</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="nivel">☐ Alto &nbsp; ☐ Medio &nbsp; ☐ Bajo</td><td class="write"></td></tr>
+<tr><td>Estados Contables</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="nivel">☐ Alto &nbsp; ☐ Medio &nbsp; ☐ Bajo</td><td class="write"></td></tr>
+<tr><td>Activo Fijo</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="nivel">☐ Alto &nbsp; ☐ Medio &nbsp; ☐ Bajo</td><td class="write"></td></tr>
+<tr><td>Sueldos / Control de Horarios</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="nivel">☐ Alto &nbsp; ☐ Medio &nbsp; ☐ Bajo</td><td class="write"></td></tr>
+<tr><td>Central (multiempresa)</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="nivel">☐ Alto &nbsp; ☐ Medio &nbsp; ☐ Bajo</td><td class="write"></td></tr>
+</tbody></table>
+
+<h3>Otros productos de la familia Tango</h3>
+<table class="grid"><thead><tr><th>Producto</th><th>¿Lo tiene?</th><th>¿Lo usa?</th><th>Aprovechamiento</th><th>Dolores / notas</th></tr></thead><tbody>
+<tr><td>Tango Capital Humano (RRHH)</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="nivel">☐ Alto &nbsp; ☐ Medio &nbsp; ☐ Bajo</td><td class="write"></td></tr>
+<tr><td>Tango Punto de Venta (PdV)</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="nivel">☐ Alto &nbsp; ☐ Medio &nbsp; ☐ Bajo</td><td class="write"></td></tr>
+<tr><td>Tango Restô</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="nivel">☐ Alto &nbsp; ☐ Medio &nbsp; ☐ Bajo</td><td class="write"></td></tr>
+<tr><td>Tango Estudios Contables</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="nivel">☐ Alto &nbsp; ☐ Medio &nbsp; ☐ Bajo</td><td class="write"></td></tr>
+<tr><td>TFactura</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="nivel">☐ Alto &nbsp; ☐ Medio &nbsp; ☐ Bajo</td><td class="write"></td></tr>
+</tbody></table>
+  </div>
+  <div class="page-footer">Uso interno · Completar a mano · Cargar datos en auditapp</div>
+</div>
+<div class="print-page">
+  <div class="page-header">
+    <span class="brand">Servicios y Sistemas SRL</span>
+    <span class="doc-title">Auditoría ERP Tango v2.1</span>
+    <span class="page-num">Pág. 4 / 8</span>
+  </div>
+  <div class="page-body">
+<h2>B3 · Apps Tango Nexo</h2>
+<p><strong>Identify</strong> — Nexo es la capa cloud que potencia Tango. Muchas apps son <strong>gratuitas</strong>: si no las activaron, son <strong>quick wins</strong> inmediatos; las pagas, oportunidades de upsell.</p>
+<table class="grid"><thead><tr><th>App Nexo</th><th>Plan</th><th>¿La conoce?</th><th>¿La usa?</th><th>Oportunidad (quick win / upsell / N/A)</th></tr></thead><tbody>
+<tr><td>Tango Clientes (info comercial/financiera)</td><td class="plan">gratis</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="write"></td></tr>
+<tr><td>Tango Reportes (consulta de info)</td><td class="plan">gratis</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="write"></td></tr>
+<tr><td>Tango Tablero (indicadores tiempo real)</td><td class="plan">gratis</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="write"></td></tr>
+<tr><td>Tango Tablero 2 (indicadores a medida)</td><td class="plan">pago</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="write"></td></tr>
+<tr><td>Tango Connect (comunicación entre sistemas)</td><td class="plan">—</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="write"></td></tr>
+<tr><td>Tango Tiendas (e-commerce)</td><td class="plan">pago</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="write"></td></tr>
+<tr><td>Tango Cobranzas (medios de pago electrónicos)</td><td class="plan">—</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="write"></td></tr>
+<tr><td>Tango Backup (resguardo de la base)</td><td class="plan">gratis</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="write"></td></tr>
+<tr><td>Tango Update (mantiene Tango al día)</td><td class="plan">gratis</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="write"></td></tr>
+<tr><td>Tango Empleados (docs, licencias, vacaciones)</td><td class="plan">—</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="write"></td></tr>
+<tr><td>Tango Fichadas (control de personal)</td><td class="plan">gratis</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="write"></td></tr>
+<tr><td>TangoNet (transferencias entre sucursales)</td><td class="plan">—</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="write"></td></tr>
+<tr><td>Tango Notificaciones (alertas de Nexo)</td><td class="plan">gratis</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="chk">☐ Sí &nbsp; ☐ No</td><td class="write"></td></tr>
+</tbody></table>
+  </div>
+  <div class="page-footer">Uso interno · Completar a mano · Cargar datos en auditapp</div>
+</div>
+<div class="print-page">
+  <div class="page-header">
+    <span class="brand">Servicios y Sistemas SRL</span>
+    <span class="doc-title">Auditoría ERP Tango v2.1</span>
+    <span class="page-num">Pág. 5 / 8</span>
+  </div>
+  <div class="page-body">
+<h2>B4 · Aprovechamiento funcional y BI</h2>
+<p><strong>Identify</strong> — ¿le sacan jugo o lo usan como una factura cara? Énfasis en la <strong>toma de decisiones con datos</strong> (dolor #1 del dueño).</p>
+<table><thead><tr><th>Ítem</th><th>Cómo</th><th class="col-write">Respuesta / notas</th></tr></thead><tbody>
+<tr><td>Herramientas de análisis que usan (Tango Live, Tablero de Control, Automatizador de Reportes/Tareas)</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td><strong>¿El dueño/gerencia saca sus propios reportes o depende de administración?</strong></td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Reportes / informes de gestión que usan hoy</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Funciones avanzadas sin usar (que ya pagan)</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Procesos que siguen haciendo a mano / en Excel pudiendo estar en Tango</td><td class="met">E/O</td><td class="write"></td></tr>
+<tr><td>Nivel de satisfacción del usuario con el sistema</td><td class="met">E</td><td class="write"></td></tr>
+</tbody></table>
+<div class="section-gap"></div>
+<h2>B5 · Integraciones y personalizaciones a medida</h2>
+<p><strong>Identify/Protect</strong> — <em>la facturación electrónica AFIP se releva de forma unificada en B10.</em></p>
+<h3>Integraciones</h3>
+<table><thead><tr><th>Ítem</th><th>Cómo</th><th class="col-write">Respuesta / notas</th></tr></thead><tbody>
+<tr><td>Integración con bancos / medios de pago (¿vía Tango Cobranzas?)</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>e-commerce / tienda online (¿Tango Tiendas u otro?)</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Transferencias entre sucursales (¿TangoNet?)</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Exportación/importación con Excel u otros sistemas</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Necesidades de integración no resueltas</td><td class="met">E</td><td class="write"></td></tr>
+</tbody></table>
+<h3>Personalizaciones a medida <em>(riesgo de upgrade + lock-in)</em></h3>
+<table><thead><tr><th>Ítem</th><th>Cómo</th><th class="col-write">Respuesta / notas</th></tr></thead><tbody>
+<tr><td>Reportes / formularios / talonarios a medida</td><td class="met">E/O</td><td class="write"></td></tr>
+<tr><td>Desarrollos a medida sobre Tango (¿de SyS o de un tercero?)</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>¿Una actualización de versión podría romper algo personalizado?</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Dependencia de un proveedor externo por esas personalizaciones</td><td class="met">E</td><td class="write"></td></tr>
+</tbody></table>
+  </div>
+  <div class="page-footer">Uso interno · Completar a mano · Cargar datos en auditapp</div>
+</div>
+<div class="print-page">
+  <div class="page-header">
+    <span class="brand">Servicios y Sistemas SRL</span>
+    <span class="doc-title">Auditoría ERP Tango v2.1</span>
+    <span class="page-num">Pág. 6 / 8</span>
+  </div>
+  <div class="page-body">
+<h2>B6 · Datos, base y backup del ERP</h2>
+<p><strong>Protect/Recover</strong> — <em>acá se releva solo el respaldo de la base Tango. El backup integral (servidores, regla 3-2-1, RTO/RPO, ransomware) vive en la Auditoría Técnica IT (A10).</em></p>
+<table><thead><tr><th>Ítem</th><th>Cómo</th><th class="col-write">Respuesta / notas</th></tr></thead><tbody>
+<tr><td>Motor de base de datos y dónde corre</td><td class="met">O/E</td><td class="write"></td></tr>
+<tr><td>Tamaño de la base / antigüedad de datos</td><td class="met">O/E</td><td class="write"></td></tr>
+<tr><td><strong>Backup específico de la base del ERP</strong> (¿usan Tango Backup de Nexo?)</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>¿Se probó alguna vez restaurar la base Tango?</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Performance (¿anda lento? ¿cuándo?)</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Depuración / mantenimiento de la base</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Integridad de datos / errores conocidos</td><td class="met">E</td><td class="write"></td></tr>
+</tbody></table>
+<div class="section-gap"></div>
+<h2>B7 · Procesos de negocio y configuración operativa</h2>
+<p><strong>Identify</strong> — cómo fluye la operación real y cómo está parametrizado Tango.</p>
+<h3>Circuitos</h3>
+<table><thead><tr><th>Ítem</th><th>Cómo</th><th class="col-write">Respuesta / notas</th></tr></thead><tbody>
+<tr><td>Circuito de ventas (pedido → factura → cobro)</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Circuito de compras (OC → recepción → pago)</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Control de stock (¿en tiempo real? ¿inventarios?)</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Cierre contable (¿al día? ¿demoras?)</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Liquidación de sueldos</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Doble carga / reprocesos detectados</td><td class="met">E</td><td class="write"></td></tr>
+</tbody></table>
+<h3>Configuración multiempresa / multidepósito / multimoneda</h3>
+<table><thead><tr><th>Ítem</th><th>Cómo</th><th class="col-write">Respuesta / notas</th></tr></thead><tbody>
+<tr><td>¿Operan multiempresa? (¿usan módulo Central?)</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>¿Multidepósito / múltiples sucursales en stock?</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>¿Multimoneda?</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>¿Bases sueltas sin consolidar (cuando deberían estar integradas)?</td><td class="met">E/O</td><td class="write"></td></tr>
+</tbody></table>
+  </div>
+  <div class="page-footer">Uso interno · Completar a mano · Cargar datos en auditapp</div>
+</div>
+<div class="print-page">
+  <div class="page-header">
+    <span class="brand">Servicios y Sistemas SRL</span>
+    <span class="doc-title">Auditoría ERP Tango v2.1</span>
+    <span class="page-num">Pág. 7 / 8</span>
+  </div>
+  <div class="page-body">
+<h2>B8 · Usuarios, permisos y segregación de funciones (dentro del ERP)</h2>
+<p><strong>Protect · ITGC (SoD)</strong> — <em>los accesos a nivel SO/red (AD, MFA, alta/baja) se relevan en la Auditoría Técnica IT (A5).</em></p>
+<table><thead><tr><th>Ítem</th><th>Cómo</th><th class="col-write">Respuesta / notas</th></tr></thead><tbody>
+<tr><td>Perfiles de usuario definidos en el ERP</td><td class="met">O/E</td><td class="write"></td></tr>
+<tr><td>Segregación de funciones (quien factura ≠ quien cobra ≠ quien concilia)</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Usuarios con permisos totales innecesarios</td><td class="met">E/O</td><td class="write"></td></tr>
+<tr><td>Cuentas compartidas dentro del ERP</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Trazabilidad / auditoría de operaciones en Tango</td><td class="met">E</td><td class="write"></td></tr>
+</tbody></table>
+<div class="section-gap"></div>
+<h2>B9 · Actualizaciones y soporte</h2>
+<p><strong>Govern</strong> — <em>el "quién da soporte ERP hoy" se releva en la cabecera.</em></p>
+<table><thead><tr><th>Ítem</th><th>Cómo</th><th class="col-write">Respuesta / notas</th></tr></thead><tbody>
+<tr><td>Versión instalada vs última disponible</td><td class="met">O/E/⚡</td><td class="write"></td></tr>
+<tr><td>Soporte / actualización vigente (¿usan Tango Update?)</td><td class="met">E/⚡</td><td class="write"></td></tr>
+<tr><td>Frecuencia con que actualizan</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Quién resuelve los problemas del día a día</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Tiempo de respuesta del soporte actual</td><td class="met">E</td><td class="write"></td></tr>
+</tbody></table>
+<div class="section-gap"></div>
+<h2>B10 · Cumplimiento fiscal y normativo</h2>
+<p><strong>Govern</strong> — específico Argentina. Incluye la <strong>facturación electrónica AFIP</strong> (integración técnica + cumplimiento, unificadas en un solo ítem con dos estados).</p>
+<table><thead><tr><th>Ítem</th><th>Cómo</th><th class="col-write">Respuesta / notas</th></tr></thead><tbody>
+<tr><td><strong>Facturación electrónica AFIP</strong> — ¿integrada? / ¿al día con la RG vigente?</td><td class="met">E/O</td><td class="write"></td></tr>
+<tr><td>Percepciones / retenciones configuradas correctamente</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Libros IVA / sueldos generados desde el sistema</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Adaptación a últimos cambios normativos</td><td class="met">E</td><td class="write"></td></tr>
+<tr><td>Riesgos fiscales por mala configuración</td><td class="met">E</td><td class="write"></td></tr>
+</tbody></table>
+  </div>
+  <div class="page-footer">Uso interno · Completar a mano · Cargar datos en auditapp</div>
+</div>
+<div class="print-page">
+  <div class="page-header">
+    <span class="brand">Servicios y Sistemas SRL</span>
+    <span class="doc-title">Auditoría ERP Tango v2.1</span>
+    <span class="page-num">Pág. 8 / 8</span>
+  </div>
+  <div class="page-body">
+<h2>B11 · Oportunidades detectadas (insumo de recomendaciones internas)</h2>
+<p><strong>No se muestra textual al cliente — alimenta el presupuesto.</strong></p>
+<table><thead><tr><th>Ítem</th><th class="col-write">Respuesta / notas</th></tr></thead><tbody>
+<tr><td>Módulos a sumar (de B2)</td><td class="write"></td></tr>
+<tr><td>Apps Nexo a activar (quick wins gratis + upsell de B3)</td><td class="write"></td></tr>
+<tr><td>Capacitación necesaria</td><td class="write"></td></tr>
+<tr><td>Actualización de versión / migración a Nube o Nexo</td><td class="write"></td></tr>
+<tr><td>Integraciones o personalizaciones a desarrollar / absorber</td><td class="write"></td></tr>
+<tr><td>Sobre-gasto detectado (licencias/módulos que pagan y no usan)</td><td class="write"></td></tr>
+<tr><td>Candidato a abono de soporte ERP (MRR)</td><td class="write"></td></tr>
+<tr><td>Prioridad comercial (alta/media/baja)</td><td class="write"></td></tr>
+</tbody></table>
+<div class="section-gap"></div>
+<h1 class="section-title">Cierre del relevamiento ERP</h1>
+<table class="grid"><thead><tr><th>Campo</th><th class="col-write">Respuesta / notas</th></tr></thead><tbody>
+<tr><td>Top 5 riesgos ERP detectados (para el informe)</td><td class="write tall"></td></tr>
+<tr><td>Quick wins de costo cero (incl. apps Nexo gratis sin activar)</td><td class="write tall"></td></tr>
+<tr><td>Hallazgos para recomendaciones internas (upsell ERP)</td><td class="write tall"></td></tr>
+<tr><td>Fotos / exports adjuntos</td><td class="write tall"></td></tr>
+<tr><td>Próximo paso acordado con el cliente</td><td class="write tall"></td></tr>
+</tbody></table>
+<p class="note">Los índices y el informe final se arman en auditapp al cargar los datos.</p>
+  </div>
+  <div class="page-footer">Uso interno · Completar a mano · Cargar datos en auditapp</div>
+</div>
+</body>
+</html>

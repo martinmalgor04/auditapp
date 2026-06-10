@@ -12,7 +12,7 @@
 </svelte:head>
 
 <div class="space-y-4">
-  <div class="flex items-center justify-between">
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <h1 class="text-2xl font-bold text-slate-900">Tablero</h1>
     <a
       href="/auditorias/new"
@@ -28,7 +28,7 @@
   <AuditCardList rows={data.dashboard.rows} />
 
   {#if data.dashboard.hasNext || data.dashboard.page > 1}
-    <nav class="flex items-center justify-between text-sm text-slate-600 pt-2">
+    <nav class="flex flex-col gap-2 text-sm text-slate-600 pt-2 sm:flex-row sm:items-center sm:justify-between">
       <span>
         Página {data.dashboard.page} · {data.dashboard.total} auditorías
       </span>

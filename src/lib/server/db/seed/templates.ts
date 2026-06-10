@@ -119,34 +119,55 @@ async function seedTemplateFixture(sql: DbExecutor, fixture: TemplateFixture): P
           );
         }
 
-        await sql`
-          INSERT INTO template_item (
-            section_id, label, help_text, method, field_type, options,
-            is_prefillable, prefill_source, filled_by, allow_na, required,
-            scores, item_weight, sort_order
-          )
-          SELECT
-            ${sectionId},
-            ${item.label},
-            ${item.help_text ?? null},
-            ${item.method ?? []},
-            ${item.field_type},
-            ${sql.json(JSON.parse(JSON.stringify(options)) as postgres.JSONValue)},
-            ${item.is_prefillable ?? false},
-            ${item.prefill_source ?? null},
-            ${item.filled_by},
-            ${item.allow_na ?? false},
-            ${item.required ?? false},
-            ${scores},
-            ${item.item_weight ?? 1},
-            ${item.sort_order}
-          WHERE NOT EXISTS (
-            SELECT 1 FROM template_item ti
-            WHERE ti.section_id = ${sectionId}
-              AND ti.label = ${item.label}
-              AND ti.sort_order = ${item.sort_order}
-          )
+        const optionsJson = sql.json(
+          JSON.parse(JSON.stringify(options)) as postgres.JSONValue
+        );
+
+        const updated = await sql<{ id: string }[]>`
+          UPDATE template_item
+          SET
+            label = ${item.label},
+            help_text = ${item.help_text ?? null},
+            method = ${item.method ?? []},
+            field_type = ${item.field_type},
+            options = ${optionsJson},
+            is_prefillable = ${item.is_prefillable ?? false},
+            prefill_source = ${item.prefill_source ?? null},
+            filled_by = ${item.filled_by},
+            allow_na = ${item.allow_na ?? false},
+            required = ${item.required ?? false},
+            scores = ${scores},
+            item_weight = ${item.item_weight ?? 1}
+          WHERE section_id = ${sectionId}
+            AND sort_order = ${item.sort_order}
+          RETURNING id
         `;
+
+        if (updated.length === 0) {
+          await sql`
+            INSERT INTO template_item (
+              section_id, label, help_text, method, field_type, options,
+              is_prefillable, prefill_source, filled_by, allow_na, required,
+              scores, item_weight, sort_order
+            )
+            VALUES (
+              ${sectionId},
+              ${item.label},
+              ${item.help_text ?? null},
+              ${item.method ?? []},
+              ${item.field_type},
+              ${optionsJson},
+              ${item.is_prefillable ?? false},
+              ${item.prefill_source ?? null},
+              ${item.filled_by},
+              ${item.allow_na ?? false},
+              ${item.required ?? false},
+              ${scores},
+              ${item.item_weight ?? 1},
+              ${item.sort_order}
+            )
+          `;
+        }
       }
     }
 }

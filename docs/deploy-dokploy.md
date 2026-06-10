@@ -111,13 +111,33 @@ Imagen `docker/postgres` con:
 1. Un solo proyecto Compose con `deploy/dokploy.compose.example.yml`.
 2. Mismas variables que el paso 2 más `POSTGRES_PASSWORD` compartida con el servicio postgres del stack.
 
-## Seed inicial automático
+## Seed en producción
 
-El entrypoint corre seed automáticamente **solo si la DB está vacía** (sin usuarios en `app_user`).
+### Automático en cada deploy (recomendado)
 
-Para desactivar: `AUTO_SEED=false`
+El entrypoint hace dos pasos idempotentes:
 
-**Advertencia:** contraseñas seed de ejemplo (`changeme-admin`, `changeme-tech`). Cambiarlas en prod.
+1. **Seed inicial** — solo si la DB está vacía (sin usuarios en `app_user`): usuarios + plantillas + clientes CSV.
+2. **Sync de plantillas** — **siempre** en cada arranque: actualiza `template`, `section` y `template_item` desde `seed/templates/*.json`. **No toca** usuarios, clientes ni auditorías existentes.
+
+Para desactivar el seed inicial: `AUTO_SEED=false`
+
+### Manual (sin redeploy)
+
+Solo plantillas (seguro con datos en prod):
+
+```bash
+docker exec <contenedor-app> node docker/seed-templates-cli.mjs
+```
+
+Seed completo local (con `DATABASE_URL` apuntando a prod vía túnel SSH):
+
+```bash
+pnpm run db:seed:templates   # solo plantillas — seguro
+pnpm run db:seed             # usuarios + plantillas + clientes — cuidado en prod
+```
+
+**Advertencia:** `db:seed` completo resetea hashes de usuarios seed y reimporta clientes CSV. En prod usá `db:seed:templates` o el sync automático del entrypoint.
 
 ## Gate pre-push (obligatorio antes de pushear)
 

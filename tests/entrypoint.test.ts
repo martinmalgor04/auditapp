@@ -19,14 +19,16 @@ describe('docker entrypoint', () => {
     await teardownTestDb();
   });
 
-  it('runs migrations before conditional seed and node server', () => {
+  it('runs migrations before conditional seed, templates sync, and node server', () => {
     const entrypoint = readFileSync(resolve(root, 'docker/entrypoint.sh'), 'utf8');
     const migrateIndex = entrypoint.indexOf('migrate-cli.mjs');
     const seedIndex = entrypoint.indexOf('seed-cli.mjs');
+    const templatesSeedIndex = entrypoint.indexOf('seed-templates-cli.mjs');
     const nodeIndex = entrypoint.indexOf('build/index.js');
     expect(migrateIndex).toBeGreaterThan(-1);
     expect(seedIndex).toBeGreaterThan(migrateIndex);
-    expect(nodeIndex).toBeGreaterThan(seedIndex);
+    expect(templatesSeedIndex).toBeGreaterThan(seedIndex);
+    expect(nodeIndex).toBeGreaterThan(templatesSeedIndex);
     expect(entrypoint).toContain('exec node build/index.js');
   });
 

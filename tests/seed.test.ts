@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parse } from 'csv-parse/sync';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { runSeed } from '../src/lib/server/db/seed';
+import { runSeed, seedTemplates } from '../src/lib/server/db/seed';
 import { setSqlForTests } from '../src/lib/server/db/client';
 import {
   flushTestDbSerial,
@@ -159,6 +159,33 @@ describe('database seed', () => {
     expect(client.cuit).toBe('30642277428');
     expect(client.direccion).toContain('TUCUMAN');
     expect(client.provincia).toBe('CORRIENTES');
+  });
+
+  it('re-sync updates template item labels by sort_order', async () => {
+    await withTestDbSerial(sql, async (s) => {
+      const [section] = await s<{ id: string }[]>`
+        SELECT s.id
+        FROM section s
+        JOIN template t ON t.id = s.template_id
+        WHERE t.code = 'erp-tango' AND s.code = 'B5'
+        LIMIT 1
+      `;
+      expect(section).toBeDefined();
+
+      await s`
+        UPDATE template_item
+        SET label = '¿Proceso Contabilidad documentado?'
+        WHERE section_id = ${section.id} AND sort_order = 0
+      `;
+
+      await seedTemplates(s);
+
+      const [item] = await s<{ label: string }[]>`
+        SELECT label FROM template_item
+        WHERE section_id = ${section.id} AND sort_order = 0
+      `;
+      expect(item.label).toBe('¿Proceso Tesorería documentado?');
+    });
   });
 
   it('seed is idempotent on second run', async () => {

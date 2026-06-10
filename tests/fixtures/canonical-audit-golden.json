@@ -337,7 +337,7 @@
     },
     {
       "code": "B5",
-      "title": "Contabilidad",
+      "title": "Tesorería",
       "standard_ref": "ERP B5",
       "weight": "alto",
       "score": null,
@@ -345,7 +345,7 @@
       "items": [
         {
           "item_id": "6827c7bb-426e-4d72-bee2-ae4d1ac9cb7b",
-          "label": "¿Proceso Contabilidad documentado?",
+          "label": "¿Proceso Tesorería documentado?",
           "field_type": "tri",
           "value": null,
           "na": false,
@@ -354,7 +354,7 @@
         },
         {
           "item_id": "0aeb7915-0ad8-4a8a-a2e6-48fdc8b5d841",
-          "label": "¿Controles internos aplicados en Contabilidad?",
+          "label": "¿Controles internos aplicados en Tesorería?",
           "field_type": "bool",
           "value": null,
           "na": false,
@@ -363,7 +363,7 @@
         },
         {
           "item_id": "c4d2be7b-9a8d-4990-8c81-eea1ef685f4a",
-          "label": "Madurez operativa — Contabilidad",
+          "label": "Madurez operativa — Tesorería",
           "field_type": "select",
           "value": null,
           "na": false,
@@ -401,43 +401,6 @@
       ]
     },
     {
-      "code": "B6",
-      "title": "Tesorería y bancos",
-      "standard_ref": "ERP B6",
-      "weight": "alto",
-      "score": null,
-      "observations": null,
-      "items": [
-        {
-          "item_id": "3456d826-d453-4385-b80e-b15e40cd0843",
-          "label": "¿Proceso Tesorería y bancos documentado?",
-          "field_type": "tri",
-          "value": null,
-          "na": false,
-          "observations": null,
-          "attachments": []
-        },
-        {
-          "item_id": "97a41d88-31b1-4299-89c6-c39ba727b04f",
-          "label": "¿Controles internos aplicados en Tesorería y bancos?",
-          "field_type": "bool",
-          "value": null,
-          "na": false,
-          "observations": null,
-          "attachments": []
-        },
-        {
-          "item_id": "9e60f7e3-e256-4f71-b6c1-de960c787bda",
-          "label": "Madurez operativa — Tesorería y bancos",
-          "field_type": "select",
-          "value": null,
-          "na": false,
-          "observations": null,
-          "attachments": []
-        }
-      ]
-    },
-    {
       "code": "A7",
       "title": "Gestión de vulnerabilidades",
       "standard_ref": "CIS 7 · NIST: Detect",
@@ -466,9 +429,9 @@
       ]
     },
     {
-      "code": "B7",
+      "code": "B6",
       "title": "Sueldos y RRHH",
-      "standard_ref": "ERP B7",
+      "standard_ref": "ERP B6",
       "weight": "medio",
       "score": null,
       "observations": null,
@@ -531,9 +494,9 @@
       ]
     },
     {
-      "code": "B8",
+      "code": "B7",
       "title": "Producción / costos",
-      "standard_ref": "ERP B8",
+      "standard_ref": "ERP B7",
       "weight": "medio",
       "score": null,
       "observations": null,
@@ -587,9 +550,9 @@
       ]
     },
     {
-      "code": "B9",
+      "code": "B8",
       "title": "Integraciones y Nexo",
-      "standard_ref": "ERP B9",
+      "standard_ref": "ERP B8",
       "weight": "medio",
       "score": null,
       "observations": null,
@@ -661,9 +624,9 @@
       ]
     },
     {
-      "code": "B10",
+      "code": "B9",
       "title": "Seguridad y usuarios Tango",
-      "standard_ref": "ERP B10",
+      "standard_ref": "ERP B9",
       "weight": "medio",
       "score": null,
       "observations": null,

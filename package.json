@@ -17,6 +17,7 @@
     "db:down": "docker compose down",
     "db:migrate": "tsx scripts/db-migrate.ts",
     "db:seed": "tsx scripts/db-seed.ts",
+    "db:seed:templates": "tsx scripts/db-seed-templates.ts",
     "db:reset": "tsx scripts/db-reset.ts"
   },
   "devDependencies": {

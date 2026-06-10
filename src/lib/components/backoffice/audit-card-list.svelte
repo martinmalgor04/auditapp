@@ -16,7 +16,7 @@
   {#each rows as row}
     <article class="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
       <div class="flex items-start justify-between gap-2">
-        <a href="/auditorias/{row.id}" class="font-medium text-slate-900 hover:underline">
+        <a href="/auditorias/{row.id}" class="min-w-0 font-medium text-slate-900 hover:underline">
           {row.razonSocial}
         </a>
         <AuditStatusBadge status={row.status} />

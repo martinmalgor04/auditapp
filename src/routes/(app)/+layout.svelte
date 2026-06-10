@@ -9,7 +9,7 @@
 
 <SysShell variant="light">
   {#snippet nav()}
-    <nav class="flex flex-wrap items-center gap-4 text-sm font-medium">
+    <nav class="flex items-center gap-4 whitespace-nowrap text-sm font-medium">
       <a href="/tablero" class="text-sys-profundo hover:text-sys-electrico">Tablero</a>
       <a href="/auditorias/new" class="text-sys-medio hover:text-sys-electrico">Nueva auditoría</a>
       {#if isAdmin}
@@ -20,8 +20,8 @@
   {/snippet}
 
   {#snippet headerActions()}
-    <div class="flex shrink-0 items-center gap-3 text-sm text-[var(--sys-text-muted-light)]">
-      <span>{data.user?.name} ({data.user?.role})</span>
+    <div class="flex shrink-0 items-center gap-2 text-sm text-[var(--sys-text-muted-light)] sm:gap-3">
+      <span class="hidden max-w-[10rem] truncate sm:inline sm:max-w-none">{data.user?.name} ({data.user?.role})</span>
       <form method="POST" action="/logout">
         <button type="submit" class="text-sys-medio underline hover:text-sys-electrico">Salir</button>
       </form>

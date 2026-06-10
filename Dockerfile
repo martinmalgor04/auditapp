@@ -40,6 +40,7 @@ COPY docker/entrypoint.sh /entrypoint.sh
 COPY docker/database-url.mjs ./docker/database-url.mjs
 COPY docker/migrate-cli.mjs ./docker/migrate-cli.mjs
 COPY docker/seed-cli.mjs ./docker/seed-cli.mjs
+COPY docker/seed-templates-cli.mjs ./docker/seed-templates-cli.mjs
 
 RUN chmod +x /entrypoint.sh
 

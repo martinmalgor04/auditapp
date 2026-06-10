@@ -135,7 +135,7 @@
               "ventas",
               "compras",
               "stock",
-              "contabilidad",
+              "tesorería",
               "sueldos",
               "punto_venta"
             ]
@@ -364,8 +364,8 @@
     },
     {
       "code": "B5",
-      "title": "Contabilidad",
-      "objective": "Contabilidad",
+      "title": "Tesorería",
+      "objective": "Tesorería",
       "standard_ref": "ERP B5",
       "weight": "alto",
       "has_score": true,
@@ -373,7 +373,7 @@
       "items": [
         {
           "sort_order": 0,
-          "label": "¿Proceso Contabilidad documentado?",
+          "label": "¿Proceso Tesorería documentado?",
           "field_type": "tri",
           "method": [
             "O"
@@ -383,7 +383,7 @@
         },
         {
           "sort_order": 1,
-          "label": "¿Controles internos aplicados en Contabilidad?",
+          "label": "¿Controles internos aplicados en Tesorería?",
           "field_type": "bool",
           "method": [
             "O"
@@ -393,7 +393,7 @@
         },
         {
           "sort_order": 2,
-          "label": "Madurez operativa — Contabilidad",
+          "label": "Madurez operativa — Tesorería",
           "field_type": "select",
           "method": [
             "O"
@@ -416,64 +416,12 @@
     },
     {
       "code": "B6",
-      "title": "Tesorería y bancos",
-      "objective": "Tesorería y bancos",
-      "standard_ref": "ERP B6",
-      "weight": "alto",
-      "has_score": true,
-      "sort_order": 6,
-      "items": [
-        {
-          "sort_order": 0,
-          "label": "¿Proceso Tesorería y bancos documentado?",
-          "field_type": "tri",
-          "method": [
-            "O"
-          ],
-          "filled_by": "tecnico",
-          "options": {}
-        },
-        {
-          "sort_order": 1,
-          "label": "¿Controles internos aplicados en Tesorería y bancos?",
-          "field_type": "bool",
-          "method": [
-            "O"
-          ],
-          "filled_by": "tecnico",
-          "options": {}
-        },
-        {
-          "sort_order": 2,
-          "label": "Madurez operativa — Tesorería y bancos",
-          "field_type": "select",
-          "method": [
-            "O"
-          ],
-          "filled_by": "tecnico",
-          "options": {
-            "choices": [
-              "Optimizado",
-              "En desarrollo",
-              "Manual"
-            ],
-            "score_map": {
-              "Optimizado": 100,
-              "En desarrollo": 50,
-              "Manual": 0
-            }
-          }
-        }
-      ]
-    },
-    {
-      "code": "B7",
       "title": "Sueldos y RRHH",
       "objective": "Sueldos y RRHH",
-      "standard_ref": "ERP B7",
+      "standard_ref": "ERP B6",
       "weight": "medio",
       "has_score": true,
-      "sort_order": 7,
+      "sort_order": 6,
       "items": [
         {
           "sort_order": 0,
@@ -519,13 +467,13 @@
       ]
     },
     {
-      "code": "B8",
+      "code": "B7",
       "title": "Producción / costos",
       "objective": "Producción / costos",
-      "standard_ref": "ERP B8",
+      "standard_ref": "ERP B7",
       "weight": "medio",
       "has_score": true,
-      "sort_order": 8,
+      "sort_order": 7,
       "items": [
         {
           "sort_order": 0,
@@ -571,13 +519,13 @@
       ]
     },
     {
-      "code": "B9",
+      "code": "B8",
       "title": "Integraciones y Nexo",
       "objective": "Integraciones y Nexo",
-      "standard_ref": "ERP B9",
+      "standard_ref": "ERP B8",
       "weight": "medio",
       "has_score": true,
-      "sort_order": 9,
+      "sort_order": 8,
       "items": [
         {
           "sort_order": 0,
@@ -623,13 +571,13 @@
       ]
     },
     {
-      "code": "B10",
+      "code": "B9",
       "title": "Seguridad y usuarios Tango",
       "objective": "Seguridad y usuarios Tango",
-      "standard_ref": "ERP B10",
+      "standard_ref": "ERP B9",
       "weight": "medio",
       "has_score": true,
-      "sort_order": 10,
+      "sort_order": 9,
       "items": [
         {
           "sort_order": 0,

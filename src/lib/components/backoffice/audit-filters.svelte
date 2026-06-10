@@ -30,10 +30,13 @@
   ];
 </script>
 
-<form method="GET" class="flex flex-wrap gap-3 items-end p-4 bg-white rounded-lg border border-slate-200">
+<form
+  method="GET"
+  class="grid grid-cols-1 gap-3 p-4 bg-white rounded-lg border border-slate-200 sm:grid-cols-2 md:flex md:flex-wrap md:items-end"
+>
   <label class="space-y-1">
     <span class="text-xs font-medium text-slate-600">Tipo</span>
-    <select name="type" class="rounded border border-slate-300 px-2 py-1.5 text-sm">
+    <select name="type" class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm md:w-auto">
       <option value="">Todos</option>
       {#each TYPE_OPTIONS as opt}
         <option value={opt.value} selected={filters.type === opt.value}>{opt.label}</option>
@@ -43,7 +46,7 @@
 
   <label class="space-y-1">
     <span class="text-xs font-medium text-slate-600">Estado</span>
-    <select name="status" class="rounded border border-slate-300 px-2 py-1.5 text-sm">
+    <select name="status" class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm md:w-auto">
       <option value="">Todos</option>
       {#each AUDIT_STATUSES as st}
         <option value={st} selected={filters.status === st}>{st}</option>
@@ -53,7 +56,7 @@
 
   <label class="space-y-1">
     <span class="text-xs font-medium text-slate-600">Cliente</span>
-    <select name="clientId" class="rounded border border-slate-300 px-2 py-1.5 text-sm min-w-[12rem]">
+    <select name="clientId" class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm md:min-w-[12rem] md:w-auto">
       <option value="">Todos</option>
       {#each clients as c}
         <option value={c.id} selected={filters.clientId === c.id}>{c.razonSocial}</option>
@@ -61,7 +64,7 @@
     </select>
   </label>
 
-  <label class="space-y-1 flex-1 min-w-[12rem]">
+  <label class="space-y-1 sm:col-span-2 md:flex-1 md:min-w-[12rem]">
     <span class="text-xs font-medium text-slate-600">Buscar</span>
     <input
       type="search"
@@ -74,7 +77,7 @@
 
   <label class="space-y-1">
     <span class="text-xs font-medium text-slate-600">Orden</span>
-    <select name="sort" class="rounded border border-slate-300 px-2 py-1.5 text-sm">
+    <select name="sort" class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm md:w-auto">
       {#each SORT_OPTIONS as opt}
         <option value={opt.value} selected={filters.sort === opt.value}>{opt.label}</option>
       {/each}
