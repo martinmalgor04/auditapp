@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pruebas manuales — 3 auditorías completas | auditapp</title>
+  <style>
+    :root {
+      --sys-blue: #1e3a5f;
+      --sys-blue-light: #2d5a8a;
+      --sys-accent: #e85d04;
+      --sys-bg: #f4f6f9;
+      --sys-card: #ffffff;
+      --sys-border: #dde3ec;
+      --sys-text: #1a2332;
+      --sys-muted: #5c6b7f;
+      --sys-radius: 10px;
+      --sys-shadow: 0 2px 8px rgba(30, 58, 95, 0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--sys-bg);
+      color: var(--sys-text);
+      line-height: 1.55;
+      font-size: 15px;
+    }
+    header {
+      background: linear-gradient(135deg, var(--sys-blue), var(--sys-blue-light));
+      color: #fff;
+      padding: 2rem 1.5rem 2.5rem;
+    }
+    header .inner, main { max-width: 980px; margin: 0 auto; }
+    main { padding: 0 1.5rem 3rem; margin-top: -1rem; }
+    header h1 { font-size: 1.7rem; margin-bottom: 0.4rem; }
+    header p { opacity: 0.92; max-width: 680px; }
+    .badge {
+      display: inline-block;
+      margin-top: 0.75rem;
+      padding: 0.2rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+    section {
+      background: var(--sys-card);
+      border: 1px solid var(--sys-border);
+      border-radius: var(--sys-radius);
+      box-shadow: var(--sys-shadow);
+      padding: 1.4rem;
+      margin-bottom: 1.1rem;
+    }
+    h2 {
+      font-size: 1.12rem;
+      color: var(--sys-blue);
+      margin-bottom: 0.9rem;
+      padding-bottom: 0.45rem;
+      border-bottom: 2px solid var(--sys-bg);
+    }
+    h3 { font-size: 0.98rem; color: var(--sys-blue-light); margin: 1rem 0 0.55rem; }
+    h3:first-child { margin-top: 0; }
+    p, li { color: var(--sys-muted); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; margin: 0.5rem 0; }
+    th, td { text-align: left; padding: 0.5rem 0.65rem; border-bottom: 1px solid var(--sys-border); vertical-align: top; }
+    th { background: var(--sys-bg); color: var(--sys-blue); white-space: nowrap; }
+    code {
+      font-family: 'SF Mono', Consolas, monospace;
+      font-size: 0.82rem;
+      background: #eef2f7;
+      padding: 0.12rem 0.4rem;
+      border-radius: 4px;
+      color: var(--sys-blue);
+    }
+    a { color: var(--sys-blue-light); }
+    .flow {
+      display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center;
+      font-size: 0.78rem; margin: 0.6rem 0 0.2rem;
+    }
+    .flow span {
+      background: var(--sys-bg); border: 1px solid var(--sys-border);
+      padding: 0.28rem 0.55rem; border-radius: 6px;
+    }
+    .flow .arrow { border: none; background: none; color: var(--sys-muted); }
+    .scenario {
+      border: 1px solid var(--sys-border);
+      border-radius: 8px;
+      padding: 1.2rem;
+      margin-bottom: 1.1rem;
+      background: #fafbfc;
+    }
+    .scenario:last-child { margin-bottom: 0; }
+    .scenario-head {
+      display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; margin-bottom: 0.65rem;
+    }
+    .scenario-head h3 { margin: 0; flex: 1 1 220px; font-size: 1.05rem; }
+    .tag {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.04em; padding: 0.18rem 0.5rem; border-radius: 4px;
+    }
+    .tag-it { background: #dbeafe; color: #1e40af; }
+    .tag-erp { background: #fef3c7; color: #92400e; }
+    .tag-combo { background: #ede9fe; color: #5b21b6; }
+    .tag-a { background: #d1fae5; color: #065f46; }
+    .tag-b { background: #e0e7ff; color: #3730a3; }
+    .tag-c { background: #fce7f3; color: #9d174d; }
+    .phase {
+      margin-top: 0.85rem;
+      padding-top: 0.75rem;
+      border-top: 1px dashed var(--sys-border);
+    }
+    .phase-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--sys-accent);
+      margin-bottom: 0.45rem;
+    }
+    .checklist { list-style: none; margin-top: 0.35rem; }
+    .checklist li {
+      padding: 0.32rem 0 0.32rem 1.65rem;
+      position: relative;
+      font-size: 0.86rem;
+      color: var(--sys-text);
+    }
+    .checklist li::before {
+      content: '';
+      position: absolute; left: 0; top: 0.48rem;
+      width: 13px; height: 13px;
+      border: 2px solid var(--sys-border);
+      border-radius: 3px; background: #fff;
+    }
+    .note {
+      background: #fff8e6;
+      border-left: 4px solid var(--sys-accent);
+      padding: 0.65rem 0.85rem;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.84rem;
+      color: #5c4a1a;
+      margin: 0.55rem 0;
+    }
+    .pw { font-size: 0.84rem; color: var(--sys-muted); margin-top: 0.35rem; }
+    footer { text-align: center; padding: 1.2rem; color: var(--sys-muted); font-size: 0.78rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <h1>3 auditorías completas — guía manual</h1>
+    <p>Cada caso recorre el flujo entero: alta en backoffice → link de briefing → formulario cliente → relevamiento técnico → cierre → auditoría <strong>cerrada</strong>.</p>
+    <span class="badge">Local: pnpm run dev · Seed: pnpm run db:seed · E2E: e2e/audit-full-flow.spec.ts</span>
+  </div>
+</header>
+
+<main>
+
+  <section>
+    <h2>Acceso rápido</h2>
+    <table>
+      <tr><th>Rol</th><th>Email</th><th>Contraseña</th><th>Usar en</th></tr>
+      <tr><td>Admin</td><td><code>admin@serviciosysistemas.com.ar</code></td><td><code>changeme-admin</code></td><td>Fases 1–2 (todos los casos)</td></tr>
+      <tr><td>Técnico Facu</td><td><code>facu@serviciosysistemas.com.ar</code></td><td><code>changeme-tech</code></td><td>Casos A y C</td></tr>
+      <tr><td>Técnico Simón</td><td><code>simon@serviciosysistemas.com.ar</code></td><td><code>changeme-tech</code></td><td>Caso D</td></tr>
+    </table>
+    <table>
+      <tr><th>Ruta</th><th>URL</th></tr>
+      <tr><td>Tablero</td><td><a href="http://localhost:5173/tablero">/tablero</a></td></tr>
+      <tr><td>Nueva auditoría</td><td><a href="http://localhost:5173/auditorias/new">/auditorias/new</a></td></tr>
+      <tr><td>Briefing cliente</td><td><code>/briefing/{token}</code> (copiás del detalle)</td></tr>
+      <tr><td>Relevamiento técnico</td><td><code>/auditorias/{id}/form</code></td></tr>
+      <tr><td>Cierre</td><td><code>/auditorias/{id}/cierre</code></td></tr>
+    </table>
+    <h3>Pipeline completo (6 fases)</h3>
+    <div class="flow">
+      <span>① Crear</span><span class="arrow">→</span>
+      <span>borrador</span><span class="arrow">→</span>
+      <span>② Link briefing</span><span class="arrow">→</span>
+      <span>briefing_enviado</span><span class="arrow">→</span>
+      <span>③ Cliente envía</span><span class="arrow">→</span>
+      <span>briefing_completo</span><span class="arrow">→</span>
+      <span>④ Relevamiento</span><span class="arrow">→</span>
+      <span>en_cierre</span><span class="arrow">→</span>
+      <span>⑤ Cierre</span><span class="arrow">→</span>
+      <span>cerrada</span><span class="arrow">→</span>
+      <span>⑥ Verificar</span>
+    </div>
+    <p class="pw">En incógnito para el briefing (sin cookie de admin). El técnico asignado completa fases 4–5.</p>
+  </section>
+
+  <!-- CASO A -->
+  <section>
+    <h2>Caso A — IT · Segmento A · Facu</h2>
+    <div class="scenario">
+      <div class="scenario-head">
+        <h3>Distribuidora del Litoral SA</h3>
+        <span class="tag tag-it">Solo IT</span>
+        <span class="tag tag-a">Seg. A</span>
+      </div>
+      <p>Distribución mayorista, 85 empleados, Resistencia. Camino feliz IT puro.</p>
+
+      <div class="phase">
+        <div class="phase-title">Fase 1 — Crear auditoría (admin)</div>
+        <table>
+          <tr><th>Campo</th><th>Valor</th></tr>
+          <tr><td>Cliente</td><td><strong>Cliente nuevo</strong></td></tr>
+          <tr><td>Razón social</td><td>Distribuidora del Litoral SA</td></tr>
+          <tr><td>CUIT</td><td>30-71234567-8</td></tr>
+          <tr><td>Rubro</td><td>Distribución alimenticia y bebidas</td></tr>
+          <tr><td>Tipo</td><td>☑ IT</td></tr>
+          <tr><td>Segmento</td><td>A</td></tr>
+          <tr><td>Técnico</td><td>Facu</td></tr>
+          <tr><td>Fecha visita</td><td>2026-07-08</td></tr>
+        </table>
+        <ul class="checklist">
+          <li>Login admin → Nueva auditoría → completar tabla → Crear auditoría</li>
+          <li>Verificar CAB precargada (razón social, CUIT, rubro)</li>
+          <li>Estado badge: <code>borrador</code></li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="phase-title">Fase 2 — Link de briefing (admin)</div>
+        <ul class="checklist">
+          <li>En detalle: <strong>Generar link de briefing</strong></li>
+          <li>Estado → <code>briefing_enviado</code></li>
+          <li>Copiar link (botón «Copiar link») y guardarlo</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="phase-title">Fase 3 — Briefing cliente (incógnito)</div>
+        <table>
+          <tr><th>Ítem</th><th>Valor</th></tr>
+          <tr><td>Rubro / actividad</td><td>Distribución mayorista — alimentos, bebidas y limpieza</td></tr>
+          <tr><td>Cantidad de empleados</td><td>85</td></tr>
+          <tr><td>Referente principal</td><td>Carolina Méndez — Gerente Administrativa</td></tr>
+          <tr><td>Contacto referente</td><td>carolina.mendez@distlitoral.com.ar · 3624-555123</td></tr>
+          <tr><td>ERP actual</td><td>Tango Gestión (Ventas, Compras, Stock)</td></tr>
+          <tr><td>Proveedor de correo</td><td>Google Workspace</td></tr>
+          <tr><td>Soporte IT actual</td><td>Servicios y Sistemas — contrato anual</td></tr>
+        </table>
+        <ul class="checklist">
+          <li>Header: «Hola, Distribuidora del Litoral SA»</li>
+          <li>Solo ítems del cliente (sin preguntas técnicas)</li>
+          <li>Completar campos → <strong>Enviar</strong> → «¡Listo! Nos vemos en la visita.»</li>
+          <li>Backoffice: estado <code>briefing_completo</code></li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="phase-title">Fase 4 — Relevamiento técnico (Facu)</div>
+        <ul class="checklist">
+          <li>Login <code>facu@...</code> → detalle auditoría → <strong>Abrir relevamiento técnico</strong></li>
+          <li>Recorrer secciones IT (A1, B7, …) — completar ítems visibles</li>
+          <li>Verificar autosave «Guardado» y barra de progreso</li>
+          <li><strong>Relevamiento completo</strong> → vuelve al detalle, estado <code>en_cierre</code></li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="phase-title">Fase 5 — Cierre (Facu)</div>
+        <table>
+          <tr><th>Campo cierre</th><th>Valor sugerido</th></tr>
+          <tr><td>Top riesgo 1</td><td>Backups sin prueba de restore periódica</td></tr>
+          <tr><td>Quick win</td><td>Activar MFA en cuentas admin de Google</td></tr>
+          <tr><td>Próximo paso</td><td>Revisión de infraestructura en 30 días</td></tr>
+        </table>
+        <ul class="checklist">
+          <li>Ir a <strong>Pantalla de cierre</strong> (o /cierre directo)</li>
+          <li>Revisar índices IT y scores por sección</li>
+          <li>Completar riesgos / quick wins / próximo paso</li>
+          <li><strong>Confirmar cierre</strong> → estado <code>cerrada</code></li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="phase-title">Fase 6 — Verificación final</div>
+        <ul class="checklist">
+          <li>Detalle en solo lectura; badge <code>Cerrada</code></li>
+          <li>Link briefing ya no funciona (pantalla amable)</li>
+          <li>Preview informe en /cierre/preview accesible</li>
+          <li>Tablero lista la auditoría con estado cerrada</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- CASO C -->
+  <section>
+    <h2>Caso C — IT + ERP Tango · Segmento A · Facu</h2>
+    <div class="scenario">
+      <div class="scenario-head">
+        <h3>Metalúrgica NEA SA</h3>
+        <span class="tag tag-combo">IT + ERP Tango</span>
+        <span class="tag tag-a">Seg. A</span>
+      </div>
+      <p>Industria metalúrgica, 120 empleados. Prueba combo con módulos Tango en briefing.</p>
+
+      <div class="phase">
+        <div class="phase-title">Fase 1 — Crear auditoría</div>
+        <table>
+          <tr><th>Campo</th><th>Valor</th></tr>
+          <tr><td>Razón social</td><td>Metalúrgica NEA SA</td></tr>
+          <tr><td>CUIT</td><td>30-70987654-3</td></tr>
+          <tr><td>Rubro</td><td>Metalurgia y estructuras</td></tr>
+          <tr><td>Tipo</td><td>☑ IT + ☑ ERP Tango</td></tr>
+          <tr><td>Segmento / Técnico / Fecha</td><td>A · Facu · 2026-08-05</td></tr>
+        </table>
+        <ul class="checklist">
+          <li>CAB muestra ítems unificados de ambas plantillas</li>
+          <li>Estado <code>borrador</code></li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="phase-title">Fase 2 — Link briefing</div>
+        <ul class="checklist"><li>Igual que Caso A: generar y copiar link</li></ul>
+      </div>
+
+      <div class="phase">
+        <div class="phase-title">Fase 3 — Briefing cliente</div>
+        <table>
+          <tr><th>Ítem</th><th>Valor</th></tr>
+          <tr><td>Rubro</td><td>Fabricación de estructuras metálicas y montajes industriales</td></tr>
+          <tr><td>Empleados</td><td>120</td></tr>
+          <tr><td>Referente</td><td>Laura Benítez — Directora Financiera</td></tr>
+          <tr><td>Contacto</td><td>lbenitez@metalurgicanea.com.ar · 3624-555890</td></tr>
+          <tr><td>ERP</td><td>Tango Gestión v9</td></tr>
+          <tr><td>Correo / Soporte</td><td>SyS hosting · SyS soporte</td></tr>
+          <tr><td>Módulos Tango</td><td>ventas, compras, stock, contabilidad, sueldos</td></tr>
+        </table>
+        <div class="note">En combo el briefing puede tener wizard de 2–3 pasos. Usá «Siguiente» entre pasos.</div>
+        <ul class="checklist">
+          <li>Completar multiselect módulos Tango si aparece</li>
+          <li>Enviar → <code>briefing_completo</code></li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="phase-title">Fase 4 — Relevamiento (Facu)</div>
+        <ul class="checklist">
+          <li>Form incluye secciones IT <strong>y</strong> ERP Tango</li>
+          <li>Completar al menos una sección de cada plantilla</li>
+          <li>Relevamiento completo → <code>en_cierre</code></li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="phase-title">Fase 5 — Cierre</div>
+        <table>
+          <tr><td>Top riesgo</td><td>Usuarios ERP con permisos excesivos</td></tr>
+          <tr><td>Quick win</td><td>Auditoría de roles Tango en 2 semanas</td></tr>
+          <tr><td>Próximo paso</td><td>Propuesta de hardening IT + ERP</td></tr>
+        </table>
+        <ul class="checklist">
+          <li>Verificar índices IT <strong>y</strong> ERP en pantalla cierre</li>
+          <li>Confirmar cierre</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="phase-title">Fase 6 — Verificación</div>
+        <ul class="checklist">
+          <li><code>types</code> en detalle: it, erp-tango</li>
+          <li>Estado <code>cerrada</code> · informe preview OK</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- CASO D -->
+  <section>
+    <h2>Caso D — ERP Tango · Segmento C · Simón</h2>
+    <div class="scenario">
+      <div class="scenario-head">
+        <h3>Boutique Moda &amp; Estilo</h3>
+        <span class="tag tag-erp">ERP Tango</span>
+        <span class="tag tag-c">Seg. C</span>
+      </div>
+      <p>Retail chico, 12 empleados, Posadas. Solo ERP, técnico Simón.</p>
+
+      <div class="phase">
+        <div class="phase-title">Fase 1 — Crear auditoría</div>
+        <table>
+          <tr><th>Campo</th><th>Valor</th></tr>
+          <tr><td>Razón social</td><td>Boutique Moda &amp; Estilo</td></tr>
+          <tr><td>CUIT</td><td>27-33445566-1</td></tr>
+          <tr><td>Rubro</td><td>Retail — indumentaria</td></tr>
+          <tr><td>Tipo</td><td>☑ ERP Tango (solo)</td></tr>
+          <tr><td>Segmento / Técnico / Fecha</td><td>C · Simón · 2026-07-18</td></tr>
+        </table>
+      </div>
+
+      <div class="phase">
+        <div class="phase-title">Fase 2 — Link briefing</div>
+        <ul class="checklist"><li>Generar link → copiar → incógnito</li></ul>
+      </div>
+
+      <div class="phase">
+        <div class="phase-title">Fase 3 — Briefing cliente</div>
+        <table>
+          <tr><th>Ítem</th><th>Valor</th></tr>
+          <tr><td>Rubro</td><td>Venta minorista de indumentaria femenina</td></tr>
+          <tr><td>Empleados</td><td>12</td></tr>
+          <tr><td>Referente</td><td>Valentina Acosta — Dueña</td></tr>
+          <tr><td>Contacto</td><td>valentina@modaestilo.com · 3764-223344</td></tr>
+          <tr><td>ERP</td><td>Tango PdV + Gestión básico</td></tr>
+          <tr><td>Módulos Tango</td><td>ventas, punto_venta, stock</td></tr>
+          <tr><td>Soporte IT</td><td>Sin contrato — soporte puntual</td></tr>
+        </table>
+      </div>
+
+      <div class="phase">
+        <div class="phase-title">Fase 4 — Relevamiento (Simón)</div>
+        <ul class="checklist">
+          <li>Login <code>simon@...</code></li>
+          <li>Form solo plantilla ERP Tango</li>
+          <li>Relevamiento completo</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="phase-title">Fase 5 — Cierre</div>
+        <table>
+          <tr><td>Riesgo</td><td>PdV sin conciliación diaria de caja</td></tr>
+          <tr><td>Quick win</td><td>Capacitación cierre de caja Tango PdV</td></tr>
+          <tr><td>Próximo paso</td><td>Seguimiento post-implementación en 15 días</td></tr>
+        </table>
+      </div>
+
+      <div class="phase">
+        <div class="phase-title">Fase 6 — Verificación</div>
+        <ul class="checklist">
+          <li>Índice ERP visible · estado <code>cerrada</code></li>
+          <li>Cliente chico (seg. C) cerrado correctamente</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Matriz resumen</h2>
+    <table>
+      <thead>
+        <tr><th>Caso</th><th>Empresa</th><th>Tipo</th><th>Seg.</th><th>Técnico</th><th>Qué valida</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>A</strong></td><td>Distribuidora del Litoral SA</td><td>IT</td><td>A</td><td>Facu</td><td>Flujo IT puro end-to-end</td></tr>
+        <tr><td><strong>C</strong></td><td>Metalúrgica NEA SA</td><td>IT + ERP Tango</td><td>A</td><td>Facu</td><td>Combo, multiselect módulos, 2 índices</td></tr>
+        <tr><td><strong>D</strong></td><td>Boutique Moda &amp; Estilo</td><td>ERP Tango</td><td>C</td><td>Simón</td><td>Retail chico, otro técnico</td></tr>
+      </tbody>
+    </table>
+    <div class="note" style="margin-top:0.75rem">
+      <strong>Automatizado:</strong> los mismos 3 casos corren en Playwright con
+      <code>pnpm exec playwright test e2e/audit-full-flow.spec.ts</code>
+      (datos en <code>e2e/fixtures/audit-scenarios.ts</code>).
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  auditapp · Servicios y Sistemas SRL · docs/datos-prueba-auditorias.html
+</footer>
+
+</body>
+</html>

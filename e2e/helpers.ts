@@ -7,3 +7,11 @@ export async function loginAsAdmin(page: Page) {
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await page.waitForURL('/tablero');
 }
+
+export async function loginAsTech(page: Page, email = 'facu@serviciosysistemas.com.ar') {
+  await page.goto('/login');
+  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Contraseña').fill('changeme-tech');
+  await page.getByRole('button', { name: 'Ingresar' }).click();
+  await page.waitForURL('/tablero');
+}
