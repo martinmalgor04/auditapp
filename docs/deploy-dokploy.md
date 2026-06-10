@@ -34,6 +34,7 @@ Configurar en Dokploy:
 | `R2_SECRET_ACCESS_KEY` | Cloudflare R2 |
 | `R2_BUCKET` | Nombre del bucket |
 | `R2_ENDPOINT` | URL del endpoint R2 |
+| `LOG_LEVEL` | `debug` \| `info` \| `warn` \| `error` (default `info`) — logs JSON en stdout del contenedor |
 
 Opcionales (Postgres admin):
 
@@ -141,6 +142,20 @@ Incluye `pnpm test`, `pnpm run build` y `docker build`. Alias: `pnpm run prepush
 | 404 dominio app | App fuera de `dokploy-network` | Ver compose; redeploy |
 | 404 al recargar (F5) en rutas internas | Service worker viejo con cache-first en HTML | Hard refresh; tras deploy v2 del SW se corrige solo. En dev el SW no se registra |
 | Healthcheck falla | Puerto UI ≠ 3033 | Dokploy servicio app → puerto **3033** |
+| 500 sin detalle en UI | Error server no expuesto al cliente | Logs del contenedor app: buscar `"msg":"request_failed"` (incluye `path`, `status`, `err.stack`) |
+
+### Leer logs en Dokploy
+
+La app escribe **una línea JSON por evento** en stdout. Ejemplos útiles:
+
+| `msg` | Cuándo aparece |
+|---|---|
+| `request_failed` | Error no manejado (500) — incluye ruta, usuario y stack |
+| `http_5xx` | Respuesta 5xx sin excepción capturada en `handleError` |
+| `session_resolve_failed` | Cookie de sesión inválida o DB inaccesible al resolver sesión |
+| `action_unhandled_error` | Acción de formulario con error inesperado |
+
+Para más detalle temporal: `LOG_LEVEL=debug` en el servicio app y redeploy.
 
 ## Referencia compose
 

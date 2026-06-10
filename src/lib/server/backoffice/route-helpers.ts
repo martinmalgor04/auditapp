@@ -1,5 +1,6 @@
 import { error, fail, isRedirect } from '@sveltejs/kit';
 import { AuthError, requireAdmin } from '$lib/server/auth/guards';
+import { logger } from '$lib/server/logger';
 import { BackofficeError } from './errors';
 
 export function requireAdminPage(locals: App.Locals) {
@@ -36,5 +37,6 @@ export function failFromError(e: unknown) {
   if (e instanceof AuthError) {
     return fail(e.status, { error: e.message, code: e.code });
   }
+  logger.error('action_unhandled_error', {}, e);
   throw e;
 }

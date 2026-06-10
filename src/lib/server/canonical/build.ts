@@ -1,4 +1,5 @@
 import { getSql } from '$lib/server/db/client';
+import { logger } from '$lib/server/logger';
 import type { FieldType } from '$lib/server/db/field-schemas';
 import { AuditNotFoundError } from '$lib/server/backoffice/errors';
 import type { TopRisk } from '$lib/server/scoring/types';
@@ -319,7 +320,7 @@ export async function buildCanonicalAuditJson(
   try {
     return canonicalAuditSchema.parse(payload);
   } catch (err) {
-    console.error('[canonical] schema validation failed', auditId, err);
+    logger.error('canonical_schema_validation_failed', { auditId }, err);
     throw new CanonicalBuildError();
   }
 }
