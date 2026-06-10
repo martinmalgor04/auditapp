@@ -59,7 +59,7 @@
 
   let textValue = $state('');
   let numberValue = $state<number | ''>('');
-  let boolValue = $state(false);
+  let boolValue = $state<boolean | null>(null);
   let triValue = $state<'si' | 'no' | 'parcial' | ''>('');
   let selectValue = $state('');
   let multiselectValue = $state<string[]>([]);
@@ -109,7 +109,7 @@
         numberValue = typeof v === 'number' ? v : '';
         break;
       case 'bool':
-        boolValue = Boolean(v);
+        boolValue = v === true ? true : v === false ? false : null;
         break;
       case 'tri':
         triValue = (v as 'si' | 'no' | 'parcial') ?? '';
