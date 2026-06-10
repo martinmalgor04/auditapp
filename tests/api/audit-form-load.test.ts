@@ -30,6 +30,15 @@ describe('audit form load', () => {
     expect(form.audit.id).toBe(auditId);
   });
 
+  it('sections follow template sort_order (CAB first)', async () => {
+    const { auditId } = await seedAuditFormFixture(sql);
+    const tech = await findUserByEmail(sql, 'facu@serviciosysistemas.com.ar');
+    const form = await loadAuditForm(auditId, tech!);
+    const sortOrders = form.sections.map((s) => s.sortOrder);
+    expect(sortOrders).toEqual([...sortOrders].sort((a, b) => a - b));
+    expect(form.sections[0]?.code).toBe('CAB');
+  });
+
   it('unassigned tecnico receives 403', async () => {
     const { auditId } = await seedAuditFormFixture(sql, {
       assignedTechEmail: 'facu@serviciosysistemas.com.ar'

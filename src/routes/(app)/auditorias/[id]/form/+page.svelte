@@ -30,6 +30,26 @@
 
   const activeSection = $derived(data.sections.find((s) => s.id === activeSectionId) ?? data.sections[0]);
 
+  const activeSectionIndex = $derived(data.sections.findIndex((s) => s.id === activeSectionId));
+
+  const isFirstSection = $derived(activeSectionIndex <= 0);
+  const isLastSection = $derived(activeSectionIndex >= data.sections.length - 1);
+
+  function goToSection(index: number) {
+    const section = data.sections[index];
+    if (!section) return;
+    activeSectionId = section.id;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goToPrevSection() {
+    if (!isFirstSection) goToSection(activeSectionIndex - 1);
+  }
+
+  function goToNextSection() {
+    if (!isLastSection) goToSection(activeSectionIndex + 1);
+  }
+
   const autosave = createAutosave(data.auditId, {
     onStateChange: (s) => {
       saveState = s;
@@ -171,7 +191,7 @@
 </div>
 
 <div class="lg:grid lg:grid-cols-[280px_1fr] lg:gap-6">
-  <aside class="mb-4 lg:mb-0 lg:sticky lg:top-16 lg:self-start">
+  <aside class="sticky top-12 z-20 -mx-4 mb-4 border-b border-sys-medio/10 bg-sys-offwhite px-4 pb-3 lg:top-16 lg:z-auto lg:mx-0 lg:mb-0 lg:border-0 lg:px-0 lg:pb-0 lg:self-start">
     <SectionNav
       sections={data.sections}
       {activeSectionId}
@@ -226,6 +246,21 @@
         />
       {/each}
     </div>
+
+    {#if data.sections.length > 1}
+      <div class="flex gap-3 pt-2" data-section-step>
+        {#if !isFirstSection}
+          <SysButton type="button" variant="secondary" class="flex-1" onclick={goToPrevSection}>
+            Anterior
+          </SysButton>
+        {/if}
+        {#if !isLastSection}
+          <SysButton type="button" variant="primary" class="flex-1" onclick={goToNextSection}>
+            Siguiente
+          </SysButton>
+        {/if}
+      </div>
+    {/if}
 
     <form method="POST" action="?/complete" use:enhance class="sticky bottom-4 pt-4">
       <SysButton type="submit" variant="primary" class="w-full shadow-md">

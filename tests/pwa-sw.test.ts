@@ -11,6 +11,7 @@ describe('pwa service worker', () => {
     expect(source).toContain("'/api/'");
     expect(source).toContain('PRECACHE_URLS');
     expect(source).toContain("fetch(event.request)");
+    expect(source).toContain("event.request.mode === 'navigate'");
   });
 
   it('api fetch uses network not cache-only', () => {

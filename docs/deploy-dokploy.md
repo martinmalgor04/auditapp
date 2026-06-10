@@ -139,6 +139,7 @@ Incluye `pnpm test`, `pnpm run build` y `docker build`. Alias: `pnpm run prepush
 | No puedo conectar al 4043 | Bind en 127.0.0.1 | Usar túnel SSH o `POSTGRES_PUBLISH_BIND=0.0.0.0` + firewall |
 | Conexión rechazada en 4043 | IP no permitida en pg_hba | Agregar `POSTGRES_ALLOWED_CIDRS` |
 | 404 dominio app | App fuera de `dokploy-network` | Ver compose; redeploy |
+| 404 al recargar (F5) en rutas internas | Service worker viejo con cache-first en HTML | Hard refresh; tras deploy v2 del SW se corrige solo. En dev el SW no se registra |
 | Healthcheck falla | Puerto UI ≠ 3033 | Dokploy servicio app → puerto **3033** |
 
 ## Referencia compose

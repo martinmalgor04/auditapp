@@ -78,7 +78,7 @@ export async function getAuditFormHeader(auditId: string): Promise<AuditFormHead
 export async function listFormSections(auditId: string): Promise<FormSectionRow[]> {
   const sql = getSql();
   return sql<FormSectionRow[]>`
-    SELECT DISTINCT ON (s.id)
+    SELECT
       s.id,
       s.code,
       s.title,
@@ -86,10 +86,14 @@ export async function listFormSections(auditId: string): Promise<FormSectionRow[
       s.has_score
     FROM audit a
     JOIN section s ON s.template_id = ANY(a.template_ids)
-    JOIN template_item ti ON ti.section_id = s.id
     WHERE a.id = ${auditId}
-      AND ti.filled_by IN ('tecnico', 'admin')
-    ORDER BY s.id, s.sort_order
+      AND EXISTS (
+        SELECT 1
+        FROM template_item ti
+        WHERE ti.section_id = s.id
+          AND ti.filled_by IN ('tecnico', 'admin')
+      )
+    ORDER BY s.sort_order ASC, s.code ASC
   `;
 }
 
