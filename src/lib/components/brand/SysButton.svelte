@@ -17,13 +17,13 @@
   } = $props();
 
   const base =
-    'inline-flex min-h-[var(--sys-touch-min)] items-center justify-center rounded-sys px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50';
+    'inline-flex min-h-[var(--sys-touch-min)] items-center justify-center rounded-sys px-4 py-2 text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50';
 
   const variants: Record<Variant, string> = {
-    primary: 'bg-sys-electrico text-white hover:bg-[#1976D2]',
+    primary: 'bg-sys-electrico text-white hover:brightness-95 shadow-[0_2px_8px_rgba(33,150,243,0.22)]',
     secondary:
-      'border border-sys-medio/20 bg-sys-blanco text-sys-profundo hover:border-sys-electrico hover:text-sys-electrico',
-    ghost: 'bg-transparent text-sys-profundo hover:text-sys-electrico'
+      'border bg-sys-blanco text-sys-profundo hover:bg-sys-offwhite hover:text-sys-electrico border-[var(--sys-border-subtle)] hover:border-[rgba(33,150,243,0.35)]',
+    ghost: 'bg-transparent text-sys-profundo hover:bg-sys-offwhite hover:text-sys-electrico'
   };
 </script>
 

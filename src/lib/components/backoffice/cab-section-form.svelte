@@ -30,17 +30,17 @@
 </script>
 
 {#if items.length > 0}
-  <fieldset class="space-y-3 rounded-lg border border-slate-200 p-4">
-    <legend class="text-sm font-semibold text-slate-800 px-1">Cabecera (CAB)</legend>
+  <fieldset class="sys-card-pad space-y-4">
+    <legend class="sys-section-title float-left mb-3 w-full px-0">Cabecera (CAB)</legend>
     {#each items as item (item.id)}
-      <label class="block space-y-1">
-        <span class="text-sm font-medium text-slate-700">
+      <label class="block space-y-1.5">
+        <span class="sys-field-label">
           {item.label}
-          {#if item.required}<span class="text-red-500">*</span>{/if}
-          <span class="text-xs text-slate-400 font-normal">({item.filledBy})</span>
+          {#if item.required}<span class="text-sys-rojo">*</span>{/if}
+          <span class="text-xs font-normal text-[var(--sys-text-muted-light)]">({item.filledBy})</span>
         </span>
         {#if readonly}
-          <p class="text-sm text-slate-800 py-2">{displayValue(item) || '—'}</p>
+          <p class="py-2 text-sm text-sys-medio">{displayValue(item) || '—'}</p>
         {:else}
           {#key displayValue(item)}
             {#if item.fieldType === 'number'}
@@ -49,7 +49,7 @@
                 name="cab_{item.id}"
                 value={displayValue(item)}
                 required={item.required}
-                class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                class="sys-field"
               />
             {:else if item.fieldType === 'date'}
               <input
@@ -57,7 +57,7 @@
                 name="cab_{item.id}"
                 value={displayValue(item)}
                 required={item.required}
-                class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                class="sys-field"
               />
             {:else}
               <input
@@ -65,7 +65,7 @@
                 name="cab_{item.id}"
                 value={displayValue(item)}
                 required={item.required}
-                class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                class="sys-field"
               />
             {/if}
           {/key}
@@ -74,3 +74,10 @@
     {/each}
   </fieldset>
 {/if}
+
+<style>
+  fieldset {
+    border: none;
+    min-inline-size: 0;
+  }
+</style>

@@ -10,12 +10,32 @@
 
 <SysShell variant="light">
   {#snippet nav()}
-    <nav class="flex items-center gap-4 whitespace-nowrap text-sm font-medium">
-      <a href="/tablero" class="text-sys-profundo hover:text-sys-electrico">Tablero</a>
-      <a href="/auditorias/new" class="text-sys-medio hover:text-sys-electrico">Nueva auditoría</a>
+    <nav class="flex items-center gap-1 whitespace-nowrap text-sm font-medium">
+      <a
+        href="/tablero"
+        class="rounded-sys px-3 py-2 text-sys-profundo transition-colors hover:bg-sys-offwhite hover:text-sys-electrico"
+      >
+        Tablero
+      </a>
+      <a
+        href="/auditorias/new"
+        class="rounded-sys px-3 py-2 text-sys-medio transition-colors hover:bg-sys-offwhite hover:text-sys-electrico"
+      >
+        Nueva auditoría
+      </a>
       {#if isAdmin}
-        <a href="/usuarios" class="text-sys-medio hover:text-sys-electrico">Usuarios</a>
-        <a href="/plantillas" class="text-sys-medio hover:text-sys-electrico">Plantillas</a>
+        <a
+          href="/usuarios"
+          class="rounded-sys px-3 py-2 text-sys-medio transition-colors hover:bg-sys-offwhite hover:text-sys-electrico"
+        >
+          Usuarios
+        </a>
+        <a
+          href="/plantillas"
+          class="rounded-sys px-3 py-2 text-sys-medio transition-colors hover:bg-sys-offwhite hover:text-sys-electrico"
+        >
+          Plantillas
+        </a>
       {/if}
     </nav>
   {/snippet}
@@ -29,7 +49,12 @@
         {/if}
       </span>
       <form method="POST" action="/logout">
-        <button type="submit" class="text-sys-medio underline hover:text-sys-electrico">Salir</button>
+        <button
+          type="submit"
+          class="rounded-sys px-2 py-1 text-sys-medio transition-colors hover:bg-sys-offwhite hover:text-sys-electrico"
+        >
+          Salir
+        </button>
       </form>
     </div>
   {/snippet}

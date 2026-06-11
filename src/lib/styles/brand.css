@@ -7,8 +7,17 @@
   --sys-azul-profundo: #0a1929;
   --sys-azul-medio: #102a43;
   --sys-blanco: #ffffff;
-  --sys-offwhite: #f7f9fb;
+  --sys-offwhite: #f4f7fa;
   --sys-bg-gradient: linear-gradient(135deg, #0a1929 0%, #0f2238 60%, #102a43 100%);
+
+  /* Bordes y elevación */
+  --sys-border-subtle: rgba(16, 42, 67, 0.07);
+  --sys-shadow-sm: 0 1px 2px rgba(10, 25, 41, 0.04);
+  --sys-shadow-card: 0 1px 2px rgba(10, 25, 41, 0.04), 0 8px 24px rgba(10, 25, 41, 0.06);
+  --sys-shadow-header: 0 1px 0 rgba(10, 25, 41, 0.04), 0 4px 16px rgba(10, 25, 41, 0.04);
+  --sys-shadow-btn: 0 1px 2px rgba(10, 25, 41, 0.1), 0 4px 12px rgba(10, 25, 41, 0.08);
+  --sys-shadow-btn-hover: 0 2px 4px rgba(10, 25, 41, 0.12), 0 8px 20px rgba(10, 25, 41, 0.1);
+  --sys-shadow-focus: 0 0 0 3px rgba(33, 150, 243, 0.12);
 
   /* Acentos */
   --sys-celeste: #a2c6d4;
@@ -33,8 +42,8 @@
   /* Layout app */
   --sys-top-bar: 6px;
   --sys-touch-min: 44px;
-  --sys-radius-app: 0.75rem;
-  --sys-radius-cta: 4px;
+  --sys-radius-app: 1rem;
+  --sys-radius-cta: 0.625rem;
 
   /* Animación */
   --sys-ease: cubic-bezier(0.33, 1, 0.68, 1);

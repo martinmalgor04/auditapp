@@ -23,6 +23,13 @@ export default {
       borderRadius: {
         sys: 'var(--sys-radius-cta)',
         'sys-app': 'var(--sys-radius-app)'
+      },
+      boxShadow: {
+        'sys-sm': 'var(--sys-shadow-sm)',
+        'sys-card': 'var(--sys-shadow-card)',
+        'sys-header': 'var(--sys-shadow-header)',
+        'sys-btn': 'var(--sys-shadow-btn)',
+        'sys-focus': 'var(--sys-shadow-focus)'
       }
     }
   },

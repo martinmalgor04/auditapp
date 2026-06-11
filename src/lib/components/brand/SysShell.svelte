@@ -39,10 +39,11 @@
     </div>
   {:else}
     <header
-      class="sticky top-0 z-40 overflow-hidden border-b border-black/[0.06] bg-sys-blanco"
+      class="sticky top-0 z-40 overflow-hidden bg-sys-blanco/95 backdrop-blur-sm"
+      style="box-shadow: var(--sys-shadow-header)"
       data-sys-shell-header
     >
-      <div class="mx-auto max-w-7xl px-4 py-3">
+      <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6">
         <div class="flex min-w-0 items-center justify-between gap-4">
           <div class="flex min-w-0 items-center gap-6">
             {#if logoHref}
@@ -65,7 +66,7 @@
         </div>
       </div>
     </header>
-    <main class="mx-auto w-full max-w-7xl px-4 py-6">
+    <main class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
       {@render children?.()}
     </main>
   {/if}

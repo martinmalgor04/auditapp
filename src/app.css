@@ -5,5 +5,82 @@
 @layer base {
   body {
     font-family: var(--sys-font);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .sys-page-title {
+    @apply text-2xl font-semibold tracking-tight text-sys-profundo;
+  }
+
+  .sys-section-title {
+    @apply text-base font-semibold text-sys-profundo;
+  }
+
+  .sys-muted {
+    @apply text-sm text-[var(--sys-text-muted-light)];
+  }
+
+  .sys-card {
+    @apply rounded-sys-app border border-[var(--sys-border-subtle)] bg-sys-blanco;
+    box-shadow: var(--sys-shadow-card);
+  }
+
+  .sys-card-pad {
+    @apply sys-card p-5;
+  }
+
+  .sys-field-label {
+    @apply text-sm font-medium text-[var(--sys-text-muted-light)];
+  }
+
+  .sys-field-label-xs {
+    @apply text-xs font-medium text-[var(--sys-text-muted-light)];
+  }
+
+  .sys-field {
+    @apply w-full min-h-[var(--sys-touch-min)] rounded-sys-app border px-3.5 py-2.5 text-sm text-sys-medio transition-[border-color,background-color,box-shadow];
+    border-color: var(--sys-border-subtle);
+    background: color-mix(in srgb, var(--sys-offwhite) 60%, var(--sys-blanco));
+  }
+
+  .sys-field:focus {
+    outline: none;
+    border-color: var(--sys-azul-electrico);
+    background: var(--sys-blanco);
+    box-shadow: var(--sys-shadow-focus);
+  }
+
+  .sys-btn {
+    @apply inline-flex min-h-[var(--sys-touch-min)] items-center justify-center rounded-sys px-4 py-2 text-sm font-semibold transition-all duration-200;
+  }
+
+  .sys-btn-primary {
+    @apply sys-btn bg-sys-profundo text-white hover:bg-sys-medio;
+    box-shadow: var(--sys-shadow-btn);
+  }
+
+  .sys-btn-primary:hover {
+    box-shadow: var(--sys-shadow-btn-hover);
+  }
+
+  .sys-btn-secondary {
+    @apply sys-btn border bg-sys-blanco text-sys-profundo hover:bg-sys-offwhite hover:text-sys-electrico;
+    border-color: var(--sys-border-subtle);
+  }
+
+  .sys-btn-secondary:hover {
+    border-color: rgba(33, 150, 243, 0.35);
+  }
+
+  .sys-btn-accent {
+    @apply sys-btn bg-sys-electrico text-white hover:brightness-95;
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.22);
+  }
+
+  .sys-btn-sm {
+    @apply min-h-9 rounded-sys px-3 py-1.5 text-xs;
   }
 }

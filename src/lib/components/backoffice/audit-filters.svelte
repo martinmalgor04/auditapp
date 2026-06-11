@@ -36,11 +36,11 @@
 
 <form
   method="GET"
-  class="grid grid-cols-1 gap-3 p-4 bg-white rounded-lg border border-slate-200 sm:grid-cols-2 md:flex md:flex-wrap md:items-end"
+  class="sys-card grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 md:flex md:flex-wrap md:items-end"
 >
-  <label class="space-y-1">
-    <span class="text-xs font-medium text-slate-600">Tipo</span>
-    <select name="type" class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm md:w-auto">
+  <label class="space-y-1.5">
+    <span class="sys-field-label-xs">Tipo</span>
+    <select name="type" class="sys-field md:w-auto">
       <option value="">Todos</option>
       {#each TYPE_OPTIONS as opt}
         <option value={opt.value} selected={filters.type === opt.value}>{opt.label}</option>
@@ -48,9 +48,9 @@
     </select>
   </label>
 
-  <label class="space-y-1">
-    <span class="text-xs font-medium text-slate-600">Estado</span>
-    <select name="status" class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm md:w-auto">
+  <label class="space-y-1.5">
+    <span class="sys-field-label-xs">Estado</span>
+    <select name="status" class="sys-field md:w-auto">
       <option value="">Todos</option>
       {#each AUDIT_STATUSES as st}
         <option value={st} selected={filters.status === st}>{st}</option>
@@ -58,9 +58,9 @@
     </select>
   </label>
 
-  <label class="space-y-1">
-    <span class="text-xs font-medium text-slate-600">Cliente</span>
-    <select name="clientId" class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm md:min-w-[12rem] md:w-auto">
+  <label class="space-y-1.5">
+    <span class="sys-field-label-xs">Cliente</span>
+    <select name="clientId" class="sys-field md:min-w-[12rem] md:w-auto">
       <option value="">Todos</option>
       {#each clients as c}
         <option value={c.id} selected={filters.clientId === c.id}>{c.razonSocial}</option>
@@ -68,30 +68,25 @@
     </select>
   </label>
 
-  <label class="space-y-1 sm:col-span-2 md:flex-1 md:min-w-[12rem]">
-    <span class="text-xs font-medium text-slate-600">Buscar</span>
+  <label class="space-y-1.5 sm:col-span-2 md:min-w-[12rem] md:flex-1">
+    <span class="sys-field-label-xs">Buscar</span>
     <input
       type="search"
       name="q"
       value={filters.q ?? ''}
       placeholder="Razón social..."
-      class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+      class="sys-field"
     />
   </label>
 
-  <label class="space-y-1">
-    <span class="text-xs font-medium text-slate-600">Orden</span>
-    <select name="sort" class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm md:w-auto">
+  <label class="space-y-1.5">
+    <span class="sys-field-label-xs">Orden</span>
+    <select name="sort" class="sys-field md:w-auto">
       {#each SORT_OPTIONS as opt}
         <option value={opt.value} selected={filters.sort === opt.value}>{opt.label}</option>
       {/each}
     </select>
   </label>
 
-  <button
-    type="submit"
-    class="rounded bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800"
-  >
-    Filtrar
-  </button>
+  <button type="submit" class="sys-btn-primary sys-btn-sm w-full md:w-auto">Filtrar</button>
 </form>

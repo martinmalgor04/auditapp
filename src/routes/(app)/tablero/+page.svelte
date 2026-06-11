@@ -11,15 +11,10 @@
   <title>Tablero — auditapp</title>
 </svelte:head>
 
-<div class="space-y-4">
-  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-    <h1 class="text-2xl font-bold text-slate-900">Tablero</h1>
-    <a
-      href="/auditorias/new"
-      class="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
-    >
-      Nueva auditoría
-    </a>
+<div class="space-y-6">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <h1 class="sys-page-title">Tablero</h1>
+    <a href="/auditorias/new" class="sys-btn-primary w-full sm:w-auto">Nueva auditoría</a>
   </div>
 
   <AuditFilters clients={data.clients} filters={data.filters} allowedTypes={data.allowedTypes} />
@@ -28,26 +23,16 @@
   <AuditCardList rows={data.dashboard.rows} />
 
   {#if data.dashboard.hasNext || data.dashboard.page > 1}
-    <nav class="flex flex-col gap-2 text-sm text-slate-600 pt-2 sm:flex-row sm:items-center sm:justify-between">
+    <nav class="flex flex-col gap-3 pt-2 text-sm text-[var(--sys-text-muted-light)] sm:flex-row sm:items-center sm:justify-between">
       <span>
         Página {data.dashboard.page} · {data.dashboard.total} auditorías
       </span>
       <div class="flex gap-2">
         {#if data.dashboard.page > 1}
-          <a
-            href="?page={data.dashboard.page - 1}"
-            class="rounded border border-slate-300 px-3 py-1 hover:bg-white"
-          >
-            Anterior
-          </a>
+          <a href="?page={data.dashboard.page - 1}" class="sys-btn-secondary sys-btn-sm">Anterior</a>
         {/if}
         {#if data.dashboard.hasNext}
-          <a
-            href="?page={data.dashboard.page + 1}"
-            class="rounded border border-slate-300 px-3 py-1 hover:bg-white"
-          >
-            Siguiente
-          </a>
+          <a href="?page={data.dashboard.page + 1}" class="sys-btn-secondary sys-btn-sm">Siguiente</a>
         {/if}
       </div>
     </nav>

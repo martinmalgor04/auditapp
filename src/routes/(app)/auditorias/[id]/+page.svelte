@@ -18,11 +18,11 @@
   <title>{data.audit.razonSocial} — auditapp</title>
 </svelte:head>
 
-<div class="space-y-6 max-w-3xl">
+<div class="max-w-3xl space-y-8">
   <div class="flex items-start justify-between gap-4">
-    <div>
-      <h1 class="text-2xl font-bold text-slate-900">{data.audit.razonSocial}</h1>
-      <p class="text-sm text-slate-600">{data.audit.types.join(', ')} · Seg. {data.audit.segment}</p>
+    <div class="space-y-1">
+      <h1 class="sys-page-title">{data.audit.razonSocial}</h1>
+      <p class="sys-muted">{data.audit.types.join(', ')} · Seg. {data.audit.segment}</p>
     </div>
     <AuditStatusBadge status={data.audit.status} />
   </div>
@@ -30,61 +30,55 @@
   <AuditProgressBar progress={data.audit.progress} />
 
   {#if form?.error}
-    <p class="text-sm text-red-600" role="alert">{form.error}</p>
+    <p class="text-sm text-sys-rojo" role="alert">{form.error}</p>
   {/if}
 
   {#if data.readonly}
-    <p class="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">
+    <p class="rounded-sys-app border border-sys-naranja/20 bg-sys-naranja/10 p-4 text-sm text-sys-medio">
       Esta auditoría está cerrada. Solo lectura.
     </p>
   {/if}
 
-  <section class="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-    <h2 class="font-semibold text-slate-800">Briefing</h2>
+  <section class="sys-card-pad space-y-4">
+    <h2 class="sys-section-title">Briefing</h2>
     {#if data.audit.status === 'borrador'}
       <form method="POST" action="?/generateBriefingLink">
-        <button type="submit" class="text-sm text-blue-700 underline">Generar link de briefing</button>
+        <button type="submit" class="text-sm font-medium text-sys-electrico hover:underline">
+          Generar link de briefing
+        </button>
       </form>
     {:else if data.audit.status === 'briefing_enviado' || data.audit.status === 'briefing_completo'}
       {#if data.briefingUrl}
         <CopyLinkButton url={data.briefingUrl} />
         <form method="POST" action="?/regenerateBriefingLink" class="mt-2">
-          <button type="submit" class="text-sm text-slate-600 underline">Regenerar link</button>
+          <button type="submit" class="text-sm text-[var(--sys-text-muted-light)] hover:text-sys-electrico hover:underline">
+            Regenerar link
+          </button>
         </form>
       {/if}
     {/if}
     {#if data.audit.status === 'briefing_completo' || data.audit.status === 'en_relevamiento' || data.audit.status === 'en_cierre'}
-      <a
-        href="/auditorias/{data.audit.id}/form"
-        class="inline-flex min-h-[var(--sys-touch-min)] items-center rounded-sys bg-sys-electrico px-4 py-2 text-sm font-medium text-white"
-      >
-        Abrir relevamiento técnico
-      </a>
+      <a href="/auditorias/{data.audit.id}/form" class="sys-btn-accent">Abrir relevamiento técnico</a>
     {/if}
     {#if data.audit.status === 'en_cierre' || data.audit.status === 'cerrada'}
-      <a
-        href="/auditorias/{data.audit.id}/cierre"
-        class="mt-2 inline-flex min-h-[var(--sys-touch-min)] items-center rounded border border-slate-300 px-4 py-2 text-sm font-medium text-slate-800"
-      >
-        Pantalla de cierre
-      </a>
+      <a href="/auditorias/{data.audit.id}/cierre" class="sys-btn-secondary mt-2">Pantalla de cierre</a>
     {/if}
   </section>
 
   {#if !data.readonly}
-    <form method="POST" action="?/update" class="space-y-4">
-      <label class="block space-y-1">
-        <span class="text-sm font-medium text-slate-700">Segmento</span>
-        <select name="segment" class="w-full rounded border border-slate-300 px-3 py-2 text-sm">
+    <form method="POST" action="?/update" class="space-y-5">
+      <label class="block space-y-1.5">
+        <span class="sys-field-label">Segmento</span>
+        <select name="segment" class="sys-field">
           {#each ['A', 'B', 'C'] as seg}
             <option value={seg} selected={data.audit.segment === seg}>{seg}</option>
           {/each}
         </select>
       </label>
 
-      <label class="block space-y-1">
-        <span class="text-sm font-medium text-slate-700">Técnico asignado</span>
-        <select name="assignedTechId" class="w-full rounded border border-slate-300 px-3 py-2 text-sm">
+      <label class="block space-y-1.5">
+        <span class="sys-field-label">Técnico asignado</span>
+        <select name="assignedTechId" class="sys-field">
           {#each data.technicians as tech}
             <option value={tech.id} selected={data.audit.assignedTechId === tech.id}>
               {tech.name}
@@ -93,32 +87,26 @@
         </select>
       </label>
 
-      <label class="block space-y-1">
-        <span class="text-sm font-medium text-slate-700">Fecha de visita</span>
-        <input
-          type="date"
-          name="scheduledAt"
-          value={scheduledValue}
-          class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-        />
+      <label class="block space-y-1.5">
+        <span class="sys-field-label">Fecha de visita</span>
+        <input type="date" name="scheduledAt" value={scheduledValue} class="sys-field" />
       </label>
 
       <CabSectionForm items={data.audit.cabItems} />
 
-      <button
-        type="submit"
-        class="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
-      >
-        Guardar cambios
-      </button>
+      <button type="submit" class="sys-btn-primary">Guardar cambios</button>
     </form>
   {:else}
     <CabSectionForm items={data.audit.cabItems} readonly />
   {/if}
 
   {#if !data.audit.archivedAt}
-    <form method="POST" action="?/archive" onsubmit={(e) => !confirm('¿Archivar esta auditoría?') && e.preventDefault()}>
-      <button type="submit" class="text-sm text-red-700 underline">Archivar auditoría</button>
+    <form
+      method="POST"
+      action="?/archive"
+      onsubmit={(e) => !confirm('¿Archivar esta auditoría?') && e.preventDefault()}
+    >
+      <button type="submit" class="text-sm text-sys-rojo hover:underline">Archivar auditoría</button>
     </form>
   {/if}
 </div>

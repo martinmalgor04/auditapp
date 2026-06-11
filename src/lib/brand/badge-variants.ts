@@ -10,7 +10,7 @@ const SEMAPHORE_CLASSES: Record<SysBadgeVariant, string> = {
 };
 
 export function getSysBadgeClasses(variant: SysBadgeVariant): string {
-  return `inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${SEMAPHORE_CLASSES[variant]}`;
+  return `inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${SEMAPHORE_CLASSES[variant]}`;
 }
 
 const AUDIT_STATUS_VARIANTS: Record<AuditStatus, SysBadgeVariant> = {
