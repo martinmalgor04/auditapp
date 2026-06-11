@@ -207,6 +207,44 @@
       ],
       "sdd": true,
       "status": "done"
+    },
+    {
+      "id": 12,
+      "name": "12_reunion_asistente",
+      "title": "Asistente de reunión — grabación y completado de datos",
+      "description": "Flujo para que un técnico grabe o suba audio de reunión con el cliente, transcriba en background, extraiga datos alineados a la plantilla de la auditoría y proponga completar ítems con revisión humana antes de persistir.",
+      "source": "Solicitud operativa SyS — kickoff/briefing y relevamiento en campo",
+      "acceptance": [
+        "Técnico puede iniciar grabación in-app o subir audio (webm/m4a/mp3) vinculado a una auditoría editable",
+        "Audio se almacena en R2 con convención de keys y registro attachment kind=recording",
+        "Transcripción asíncrona genera texto con estado visible (pendiente/procesando/listo/error)",
+        "Extracción IA produce propuestas por item_id con valor tipado, cita de transcript y confidence",
+        "UI de revisión: aceptar/rechazar/editar por propuesta; nunca auto-aplicar sin confirmación",
+        "Propuestas aceptadas upsertean audit_response con source=reunion_ia y auditoría sigue editable",
+        "Consentimiento/registro de que hubo grabación documentado en la auditoría",
+        "Tests de flujo feliz, permisos y validación Zod de propuestas pasan"
+      ],
+      "sdd": true,
+      "status": "spec_ready"
+    },
+    {
+      "id": 13,
+      "name": "13_crm_leads",
+      "title": "Mini-CRM de leads — funnel comercial",
+      "description": "Tabla crm_lead en Postgres con máquina de estados del funnel (lead → contactado → agendó → auditado → presupuestado → cliente), vista funnel en backoffice y endpoint protegido para que n8n cargue leads desde Firecrawl. Sin CRM externo: todo dentro de auditapp.",
+      "source": "Decisión de plan lead magnet — docs/2026-06-03_plan_sys_auditoria-lead-magnet_v1.md (Fase 1, pipeline/CRM)",
+      "acceptance": [
+        "Migración crea tabla crm_lead: email único, empresa, contacto, source (firecrawl|referido|manual|otro), status, notas, created_at, updated_at",
+        "Máquina de estados crm_lead.status: lead → contactado → agendo → auditado → presupuestado → cliente, más descartado desde cualquier estado",
+        "FK opcionales a audit (audit_id) y referencia a presupuesto; al vincular auditoría el estado avanza a auditado",
+        "Endpoint protegido por token API para alta/upsert de leads en lote (n8n/Firecrawl), con validación Zod y dedupe por email",
+        "Vista en backoffice: lista con filtros por status/source, búsqueda por email/empresa, contadores del funnel por etapa",
+        "Cambio de estado manual desde la vista (técnico y admin), con registro de quién y cuándo",
+        "Leads descartados conservan historial (borrado lógico, no físico)",
+        "Tests de máquina de estados, dedupe del endpoint y guards de permisos pasan"
+      ],
+      "sdd": true,
+      "status": "pending"
     }
   ]
 }
