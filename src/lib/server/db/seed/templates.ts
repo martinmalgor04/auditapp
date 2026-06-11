@@ -48,7 +48,7 @@ export async function loadTemplateFixture(filename: string): Promise<TemplateFix
 }
 
 export async function seedTemplates(sql: DbExecutor): Promise<void> {
-  const files = ['it-v2.json', 'erp-tango-v2.json', 'erp-estandar-v1.json'];
+  const files = ['it-v2.json', 'erp-tango-v3.json', 'erp-estandar-v1.json'];
 
   for (const file of files) {
     const fixture = await loadTemplateFixture(file);
@@ -79,6 +79,18 @@ async function seedTemplateFixture(sql: DbExecutor, fixture: TemplateFixture): P
         RETURNING id
       `;
       templateId = inserted.id;
+    }
+
+    // Una sola versión activa por código: las auditorías existentes siguen
+    // apuntando a la versión anterior (queda archivada, intacta).
+    if (fixture.status === 'active') {
+      await sql`
+        UPDATE template
+        SET status = 'archived'
+        WHERE code = ${fixture.code}
+          AND version != ${fixture.version}
+          AND status = 'active'
+      `;
     }
 
     for (const section of fixture.sections) {
@@ -169,5 +181,35 @@ async function seedTemplateFixture(sql: DbExecutor, fixture: TemplateFixture): P
           `;
         }
       }
+
+      // Poda ítems que el fixture ya no define (solo si nadie los respondió).
+      await sql`
+        DELETE FROM template_item ti
+        WHERE ti.section_id = ${sectionId}
+          AND ti.sort_order >= ${section.items.length}
+          AND NOT EXISTS (SELECT 1 FROM audit_response ar WHERE ar.item_id = ti.id)
+          AND NOT EXISTS (SELECT 1 FROM attachment att WHERE att.item_id = ti.id)
+      `;
     }
+
+    // Poda secciones que el fixture ya no define (origen del B10 duplicado de
+    // erp-tango v2). Solo si ninguna auditoría las referencia.
+    const sectionCodes = fixture.sections.map((s) => s.code);
+    await sql`
+      DELETE FROM section s
+      WHERE s.template_id = ${templateId}
+        AND s.code != ALL(${sectionCodes})
+        AND NOT EXISTS (
+          SELECT 1
+          FROM template_item ti
+          WHERE ti.section_id = s.id
+            AND (
+              EXISTS (SELECT 1 FROM audit_response ar WHERE ar.item_id = ti.id)
+              OR EXISTS (SELECT 1 FROM attachment att WHERE att.item_id = ti.id)
+            )
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM audit_section_score ass WHERE ass.section_id = s.id
+        )
+    `;
 }

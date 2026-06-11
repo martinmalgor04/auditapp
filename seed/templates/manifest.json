@@ -8,11 +8,11 @@
       "items": 39
     },
     {
-      "file": "erp-tango-v2.json",
+      "file": "erp-tango-v3.json",
       "code": "erp-tango",
-      "version": "v2",
+      "version": "v3",
       "sections": 10,
-      "items": 38
+      "items": 69
     },
     {
       "file": "erp-estandar-v1.json",

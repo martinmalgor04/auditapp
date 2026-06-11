@@ -15,6 +15,8 @@ const OUT_DIR = join(process.cwd(), 'seed', 'templates');
 
 type ItemDef = Omit<TemplateItemFixture, 'sort_order'> & { sort_order?: number };
 
+type ItemExtras = Partial<Pick<TemplateItemFixture, 'method' | 'allow_na' | 'help_text'>>;
+
 function item(index: number, def: ItemDef): TemplateItemFixture {
   return { sort_order: index, ...def };
 }
@@ -23,41 +25,46 @@ function scoringSelect(
   label: string,
   choices: string[],
   scores: Record<string, 0 | 50 | 100>,
-  filled_by: 'admin' | 'cliente' | 'tecnico' = 'tecnico'
+  filled_by: 'admin' | 'cliente' | 'tecnico' = 'tecnico',
+  extras: ItemExtras = {}
 ): ItemDef {
   return {
     label,
     field_type: 'select',
     method: ['O'],
     filled_by,
-    options: { choices, score_map: scores }
+    options: { choices, score_map: scores },
+    ...extras
   };
 }
 
-function scoringTri(label: string): ItemDef {
+function scoringTri(label: string, extras: ItemExtras = {}): ItemDef {
   return {
     label,
     field_type: 'tri',
     method: ['O'],
     filled_by: 'tecnico',
-    options: {}
+    options: {},
+    ...extras
   };
 }
 
-function scoringBool(label: string): ItemDef {
+function scoringBool(label: string, extras: ItemExtras = {}): ItemDef {
   return {
     label,
     field_type: 'bool',
     method: ['O'],
     filled_by: 'tecnico',
-    options: {}
+    options: {},
+    ...extras
   };
 }
 
 function infoText(
   label: string,
   filled_by: 'admin' | 'cliente' | 'tecnico',
-  required = false
+  required = false,
+  extras: ItemExtras = {}
 ): ItemDef {
   return {
     label,
@@ -66,37 +73,69 @@ function infoText(
     filled_by,
     required,
     scores: false,
-    options: {}
+    options: {},
+    ...extras
   };
 }
 
-function buildCabItems(): TemplateItemFixture[] {
-  return [
-    item(0, infoText('Razón social', 'admin', true)),
-    item(1, infoText('CUIT', 'admin')),
-    item(2, infoText('Rubro / actividad', 'cliente')),
-    item(3, {
+function infoList(label: string, extras: ItemExtras = {}): ItemDef {
+  return {
+    label,
+    field_type: 'list',
+    method: ['E'],
+    filled_by: 'tecnico',
+    scores: false,
+    options: { max_items: 10 },
+    ...extras
+  };
+}
+
+function buildCabItems(opts: { modulosTango?: boolean } = {}): TemplateItemFixture[] {
+  const base: ItemDef[] = [
+    infoText('Razón social', 'admin', true),
+    infoText('CUIT', 'admin'),
+    infoText('Rubro / actividad', 'cliente'),
+    {
       label: 'Cantidad de empleados',
       field_type: 'number',
       method: ['O'],
       filled_by: 'cliente',
       scores: false,
       options: {}
-    }),
-    item(4, infoText('Referente principal', 'cliente')),
-    item(5, infoText('Contacto referente', 'cliente')),
-    item(6, infoText('ERP actual', 'cliente')),
-    item(7, infoText('Proveedor de correo', 'cliente')),
-    item(8, infoText('Soporte IT actual', 'cliente')),
-    item(9, {
-      label: 'Fecha programada de visita',
-      field_type: 'date',
-      method: ['O'],
-      filled_by: 'admin',
-      scores: false,
-      options: {}
-    })
+    },
+    infoText('Referente principal', 'cliente'),
+    infoText('Contacto referente', 'cliente'),
+    infoText('ERP actual', 'cliente'),
+    infoText('Proveedor de correo', 'cliente'),
+    infoText('Soporte IT actual', 'cliente')
   ];
+
+  if (opts.modulosTango) {
+    // item_code consumido por el builder canónico (cab_modulos_tango)
+    base.push({
+      label: 'Módulos Tango instalados',
+      field_type: 'multiselect',
+      method: ['O'],
+      filled_by: 'cliente',
+      required: false,
+      scores: false,
+      options: {
+        item_code: 'cab_modulos_tango',
+        choices: ['ventas', 'compras', 'stock', 'tesorería', 'sueldos', 'punto_venta']
+      }
+    });
+  }
+
+  base.push({
+    label: 'Fecha programada de visita',
+    field_type: 'date',
+    method: ['O'],
+    filled_by: 'admin',
+    scores: false,
+    options: {}
+  });
+
+  return base.map((def, i) => item(i, def));
 }
 
 function buildItSections(): SectionFixture[] {
@@ -359,6 +398,388 @@ function buildItSections(): SectionFixture[] {
   ];
 }
 
+/**
+ * ERP Tango v3 — secciones B1-B9 con ítems específicos de Tango Gestión.
+ * Fuente: sysaudit/docs/2026-06-05_plantilla_sys_auditoria-erp-tango_v2.md (spec 04b).
+ */
+function buildErpTangoSections(): SectionFixture[] {
+  const cab: SectionFixture = {
+    code: 'CAB',
+    title: 'Cabecera ERP',
+    objective: 'Datos generales del relevamiento ERP',
+    weight: 'bajo',
+    has_score: false,
+    sort_order: 0,
+    items: buildCabItems({ modulosTango: true })
+  };
+
+  const sectionDefs: Array<{
+    code: string;
+    title: string;
+    objective: string;
+    weight: SectionFixture['weight'];
+    items: ItemDef[];
+  }> = [
+    {
+      code: 'B1',
+      title: 'Administración y parametrización',
+      objective: 'Identificación, licenciamiento y parametrización general de Tango',
+      weight: 'muy_alto',
+      items: [
+        infoText('Versión / generación de Tango instalada (ej.: Delta, Delta 2)', 'tecnico', false, {
+          method: ['O', 'C']
+        }),
+        {
+          label: 'Modalidad de uso',
+          field_type: 'select',
+          method: ['E'],
+          filled_by: 'tecnico',
+          scores: false,
+          options: { choices: ['Local instalado', 'Tango Nube', 'Suscripción Nexo'] }
+        },
+        scoringSelect(
+          'Brecha de versión vs. última liberada por Axoft',
+          ['Al día', 'Una versión atrás', 'Dos o más versiones atrás'],
+          { 'Al día': 100, 'Una versión atrás': 50, 'Dos o más versiones atrás': 0 },
+          'tecnico',
+          { method: ['O', 'E'] }
+        ),
+        scoringBool('¿Garantía de actualización / abono Axoft vigente?', {
+          method: ['E'],
+          help_text: 'Precargable desde registros SyS de licencias'
+        }),
+        scoringSelect(
+          'Usuarios licenciados vs. usuarios activos reales',
+          ['Alineados', 'Brecha menor', 'Brecha importante (sobre-gasto o licencias que faltan)'],
+          {
+            Alineados: 100,
+            'Brecha menor': 50,
+            'Brecha importante (sobre-gasto o licencias que faltan)': 0
+          },
+          'tecnico',
+          { method: ['E'] }
+        ),
+        scoringTri('¿Hay un referente interno de Tango definido (key user)?', { method: ['E'] }),
+        scoringTri(
+          '¿Parametrización general documentada (empresas, sucursales, talonarios, listas de precios)?',
+          { method: ['E', 'O'] }
+        ),
+        scoringBool('¿Operan multiempresa con módulo Central (si tienen más de una empresa)?', {
+          method: ['E'],
+          allow_na: true
+        }),
+        infoText(
+          'Estudio contable externo: nombre y cómo trabaja (sobre Tango / le exportan datos)',
+          'tecnico',
+          false,
+          { method: ['E'] }
+        )
+      ]
+    },
+    {
+      code: 'B2',
+      title: 'Ventas y facturación',
+      objective: 'Circuito comercial completo y facturación electrónica desde Tango',
+      weight: 'muy_alto',
+      items: [
+        scoringTri(
+          '¿Facturación electrónica AFIP/ARCA integrada en Tango y al día con la normativa vigente?',
+          { method: ['E', 'O'] }
+        ),
+        scoringSelect(
+          'Circuito pedido → remito → factura → cobro',
+          ['Completo en Tango', 'Parcial (tramos manuales)', 'Mayormente fuera del sistema'],
+          {
+            'Completo en Tango': 100,
+            'Parcial (tramos manuales)': 50,
+            'Mayormente fuera del sistema': 0
+          },
+          'tecnico',
+          { method: ['E'] }
+        ),
+        scoringBool(
+          '¿Todos los comprobantes de venta se emiten desde Tango (sin facturación paralela)?',
+          { method: ['E'] }
+        ),
+        scoringTri('¿Listas de precios y condiciones comerciales parametrizadas en el sistema?', {
+          method: ['E', 'O']
+        }),
+        scoringTri('¿Cuentas corrientes de clientes conciliadas y al día en Tango?', {
+          method: ['E']
+        }),
+        scoringTri(
+          '¿Usan informes de ventas de Tango (Live / Reportes) para decisiones comerciales?',
+          { method: ['E'] }
+        ),
+        infoList('Tareas de ventas que hoy se resuelven a mano o en Excel'),
+        infoText('Cuellos de botella detectados en el circuito de ventas', 'tecnico', false, {
+          method: ['E']
+        })
+      ]
+    },
+    {
+      code: 'B3',
+      title: 'Compras y proveedores',
+      objective: 'Circuito de compras, matching y cuentas corrientes de proveedores',
+      weight: 'muy_alto',
+      items: [
+        scoringSelect(
+          'Circuito orden de compra → recepción → factura → pago',
+          ['Completo en Tango', 'Parcial (tramos manuales)', 'Mayormente fuera del sistema'],
+          {
+            'Completo en Tango': 100,
+            'Parcial (tramos manuales)': 50,
+            'Mayormente fuera del sistema': 0
+          },
+          'tecnico',
+          { method: ['E'] }
+        ),
+        scoringTri('¿Compras respaldadas por orden de compra en el sistema?', { method: ['E'] }),
+        scoringTri('¿Control de recepción contra OC y factura de proveedor (matching)?', {
+          method: ['E']
+        }),
+        scoringTri('¿Cuentas corrientes de proveedores conciliadas y al día?', { method: ['E'] }),
+        scoringBool(
+          '¿Percepciones y retenciones de compras configuradas y aplicadas desde Tango?',
+          { method: ['E'] }
+        ),
+        infoText('Doble carga / reprocesos detectados en compras', 'tecnico', false, {
+          method: ['E']
+        })
+      ]
+    },
+    {
+      code: 'B4',
+      title: 'Stock e inventarios',
+      objective: 'Confiabilidad del stock del sistema frente al stock físico',
+      weight: 'alto',
+      items: [
+        scoringTri('¿El stock del sistema refleja el stock físico (la operación confía en Tango)?', {
+          method: ['E', 'O']
+        }),
+        scoringTri('¿Movimientos de stock registrados en tiempo real (no se cargan en diferido)?', {
+          method: ['E', 'O']
+        }),
+        scoringSelect(
+          'Inventarios / conteos físicos',
+          ['Cíclicos programados', 'Solo anual', 'No se hacen'],
+          { 'Cíclicos programados': 100, 'Solo anual': 50, 'No se hacen': 0 },
+          'tecnico',
+          { method: ['E'] }
+        ),
+        scoringTri('¿Artículos codificados con criterio único (sin duplicados)?', {
+          method: ['O', 'E']
+        }),
+        scoringBool('¿Depósitos / sucursales de stock reflejados en Tango (multidepósito)?', {
+          method: ['E'],
+          allow_na: true
+        }),
+        infoText('Diferencias de inventario típicas y causas detectadas', 'tecnico', false, {
+          method: ['E']
+        })
+      ]
+    },
+    {
+      code: 'B5',
+      title: 'Tesorería',
+      objective: 'Cajas, bancos, conciliación y posición financiera desde el módulo Fondos',
+      weight: 'alto',
+      items: [
+        scoringTri('¿Usan el módulo Tesorería/Fondos para cajas y bancos?', { method: ['E'] }),
+        scoringTri('¿Conciliación bancaria hecha en Tango y al día?', { method: ['E'] }),
+        scoringSelect(
+          'Posición financiera / cash flow',
+          ['Sale de Tango', 'Se arma en Excel con datos de Tango', 'No se proyecta'],
+          { 'Sale de Tango': 100, 'Se arma en Excel con datos de Tango': 50, 'No se proyecta': 0 },
+          'tecnico',
+          { method: ['E'] }
+        ),
+        scoringBool('¿Cheques y valores administrados desde el sistema?', {
+          method: ['E'],
+          allow_na: true
+        }),
+        scoringTri('¿Cobranzas con medios de pago electrónicos integradas (Tango Cobranzas u otro)?', {
+          method: ['E'],
+          allow_na: true
+        }),
+        infoText('Circuito de pagos: quién autoriza y cómo se registra', 'tecnico', false, {
+          method: ['E']
+        })
+      ]
+    },
+    {
+      code: 'B6',
+      title: 'Sueldos y RRHH',
+      objective: 'Liquidación de sueldos, libros y control de asistencia',
+      weight: 'medio',
+      items: [
+        scoringTri('¿Liquidan sueldos con el módulo Sueldos de Tango?', {
+          method: ['E'],
+          allow_na: true
+        }),
+        scoringBool('¿Libro de sueldos y F.931 se generan desde el sistema?', {
+          method: ['E'],
+          allow_na: true
+        }),
+        scoringTri('¿Convenios y conceptos de liquidación parametrizados al día?', {
+          method: ['E'],
+          allow_na: true
+        }),
+        scoringSelect(
+          'Control de asistencia',
+          [
+            'Integrado a la liquidación (Control de Horarios / Fichadas)',
+            'Sistema aparte sin integrar',
+            'Manual / planillas'
+          ],
+          {
+            'Integrado a la liquidación (Control de Horarios / Fichadas)': 100,
+            'Sistema aparte sin integrar': 50,
+            'Manual / planillas': 0
+          },
+          'tecnico',
+          { method: ['E'], allow_na: true }
+        ),
+        infoText('Dolores en la liquidación (tiempos, errores, reclamos)', 'tecnico', false, {
+          method: ['E']
+        })
+      ]
+    },
+    {
+      code: 'B7',
+      title: 'Producción / costos',
+      objective: 'Producción, costos y rentabilidad dentro del sistema',
+      weight: 'medio',
+      items: [
+        scoringTri('¿Gestionan producción / armado dentro de Tango?', {
+          method: ['E'],
+          allow_na: true
+        }),
+        scoringTri('¿Costos de productos actualizados en el sistema?', {
+          method: ['E'],
+          allow_na: true
+        }),
+        scoringSelect(
+          'Cálculo de rentabilidad por producto / línea',
+          ['Sale de Tango', 'Se arma en Excel', 'No se calcula'],
+          { 'Sale de Tango': 100, 'Se arma en Excel': 50, 'No se calcula': 0 },
+          'tecnico',
+          { method: ['E'], allow_na: true }
+        ),
+        infoText('Procesos productivos que corren fuera del sistema', 'tecnico', false, {
+          method: ['E']
+        })
+      ]
+    },
+    {
+      code: 'B8',
+      title: 'Integraciones y Nexo',
+      objective: 'Apps Nexo, integraciones y personalizaciones a medida',
+      weight: 'medio',
+      items: [
+        {
+          label: 'Apps Tango Nexo activas',
+          field_type: 'multiselect',
+          method: ['E'],
+          filled_by: 'tecnico',
+          scores: false,
+          options: {
+            choices: [
+              'Tango Clientes',
+              'Tango Reportes',
+              'Tango Tablero',
+              'Tango Tiendas',
+              'Tango Cobranzas',
+              'Tango Backup',
+              'Tango Update',
+              'Tango Empleados',
+              'Tango Fichadas',
+              'TangoNet',
+              'Tango Notificaciones'
+            ]
+          }
+        },
+        scoringTri('¿Aprovechan las apps Nexo gratuitas (Reportes, Tablero, Backup, Update)?', {
+          method: ['E'],
+          help_text: 'Apps gratis sin activar = quick wins inmediatos'
+        }),
+        scoringTri('¿Integración con e-commerce resuelta (Tango Tiendas / API / conector)?', {
+          method: ['E'],
+          allow_na: true
+        }),
+        scoringTri('¿Intercambio con bancos y medios de pago integrado (sin retipeo)?', {
+          method: ['E'],
+          allow_na: true
+        }),
+        scoringSelect(
+          'Personalizaciones a medida y riesgo de actualización',
+          [
+            'No hay personalizaciones',
+            'Hay, documentadas y con soporte',
+            'Hay, sin documentación o proveedor desconocido'
+          ],
+          {
+            'No hay personalizaciones': 100,
+            'Hay, documentadas y con soporte': 100,
+            'Hay, sin documentación o proveedor desconocido': 0
+          },
+          'tecnico',
+          { method: ['E'] }
+        ),
+        infoList('Necesidades de integración no resueltas (oportunidades)'),
+        infoText(
+          'Exportaciones / importaciones manuales con Excel (qué y con qué frecuencia)',
+          'tecnico',
+          false,
+          { method: ['E'] }
+        )
+      ]
+    },
+    {
+      code: 'B9',
+      title: 'Seguridad y usuarios Tango',
+      objective: 'Permisos, segregación de funciones, trazabilidad y respaldo de la base Tango',
+      weight: 'medio',
+      items: [
+        scoringTri('¿Perfiles y permisos por usuario definidos en Tango?', { method: ['O', 'E'] }),
+        scoringTri('¿Segregación de funciones: quien factura ≠ quien cobra ≠ quien concilia?', {
+          method: ['E']
+        }),
+        scoringBool('¿Cada operador usa su propio usuario (sin cuentas compartidas)?', {
+          method: ['E', 'O']
+        }),
+        scoringTri('¿Permisos totales (administrador) limitados a quienes corresponde?', {
+          method: ['O', 'E']
+        }),
+        scoringTri('¿Trazabilidad / auditoría de operaciones activada en Tango?', {
+          method: ['O', 'E']
+        }),
+        scoringTri('¿Respaldo específico de la base Tango configurado y probado (Tango Backup u otro)?', {
+          method: ['E'],
+          help_text: 'Solo la base Tango; el backup integral se releva en la Auditoría IT (A10)'
+        }),
+        infoText('Incidentes o riesgos de seguridad detectados en el ERP', 'tecnico', false, {
+          method: ['E']
+        })
+      ]
+    }
+  ];
+
+  return [
+    cab,
+    ...sectionDefs.map((s, idx) => ({
+      code: s.code,
+      title: s.title,
+      objective: s.objective,
+      standard_ref: `ERP ${s.code}`,
+      weight: s.weight,
+      has_score: true,
+      sort_order: idx + 1,
+      items: s.items.map((it, i) => item(i, it))
+    }))
+  ];
+}
+
 function buildErpSections(prefix: 'B' | 'E', titles: string[]): SectionFixture[] {
   const cab: SectionFixture = {
     code: 'CAB',
@@ -409,19 +830,9 @@ const IT_TEMPLATE: TemplateFixture = {
 const ERP_TANGO_TEMPLATE: TemplateFixture = {
   code: 'erp-tango',
   name: 'Auditoría ERP Tango',
-  version: 'v2',
+  version: 'v3',
   status: 'active',
-  sections: buildErpSections('B', [
-    'Administración y parametrización',
-    'Ventas y facturación',
-    'Compras y proveedores',
-    'Stock e inventarios',
-    'Tesorería',
-    'Sueldos y RRHH',
-    'Producción / costos',
-    'Integraciones y Nexo',
-    'Seguridad y usuarios Tango'
-  ])
+  sections: buildErpTangoSections()
 };
 
 const ERP_ESTANDAR_TEMPLATE: TemplateFixture = {
@@ -455,7 +866,7 @@ async function main() {
 
   const templates = [
     { file: 'it-v2.json', data: IT_TEMPLATE },
-    { file: 'erp-tango-v2.json', data: ERP_TANGO_TEMPLATE },
+    { file: 'erp-tango-v3.json', data: ERP_TANGO_TEMPLATE },
     { file: 'erp-estandar-v1.json', data: ERP_ESTANDAR_TEMPLATE }
   ];
 

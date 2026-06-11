@@ -184,7 +184,52 @@ describe('database seed', () => {
         SELECT label FROM template_item
         WHERE section_id = ${section.id} AND sort_order = 0
       `;
-      expect(item.label).toBe('¿Proceso Tesorería documentado?');
+      expect(item.label).toBe('¿Usan el módulo Tesorería/Fondos para cajas y bancos?');
+    });
+  });
+
+  it('re-sync archives older versions and prunes stale sections without responses', async () => {
+    await withTestDbSerial(sql, async (s) => {
+      // Simula el estado que dejó el bug de erp-tango v2: una versión vieja
+      // activa y una sección huérfana que el fixture ya no define.
+      const [oldTemplate] = await s<{ id: string }[]>`
+        INSERT INTO template (code, name, version, status)
+        VALUES ('erp-tango', 'Auditoría ERP Tango', 'v2-test', 'active')
+        RETURNING id
+      `;
+
+      const [currentTemplate] = await s<{ id: string }[]>`
+        SELECT id FROM template WHERE code = 'erp-tango' AND version = 'v3' LIMIT 1
+      `;
+      const [staleSection] = await s<{ id: string }[]>`
+        INSERT INTO section (template_id, code, title, weight, has_score, sort_order)
+        VALUES (${currentTemplate.id}, 'B99', 'Sección huérfana', 'medio', true, 99)
+        RETURNING id
+      `;
+      await s`
+        INSERT INTO template_item (section_id, label, field_type, filled_by, sort_order)
+        VALUES (${staleSection.id}, 'Ítem huérfano', 'bool', 'tecnico', 0)
+      `;
+
+      await seedTemplates(s);
+
+      const [old] = await s<{ status: string }[]>`
+        SELECT status FROM template WHERE id = ${oldTemplate.id}
+      `;
+      expect(old.status).toBe('archived');
+
+      const active = await s<{ version: string }[]>`
+        SELECT version FROM template WHERE code = 'erp-tango' AND status = 'active'
+      `;
+      expect(active).toHaveLength(1);
+      expect(active[0].version).toBe('v3');
+
+      const stale = await s<{ id: string }[]>`
+        SELECT id FROM section WHERE id = ${staleSection.id}
+      `;
+      expect(stale).toHaveLength(0);
+
+      await s`DELETE FROM template WHERE id = ${oldTemplate.id}`;
     });
   });
 

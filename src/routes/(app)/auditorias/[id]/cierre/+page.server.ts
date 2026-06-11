@@ -42,14 +42,32 @@ export const actions: Actions = {
     }
   },
 
-  confirmClosure: async ({ locals, params }) => {
+  confirmClosure: async ({ request, locals, params }) => {
     const user = requireStaff(locals);
 
     try {
+      // Guarda lo tipeado antes de confirmar: confirmar no debe descartar campos.
+      const formData = await request.formData();
+      const fields = parseClosureFieldsFromFormData(formData);
+      await saveClosureFields(params.id, fields, user);
+
+      const missing: string[] = [];
+      if (fields.topRisks.length === 0) missing.push('top_risks');
+      if (fields.quickWins.length === 0) missing.push('quick_wins');
+      if (!fields.nextStep?.trim()) missing.push('next_step');
+
+      const force = formData.get('forceClose') === '1';
+      if (missing.length > 0 && !force) {
+        return fail(400, { warnings: missing });
+      }
+
       await confirmClosure(params.id, user);
       redirect(303, `/auditorias/${params.id}`);
     } catch (e) {
       if (isRedirect(e)) throw e;
+      if (e instanceof ClosureValidationError) {
+        return fail(400, { error: e.message, code: e.code, fields: e.fields });
+      }
       return failFromError(e);
     }
   },

@@ -1,0 +1,1012 @@
+{
+  "code": "erp-tango",
+  "name": "Auditoría ERP Tango",
+  "version": "v3",
+  "status": "active",
+  "sections": [
+    {
+      "code": "CAB",
+      "title": "Cabecera ERP",
+      "objective": "Datos generales del relevamiento ERP",
+      "weight": "bajo",
+      "has_score": false,
+      "sort_order": 0,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "Razón social",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "admin",
+          "required": true,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "CUIT",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "admin",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Rubro / actividad",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 3,
+          "label": "Cantidad de empleados",
+          "field_type": "number",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 4,
+          "label": "Referente principal",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 5,
+          "label": "Contacto referente",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 6,
+          "label": "ERP actual",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 7,
+          "label": "Proveedor de correo",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 8,
+          "label": "Soporte IT actual",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 9,
+          "label": "Módulos Tango instalados",
+          "field_type": "multiselect",
+          "method": [
+            "O"
+          ],
+          "filled_by": "cliente",
+          "required": false,
+          "scores": false,
+          "options": {
+            "item_code": "cab_modulos_tango",
+            "choices": [
+              "ventas",
+              "compras",
+              "stock",
+              "tesorería",
+              "sueldos",
+              "punto_venta"
+            ]
+          }
+        },
+        {
+          "sort_order": 10,
+          "label": "Fecha programada de visita",
+          "field_type": "date",
+          "method": [
+            "O"
+          ],
+          "filled_by": "admin",
+          "scores": false,
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "B1",
+      "title": "Administración y parametrización",
+      "objective": "Identificación, licenciamiento y parametrización general de Tango",
+      "standard_ref": "ERP B1",
+      "weight": "muy_alto",
+      "has_score": true,
+      "sort_order": 1,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "Versión / generación de Tango instalada (ej.: Delta, Delta 2)",
+          "field_type": "text",
+          "method": [
+            "O",
+            "C"
+          ],
+          "filled_by": "tecnico",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "Modalidad de uso",
+          "field_type": "select",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "scores": false,
+          "options": {
+            "choices": [
+              "Local instalado",
+              "Tango Nube",
+              "Suscripción Nexo"
+            ]
+          }
+        },
+        {
+          "sort_order": 2,
+          "label": "Brecha de versión vs. última liberada por Axoft",
+          "field_type": "select",
+          "method": [
+            "O",
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Al día",
+              "Una versión atrás",
+              "Dos o más versiones atrás"
+            ],
+            "score_map": {
+              "Al día": 100,
+              "Una versión atrás": 50,
+              "Dos o más versiones atrás": 0
+            }
+          }
+        },
+        {
+          "sort_order": 3,
+          "label": "¿Garantía de actualización / abono Axoft vigente?",
+          "field_type": "bool",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {},
+          "help_text": "Precargable desde registros SyS de licencias"
+        },
+        {
+          "sort_order": 4,
+          "label": "Usuarios licenciados vs. usuarios activos reales",
+          "field_type": "select",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Alineados",
+              "Brecha menor",
+              "Brecha importante (sobre-gasto o licencias que faltan)"
+            ],
+            "score_map": {
+              "Alineados": 100,
+              "Brecha menor": 50,
+              "Brecha importante (sobre-gasto o licencias que faltan)": 0
+            }
+          }
+        },
+        {
+          "sort_order": 5,
+          "label": "¿Hay un referente interno de Tango definido (key user)?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 6,
+          "label": "¿Parametrización general documentada (empresas, sucursales, talonarios, listas de precios)?",
+          "field_type": "tri",
+          "method": [
+            "E",
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 7,
+          "label": "¿Operan multiempresa con módulo Central (si tienen más de una empresa)?",
+          "field_type": "bool",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {},
+          "allow_na": true
+        },
+        {
+          "sort_order": 8,
+          "label": "Estudio contable externo: nombre y cómo trabaja (sobre Tango / le exportan datos)",
+          "field_type": "text",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "required": false,
+          "scores": false,
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "B2",
+      "title": "Ventas y facturación",
+      "objective": "Circuito comercial completo y facturación electrónica desde Tango",
+      "standard_ref": "ERP B2",
+      "weight": "muy_alto",
+      "has_score": true,
+      "sort_order": 2,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Facturación electrónica AFIP/ARCA integrada en Tango y al día con la normativa vigente?",
+          "field_type": "tri",
+          "method": [
+            "E",
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "Circuito pedido → remito → factura → cobro",
+          "field_type": "select",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Completo en Tango",
+              "Parcial (tramos manuales)",
+              "Mayormente fuera del sistema"
+            ],
+            "score_map": {
+              "Completo en Tango": 100,
+              "Parcial (tramos manuales)": 50,
+              "Mayormente fuera del sistema": 0
+            }
+          }
+        },
+        {
+          "sort_order": 2,
+          "label": "¿Todos los comprobantes de venta se emiten desde Tango (sin facturación paralela)?",
+          "field_type": "bool",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 3,
+          "label": "¿Listas de precios y condiciones comerciales parametrizadas en el sistema?",
+          "field_type": "tri",
+          "method": [
+            "E",
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 4,
+          "label": "¿Cuentas corrientes de clientes conciliadas y al día en Tango?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 5,
+          "label": "¿Usan informes de ventas de Tango (Live / Reportes) para decisiones comerciales?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 6,
+          "label": "Tareas de ventas que hoy se resuelven a mano o en Excel",
+          "field_type": "list",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "scores": false,
+          "options": {
+            "max_items": 10
+          }
+        },
+        {
+          "sort_order": 7,
+          "label": "Cuellos de botella detectados en el circuito de ventas",
+          "field_type": "text",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "required": false,
+          "scores": false,
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "B3",
+      "title": "Compras y proveedores",
+      "objective": "Circuito de compras, matching y cuentas corrientes de proveedores",
+      "standard_ref": "ERP B3",
+      "weight": "muy_alto",
+      "has_score": true,
+      "sort_order": 3,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "Circuito orden de compra → recepción → factura → pago",
+          "field_type": "select",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Completo en Tango",
+              "Parcial (tramos manuales)",
+              "Mayormente fuera del sistema"
+            ],
+            "score_map": {
+              "Completo en Tango": 100,
+              "Parcial (tramos manuales)": 50,
+              "Mayormente fuera del sistema": 0
+            }
+          }
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Compras respaldadas por orden de compra en el sistema?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "¿Control de recepción contra OC y factura de proveedor (matching)?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 3,
+          "label": "¿Cuentas corrientes de proveedores conciliadas y al día?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 4,
+          "label": "¿Percepciones y retenciones de compras configuradas y aplicadas desde Tango?",
+          "field_type": "bool",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 5,
+          "label": "Doble carga / reprocesos detectados en compras",
+          "field_type": "text",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "required": false,
+          "scores": false,
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "B4",
+      "title": "Stock e inventarios",
+      "objective": "Confiabilidad del stock del sistema frente al stock físico",
+      "standard_ref": "ERP B4",
+      "weight": "alto",
+      "has_score": true,
+      "sort_order": 4,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿El stock del sistema refleja el stock físico (la operación confía en Tango)?",
+          "field_type": "tri",
+          "method": [
+            "E",
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Movimientos de stock registrados en tiempo real (no se cargan en diferido)?",
+          "field_type": "tri",
+          "method": [
+            "E",
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Inventarios / conteos físicos",
+          "field_type": "select",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Cíclicos programados",
+              "Solo anual",
+              "No se hacen"
+            ],
+            "score_map": {
+              "Cíclicos programados": 100,
+              "Solo anual": 50,
+              "No se hacen": 0
+            }
+          }
+        },
+        {
+          "sort_order": 3,
+          "label": "¿Artículos codificados con criterio único (sin duplicados)?",
+          "field_type": "tri",
+          "method": [
+            "O",
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 4,
+          "label": "¿Depósitos / sucursales de stock reflejados en Tango (multidepósito)?",
+          "field_type": "bool",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {},
+          "allow_na": true
+        },
+        {
+          "sort_order": 5,
+          "label": "Diferencias de inventario típicas y causas detectadas",
+          "field_type": "text",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "required": false,
+          "scores": false,
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "B5",
+      "title": "Tesorería",
+      "objective": "Cajas, bancos, conciliación y posición financiera desde el módulo Fondos",
+      "standard_ref": "ERP B5",
+      "weight": "alto",
+      "has_score": true,
+      "sort_order": 5,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Usan el módulo Tesorería/Fondos para cajas y bancos?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Conciliación bancaria hecha en Tango y al día?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "Posición financiera / cash flow",
+          "field_type": "select",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Sale de Tango",
+              "Se arma en Excel con datos de Tango",
+              "No se proyecta"
+            ],
+            "score_map": {
+              "Sale de Tango": 100,
+              "Se arma en Excel con datos de Tango": 50,
+              "No se proyecta": 0
+            }
+          }
+        },
+        {
+          "sort_order": 3,
+          "label": "¿Cheques y valores administrados desde el sistema?",
+          "field_type": "bool",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {},
+          "allow_na": true
+        },
+        {
+          "sort_order": 4,
+          "label": "¿Cobranzas con medios de pago electrónicos integradas (Tango Cobranzas u otro)?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {},
+          "allow_na": true
+        },
+        {
+          "sort_order": 5,
+          "label": "Circuito de pagos: quién autoriza y cómo se registra",
+          "field_type": "text",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "required": false,
+          "scores": false,
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "B6",
+      "title": "Sueldos y RRHH",
+      "objective": "Liquidación de sueldos, libros y control de asistencia",
+      "standard_ref": "ERP B6",
+      "weight": "medio",
+      "has_score": true,
+      "sort_order": 6,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Liquidan sueldos con el módulo Sueldos de Tango?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {},
+          "allow_na": true
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Libro de sueldos y F.931 se generan desde el sistema?",
+          "field_type": "bool",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {},
+          "allow_na": true
+        },
+        {
+          "sort_order": 2,
+          "label": "¿Convenios y conceptos de liquidación parametrizados al día?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {},
+          "allow_na": true
+        },
+        {
+          "sort_order": 3,
+          "label": "Control de asistencia",
+          "field_type": "select",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Integrado a la liquidación (Control de Horarios / Fichadas)",
+              "Sistema aparte sin integrar",
+              "Manual / planillas"
+            ],
+            "score_map": {
+              "Integrado a la liquidación (Control de Horarios / Fichadas)": 100,
+              "Sistema aparte sin integrar": 50,
+              "Manual / planillas": 0
+            }
+          },
+          "allow_na": true
+        },
+        {
+          "sort_order": 4,
+          "label": "Dolores en la liquidación (tiempos, errores, reclamos)",
+          "field_type": "text",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "required": false,
+          "scores": false,
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "B7",
+      "title": "Producción / costos",
+      "objective": "Producción, costos y rentabilidad dentro del sistema",
+      "standard_ref": "ERP B7",
+      "weight": "medio",
+      "has_score": true,
+      "sort_order": 7,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Gestionan producción / armado dentro de Tango?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {},
+          "allow_na": true
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Costos de productos actualizados en el sistema?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {},
+          "allow_na": true
+        },
+        {
+          "sort_order": 2,
+          "label": "Cálculo de rentabilidad por producto / línea",
+          "field_type": "select",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "Sale de Tango",
+              "Se arma en Excel",
+              "No se calcula"
+            ],
+            "score_map": {
+              "Sale de Tango": 100,
+              "Se arma en Excel": 50,
+              "No se calcula": 0
+            }
+          },
+          "allow_na": true
+        },
+        {
+          "sort_order": 3,
+          "label": "Procesos productivos que corren fuera del sistema",
+          "field_type": "text",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "required": false,
+          "scores": false,
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "B8",
+      "title": "Integraciones y Nexo",
+      "objective": "Apps Nexo, integraciones y personalizaciones a medida",
+      "standard_ref": "ERP B8",
+      "weight": "medio",
+      "has_score": true,
+      "sort_order": 8,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "Apps Tango Nexo activas",
+          "field_type": "multiselect",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "scores": false,
+          "options": {
+            "choices": [
+              "Tango Clientes",
+              "Tango Reportes",
+              "Tango Tablero",
+              "Tango Tiendas",
+              "Tango Cobranzas",
+              "Tango Backup",
+              "Tango Update",
+              "Tango Empleados",
+              "Tango Fichadas",
+              "TangoNet",
+              "Tango Notificaciones"
+            ]
+          }
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Aprovechan las apps Nexo gratuitas (Reportes, Tablero, Backup, Update)?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {},
+          "help_text": "Apps gratis sin activar = quick wins inmediatos"
+        },
+        {
+          "sort_order": 2,
+          "label": "¿Integración con e-commerce resuelta (Tango Tiendas / API / conector)?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {},
+          "allow_na": true
+        },
+        {
+          "sort_order": 3,
+          "label": "¿Intercambio con bancos y medios de pago integrado (sin retipeo)?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {},
+          "allow_na": true
+        },
+        {
+          "sort_order": 4,
+          "label": "Personalizaciones a medida y riesgo de actualización",
+          "field_type": "select",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {
+            "choices": [
+              "No hay personalizaciones",
+              "Hay, documentadas y con soporte",
+              "Hay, sin documentación o proveedor desconocido"
+            ],
+            "score_map": {
+              "No hay personalizaciones": 100,
+              "Hay, documentadas y con soporte": 100,
+              "Hay, sin documentación o proveedor desconocido": 0
+            }
+          }
+        },
+        {
+          "sort_order": 5,
+          "label": "Necesidades de integración no resueltas (oportunidades)",
+          "field_type": "list",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "scores": false,
+          "options": {
+            "max_items": 10
+          }
+        },
+        {
+          "sort_order": 6,
+          "label": "Exportaciones / importaciones manuales con Excel (qué y con qué frecuencia)",
+          "field_type": "text",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "required": false,
+          "scores": false,
+          "options": {}
+        }
+      ]
+    },
+    {
+      "code": "B9",
+      "title": "Seguridad y usuarios Tango",
+      "objective": "Permisos, segregación de funciones, trazabilidad y respaldo de la base Tango",
+      "standard_ref": "ERP B9",
+      "weight": "medio",
+      "has_score": true,
+      "sort_order": 9,
+      "items": [
+        {
+          "sort_order": 0,
+          "label": "¿Perfiles y permisos por usuario definidos en Tango?",
+          "field_type": "tri",
+          "method": [
+            "O",
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 1,
+          "label": "¿Segregación de funciones: quien factura ≠ quien cobra ≠ quien concilia?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 2,
+          "label": "¿Cada operador usa su propio usuario (sin cuentas compartidas)?",
+          "field_type": "bool",
+          "method": [
+            "E",
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 3,
+          "label": "¿Permisos totales (administrador) limitados a quienes corresponde?",
+          "field_type": "tri",
+          "method": [
+            "O",
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 4,
+          "label": "¿Trazabilidad / auditoría de operaciones activada en Tango?",
+          "field_type": "tri",
+          "method": [
+            "O",
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {}
+        },
+        {
+          "sort_order": 5,
+          "label": "¿Respaldo específico de la base Tango configurado y probado (Tango Backup u otro)?",
+          "field_type": "tri",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "options": {},
+          "help_text": "Solo la base Tango; el backup integral se releva en la Auditoría IT (A10)"
+        },
+        {
+          "sort_order": 6,
+          "label": "Incidentes o riesgos de seguridad detectados en el ERP",
+          "field_type": "text",
+          "method": [
+            "E"
+          ],
+          "filled_by": "tecnico",
+          "required": false,
+          "scores": false,
+          "options": {}
+        }
+      ]
+    }
+  ]
+}

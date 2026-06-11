@@ -25,6 +25,12 @@
     if (band === 'red') return '🔴';
     return '—';
   };
+
+  const WARNING_LABELS: Record<string, string> = {
+    top_risks: 'Top riesgos',
+    quick_wins: 'Quick wins',
+    next_step: 'Próximo paso acordado'
+  };
 </script>
 
 <svelte:head>
@@ -133,6 +139,15 @@
             </select>
           </div>
         {/each}
+        {#if topRisks.length < 5}
+          <button
+            type="button"
+            class="text-sm text-blue-700 underline"
+            onclick={() => topRisks.push({ text: '', severity: 'media' })}
+          >
+            + Agregar riesgo
+          </button>
+        {/if}
       </section>
 
       <section class="space-y-2">
@@ -144,6 +159,15 @@
             placeholder="Quick win"
           />
         {/each}
+        {#if quickWins.length < 10}
+          <button
+            type="button"
+            class="text-sm text-blue-700 underline"
+            onclick={() => quickWins.push('')}
+          >
+            + Agregar quick win
+          </button>
+        {/if}
       </section>
 
       <section class="space-y-2">
@@ -155,6 +179,15 @@
             placeholder="Oportunidad comercial"
           />
         {/each}
+        {#if upsellFindings.length < 20}
+          <button
+            type="button"
+            class="text-sm text-blue-700 underline"
+            onclick={() => upsellFindings.push('')}
+          >
+            + Agregar hallazgo
+          </button>
+        {/if}
       </section>
 
       <label class="block space-y-1">
@@ -166,6 +199,32 @@
           bind:value={nextStep}
         ></textarea>
       </label>
+
+      {#if form?.warnings?.length}
+        <div class="space-y-2 rounded border border-amber-300 bg-amber-50 p-3" role="alert">
+          <p class="text-sm font-medium text-amber-900">
+            No se cerró la auditoría: faltan campos clave del informe.
+          </p>
+          <ul class="list-disc pl-5 text-sm text-amber-800">
+            {#each form.warnings as warning}
+              <li>{WARNING_LABELS[warning] ?? warning}</li>
+            {/each}
+          </ul>
+          <p class="text-sm text-amber-800">
+            Estos campos alimentan el informe del cliente (top riesgos y quick wins). Completalos
+            y volvé a confirmar, o cerrá igual si de verdad no aplican.
+          </p>
+          <button
+            type="submit"
+            formaction="?/confirmClosure"
+            name="forceClose"
+            value="1"
+            class="rounded border border-amber-400 px-3 py-1.5 text-sm font-medium text-amber-900"
+          >
+            Cerrar igual sin estos campos
+          </button>
+        </div>
+      {/if}
 
       <div class="flex flex-wrap gap-3">
         <button
