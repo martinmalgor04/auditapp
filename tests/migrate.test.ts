@@ -18,7 +18,11 @@ describe('migration runner', () => {
     const rows = await sql<{ version: string }[]>`
       SELECT version FROM schema_migration ORDER BY version
     `;
-    expect(rows.map((r) => r.version)).toEqual(['001_schema', '002_backoffice']);
+    expect(rows.map((r) => r.version)).toEqual([
+      '001_schema',
+      '002_backoffice',
+      '003_user_audit_types'
+    ]);
   });
 
   it('skips already applied migrations', async () => {
@@ -26,10 +30,12 @@ describe('migration runner', () => {
     expect(first.applied).toEqual([]);
     expect(first.skipped).toContain('001_schema');
     expect(first.skipped).toContain('002_backoffice');
+    expect(first.skipped).toContain('003_user_audit_types');
 
     const second = await runMigrations(sql);
     expect(second.applied).toEqual([]);
     expect(second.skipped).toContain('001_schema');
     expect(second.skipped).toContain('002_backoffice');
+    expect(second.skipped).toContain('003_user_audit_types');
   });
 });

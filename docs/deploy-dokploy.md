@@ -115,7 +115,7 @@ Imagen `docker/postgres` con:
 
 ### Automático en cada deploy (recomendado)
 
-El entrypoint hace dos pasos idempotentes:
+El entrypoint ejecuta el seed automáticamente en dos pasos idempotentes:
 
 1. **Seed inicial** — solo si la DB está vacía (sin usuarios en `app_user`): usuarios + plantillas + clientes CSV.
 2. **Sync de plantillas** — **siempre** en cada arranque: actualiza `template`, `section` y `template_item` desde `seed/templates/*.json`. **No toca** usuarios, clientes ni auditorías existentes.

@@ -16,7 +16,7 @@ describe('brand components', () => {
     );
 
     expect(source).toContain("primary: 'bg-sys-electrico");
-    expect(source).toContain('#1976D2');
+    expect(source).toContain('hover:brightness-95');
     expect(source).toContain('min-h-[var(--sys-touch-min)]');
     expect(source).toContain('rounded-sys');
   });
@@ -26,9 +26,13 @@ describe('brand components', () => {
       join(process.cwd(), 'src/lib/components/brand/SysInput.svelte'),
       'utf8'
     );
+    const appCss = readFileSync(join(process.cwd(), 'src/app.css'), 'utf8');
+    const brandCss = readFileSync(join(process.cwd(), 'src/lib/styles/brand.css'), 'utf8');
 
-    expect(source).toContain('--sys-azul-electrico');
-    expect(source).toContain('rgba(33, 150, 243, 0.15)');
+    // El componente delega estilos a la clase compartida .sys-field (app.css)
+    expect(source).toContain('sys-field');
+    expect(appCss).toMatch(/\.sys-field:focus\s*\{[^}]*var\(--sys-azul-electrico\)/);
+    expect(brandCss).toMatch(/--sys-shadow-focus:[^;]*rgba\(33, 150, 243/);
   });
 
   it('SysBadge variants map to semaphore tokens', () => {
