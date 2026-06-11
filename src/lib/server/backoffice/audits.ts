@@ -433,6 +433,15 @@ export async function updateAudit(
     templateIds = await resolveTemplateIdsForTypes(data.types);
   }
 
+  // Lecturas fuera de la transacción: el pool tiene max=1 y un getSql()
+  // dentro de sql.begin() espera la conexión que la propia tx retiene (deadlock).
+  let cabItems: Awaited<ReturnType<typeof getCabItemsForTypes>> = [];
+  let clientFields: ClientCabFields | null = null;
+  if (data.cabResponses) {
+    cabItems = await getCabItemsForTypes(audit.types);
+    clientFields = await getClientCabFields(audit.clientId);
+  }
+
   await sql.begin(async (tx) => {
     await tx`
       UPDATE audit
@@ -447,8 +456,6 @@ export async function updateAudit(
     `;
 
     if (data.cabResponses) {
-      const cabItems = await getCabItemsForTypes(audit.types);
-      const clientFields = await getClientCabFields(audit.clientId);
       const cabDefaults = clientFields
         ? clientToCabValues(clientFields, cabItems, data.scheduledAt ?? audit.scheduledAt)
         : {};
