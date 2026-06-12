@@ -12,7 +12,8 @@ export { presignPut, presignGet } from './presign';
 export {
   requestPresignedUpload,
   confirmUpload,
-  requestPresignedDownload
+  requestPresignedDownload,
+  uploadObjectToR2
 } from './attachments';
 export {
   StorageValidationError,

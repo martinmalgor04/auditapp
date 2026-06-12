@@ -52,16 +52,18 @@ export async function uploadPhotoFlow(opts: {
       return { ok: false, error: await readError(presignRes, 'No se pudo iniciar la subida') };
     }
     const presignBody = await presignRes.json();
-    const uploadUrl = presignBody.data.upload_url as string;
     const r2Key = presignBody.data.r2_key as string;
 
-    const putRes = await fetchFn(uploadUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': prepared.contentType, ...(presignBody.data.headers ?? {}) },
-      body: prepared.blob
-    });
+    const putRes = await fetchFn(
+      `/api/audits/${auditId}/attachments/server-put?r2_key=${encodeURIComponent(r2Key)}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': prepared.contentType },
+        body: prepared.blob
+      }
+    );
     if (!putRes.ok) {
-      return { ok: false, error: `Falló la subida de la foto (HTTP ${putRes.status})` };
+      return { ok: false, error: await readError(putRes, 'Falló la subida de la foto') };
     }
 
     const confirmRes = await fetchFn(`/api/audits/${auditId}/attachments/confirm`, {

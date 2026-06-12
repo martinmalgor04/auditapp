@@ -10,6 +10,8 @@ import {
   StorageValidationError
 } from './errors';
 import { buildR2Key, isR2KeyForAudit, sanitizeSectionCode } from './r2-keys';
+import { getAwsClient } from './r2-client';
+import { getR2Env } from './r2-config';
 import { presignGet, presignPut, type PresignGetResult, type PresignPutResult } from './presign';
 
 const EDITABLE_ATTACHMENT_STATUSES: AuditStatus[] = [
@@ -141,4 +143,30 @@ export async function requestPresignedDownload(input: {
   await getAuditForStorage(attachment.audit_id);
 
   return presignGet({ r2Key: attachment.r2_key });
+}
+
+/** Sube bytes a R2 desde el servidor (evita CORS del bucket en uploads del navegador). */
+export async function uploadObjectToR2(input: {
+  auditId: string;
+  r2Key: string;
+  contentType: string;
+  body: ArrayBuffer | Blob;
+}): Promise<void> {
+  if (!isR2KeyForAudit(input.r2Key, input.auditId)) {
+    throw new StorageValidationError('r2_key no corresponde a la auditoría');
+  }
+
+  const env = getR2Env();
+  const base = env.R2_ENDPOINT.replace(/\/$/, '');
+  const url = `${base}/${env.R2_BUCKET}/${input.r2Key}`;
+  const client = getAwsClient();
+  const res = await client.fetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': input.contentType },
+    body: input.body
+  });
+
+  if (!res.ok) {
+    throw new StorageValidationError(`Falló la subida a R2 (HTTP ${res.status})`);
+  }
 }

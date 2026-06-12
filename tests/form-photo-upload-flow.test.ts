@@ -18,8 +18,8 @@ function happyFetch(attachmentId = 'a1a1a1a1-0000-4000-8000-000000000001') {
     if (u.includes('presign-put')) {
       return jsonRes({ data: { upload_url: 'https://r2.example/put', r2_key: 'k', headers: {} } });
     }
-    if (u.includes('r2.example')) {
-      return jsonRes({}, true, 200);
+    if (u.includes('server-put')) {
+      return jsonRes({ data: { ok: true } });
     }
     return jsonRes({ data: { attachment_id: attachmentId } });
   });
@@ -65,14 +65,14 @@ describe('uploadPhotoFlow (hotfix data loss)', () => {
     expect(res.error).toMatch(/no se guardó/i);
   });
 
-  it('PUT a R2 fallido: no llama a confirm y devuelve error', async () => {
+  it('server-put fallido: no llama a confirm y devuelve error', async () => {
     const fetchFn = vi.fn(async (url: RequestInfo | URL) => {
       const u = String(url);
       if (u.includes('presign-put')) {
         return jsonRes({ data: { upload_url: 'https://r2.example/put', r2_key: 'k' } });
       }
-      if (u.includes('r2.example')) {
-        return jsonRes({}, false, 403);
+      if (u.includes('server-put')) {
+        return jsonRes({ error: 'Falló la subida a R2 (HTTP 403)' }, false, 403);
       }
       throw new Error('confirm no debería llamarse');
     });

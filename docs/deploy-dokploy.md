@@ -56,6 +56,19 @@ Opcionales (Postgres admin):
 
 **No configurar `PORT` en Dokploy.** El compose ya fija `3033` para la app.
 
+## Fotos (R2)
+
+Las fotos del formulario suben **vía servidor** (`/attachments/server-put`) para no depender de CORS del bucket. Igual necesitás las vars `R2_*` correctas en Dokploy:
+
+- `R2_ENDPOINT=https://<account_id>.r2.cloudflarestorage.com` (sin `/` final, sin nombre del bucket)
+- `R2_BUCKET` = nombre exacto del bucket en Cloudflare
+
+Si la miniatura no carga pero el contador dice «1 foto(s)», revisá credenciales R2 y que el objeto exista en el bucket.
+
+## Informe IA (Anthropic)
+
+Tras el deploy, «Generar informe» requiere `ANTHROPIC_API_KEY` en las env del proyecto app (el compose la reenvía al contenedor).
+
 ## Postgres expuesto (puerto 4043)
 
 Postgres se publica en el **host** en el puerto **4043** → contenedor `5432`.

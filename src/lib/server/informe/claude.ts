@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { zodToJsonSchema } from 'zod-to-json-schema';
+import { sanitizeAnthropicJsonSchema } from './anthropic-json-schema';
 import { InformeGenerationError, InformeNotConfiguredError } from './errors';
 import { reportDraftEnvelopeSchema } from './schemas';
 
@@ -26,12 +27,13 @@ export interface InformeClaudeAdapter {
 
 /** JSON schema del envelope para output_config.format (derivado de Zod, R8). */
 export function buildOutputFormat(): { type: 'json_schema'; schema: Record<string, unknown> } {
+  const raw = zodToJsonSchema(reportDraftEnvelopeSchema, { target: 'jsonSchema7' }) as Record<
+    string,
+    unknown
+  >;
   return {
     type: 'json_schema',
-    schema: zodToJsonSchema(reportDraftEnvelopeSchema, { target: 'jsonSchema7' }) as Record<
-      string,
-      unknown
-    >
+    schema: sanitizeAnthropicJsonSchema(raw) as Record<string, unknown>
   };
 }
 
