@@ -22,7 +22,8 @@ describe('migration runner', () => {
       '001_schema',
       '002_backoffice',
       '003_user_audit_types',
-      '004_informe_ia'
+      '004_informe_ia',
+      '005_client_contactos'
     ]);
   });
 
@@ -33,6 +34,7 @@ describe('migration runner', () => {
     expect(first.skipped).toContain('002_backoffice');
     expect(first.skipped).toContain('003_user_audit_types');
     expect(first.skipped).toContain('004_informe_ia');
+    expect(first.skipped).toContain('005_client_contactos');
 
     const second = await runMigrations(sql);
     expect(second.applied).toEqual([]);

@@ -43,7 +43,8 @@
     onchange?: (value: unknown) => void;
     onnoteschange?: (notes: string) => void;
     onnchange?: (na: boolean) => void;
-    oncamera?: (rowId: string) => void;
+    /** Pasa también las filas VIVAS para que el flujo de foto nunca use un snapshot viejo. */
+    oncamera?: (rowId: string, currentRows: TableRow[]) => void;
     onphotocapture?: () => void;
     onphotogallery?: () => void;
   } = $props();
@@ -227,7 +228,7 @@
         {columns}
         bind:rows={tableRows}
         onchange={emitChange}
-        oncamera={oncamera}
+        oncamera={(rowId) => oncamera?.(rowId, $state.snapshot(tableRows) as TableRow[])}
       />
     {:else if item.fieldType === 'file_ref'}
       <FieldFileRef

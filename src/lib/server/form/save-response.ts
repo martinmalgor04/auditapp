@@ -11,6 +11,7 @@ import {
   FormItemNotAllowedError
 } from './errors';
 import { assertFormAccess } from './load-form';
+import { mergeTableAttachmentIds } from './merge-table';
 import { parseFormValue } from './schemas';
 
 export async function saveFormResponse(
@@ -34,7 +35,17 @@ export async function saveFormResponse(
   }
 
   const na = payload.na ?? false;
-  const value = parseFormValue(item.field_type, item.options, payload.value, na);
+  let value = parseFormValue(item.field_type, item.options, payload.value, na);
+
+  if (item.field_type === 'table' && !na) {
+    // Red de seguridad: nunca des-asociar fotos confirmadas de filas que el
+    // payload conserva (clientes con estado viejo). Ver merge-table.ts.
+    const { listFormResponses } = await import('$lib/server/db/audit-form');
+    const existing = (await listFormResponses(auditId)).find((r) => r.item_id === payload.itemId);
+    if (existing) {
+      value = mergeTableAttachmentIds(existing.value, value);
+    }
+  }
 
   const result = await upsertFormResponse(
     auditId,

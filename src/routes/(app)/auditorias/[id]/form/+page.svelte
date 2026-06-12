@@ -16,6 +16,7 @@
   } from '$lib/client/form/backup';
   import { updateScoreFromApi } from '$lib/client/form/live-score';
   import { prepareImageForUpload } from '$lib/client/form/image-pipeline';
+  import { uploadPhotoFlow, type PhotoTableRow } from '$lib/client/form/photo-upload';
   import { enqueueSave, flushQueue, listQueued, registerOnlineFlush } from '$lib/client/form/retry-queue';
   import type { PageData } from './$types';
 
@@ -24,6 +25,7 @@
 
   let activeSectionId = $state(data.sections[0]?.id ?? '');
   let saveState = $state<SaveIndicatorState>('idle');
+  let saveErrorMessage = $state<string | null>(null);
   let sectionScores = $state(
     new Map(data.sections.map((s) => [s.id, { sectionId: s.id, score: s.liveScore, band: s.scoreBand }]))
   );
@@ -51,8 +53,9 @@
   }
 
   const autosave = createAutosave(data.auditId, {
-    onStateChange: (s) => {
+    onStateChange: (s, message) => {
       saveState = s;
+      saveErrorMessage = s === 'error' ? (message ?? 'Error al guardar') : null;
     },
     onSectionScore: (sectionId, score, band) => {
       sectionScores = updateScoreFromApi(sectionScores, sectionId, score, band);
@@ -75,8 +78,10 @@
     notes?: string | null
   ) {
     const payload = { itemId, value, na, notes };
-    const ok = await autosave.patch(payload);
-    if (!ok) {
+    const outcome = await autosave.patch(payload);
+    if (outcome === 'offline') {
+      // Solo errores de red/5xx se encolan; un 4xx ('rejected') ya mostró
+      // error visible y reintentarlo daría siempre el mismo rechazo.
       await enqueueSave({
         auditId: data.auditId,
         ...payload,
@@ -85,6 +90,7 @@
       });
       saveState = 'offline';
     }
+    return outcome;
   }
 
   async function handleExport() {
@@ -110,68 +116,53 @@
     }
   }
 
-  async function uploadPhoto(itemId: string, sectionCode: string, file: File, rowId?: string) {
-    const prepared = await prepareImageForUpload(file);
-    const presignRes = await fetch(`/api/audits/${data.auditId}/attachments/presign-put`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        item_id: itemId,
-        section_code: sectionCode,
-        filename: prepared.filename,
-        content_type: prepared.contentType,
-        size_bytes: prepared.sizeBytes,
-        kind: 'photo'
-      })
-    });
-    if (!presignRes.ok) return;
-    const presignBody = await presignRes.json();
-    const uploadUrl = presignBody.data.upload_url as string;
-    const r2Key = presignBody.data.r2_key as string;
+  async function uploadPhoto(
+    itemId: string,
+    sectionCode: string,
+    file: File,
+    rowId?: string,
+    currentRows?: PhotoTableRow[]
+  ) {
+    saveState = 'saving';
+    saveErrorMessage = null;
+    try {
+      const prepared = await prepareImageForUpload(file);
+      const result = await uploadPhotoFlow({
+        auditId: data.auditId,
+        itemId,
+        sectionCode,
+        prepared,
+        rowId,
+        currentRows
+      });
 
-    await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': prepared.contentType, ...(presignBody.data.headers ?? {}) },
-      body: prepared.blob
-    });
+      if (!result.ok) {
+        saveState = 'error';
+        saveErrorMessage = result.error;
+        return;
+      }
 
-    const confirmRes = await fetch(`/api/audits/${data.auditId}/attachments/confirm`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        item_id: itemId,
-        r2_key: r2Key,
-        filename: prepared.filename,
-        content_type: prepared.contentType,
-        size_bytes: prepared.sizeBytes,
-        kind: 'photo'
-      })
-    });
-    if (!confirmRes.ok) return;
-    const confirmBody = await confirmRes.json();
-    const attachmentId = confirmBody.data.attachment_id as string;
-
-    if (rowId) {
-      const item = activeSection?.items.find((i) => i.id === itemId);
-      const current = (item?.value ?? { rows: [] }) as { rows: Array<{ row_id: string; cells: Record<string, unknown>; attachment_ids: string[] }> };
-      const rows = (current.rows ?? []).map((r) =>
-        r.row_id === rowId
-          ? { ...r, attachment_ids: [...(r.attachment_ids ?? []), attachmentId] }
-          : r
-      );
-      await saveItem(itemId, 'table', { rows }, false);
-    } else {
+      if (result.mergedValue) {
+        // Merge sobre las filas VIVAS del FieldRenderer (nunca el snapshot del load).
+        await saveItem(itemId, 'table', result.mergedValue, false);
+      } else {
+        saveState = 'saved';
+      }
       await invalidateAll();
+    } catch (err) {
+      saveState = 'error';
+      saveErrorMessage =
+        err instanceof Error ? `Error subiendo la foto: ${err.message}` : 'Error subiendo la foto';
     }
   }
 
-  function pickPhoto(itemId: string, sectionCode: string, rowId?: string) {
+  function pickPhoto(itemId: string, sectionCode: string, rowId?: string, currentRows?: PhotoTableRow[]) {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     input.onchange = () => {
       const file = input.files?.[0];
-      if (file) void uploadPhoto(itemId, sectionCode, file, rowId);
+      if (file) void uploadPhoto(itemId, sectionCode, file, rowId, currentRows);
     };
     input.click();
   }
@@ -187,7 +178,7 @@
 </svelte:head>
 
 <div class="sticky top-0 z-30 -mx-4 mb-4 border-b border-sys-medio/10 bg-sys-offwhite px-4 py-2">
-  <SaveIndicator state={saveState} />
+  <SaveIndicator state={saveState} errorMessage={saveErrorMessage} />
 </div>
 
 <div class="lg:grid lg:grid-cols-[280px_1fr] lg:gap-6">
@@ -240,7 +231,8 @@
           onchange={(value) => void saveItem(item.id, item.fieldType, value, item.na, item.notes)}
           onnchange={(na) => void saveItem(item.id, item.fieldType, null, na, item.notes)}
           onnoteschange={(notes) => void saveItem(item.id, item.fieldType, item.value, item.na, notes)}
-          oncamera={(rowId) => pickPhoto(item.id, activeSection?.code ?? '', rowId)}
+          oncamera={(rowId, currentRows) =>
+            pickPhoto(item.id, activeSection?.code ?? '', rowId, currentRows as PhotoTableRow[])}
           onphotocapture={() => pickPhoto(item.id, activeSection?.code ?? '')}
           onphotogallery={() => pickPhoto(item.id, activeSection?.code ?? '')}
         />

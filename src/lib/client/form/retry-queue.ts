@@ -1,4 +1,7 @@
-import type { SavePayload } from './autosave';
+import type { PatchOutcome, SavePayload } from './autosave';
+
+/** Acepta boolean legado (true=saved, false=offline) o el PatchOutcome nuevo. */
+export type PatchFn = (payload: SavePayload) => Promise<boolean | PatchOutcome>;
 
 const DB_NAME = 'auditapp_form';
 const STORE_NAME = 'form_retry_queue';
@@ -58,32 +61,44 @@ export async function removeQueued(auditId: string, itemId: string): Promise<voi
   db.close();
 }
 
-export async function flushQueue(
+/** Lógica pura de flush, testeable sin IndexedDB. */
+export async function flushEntries(
   auditId: string,
-  patchFn: (payload: SavePayload) => Promise<boolean>
+  entries: QueuedSave[],
+  patchFn: PatchFn,
+  removeFn: (auditId: string, itemId: string) => Promise<void>
 ): Promise<number> {
-  const entries = await listQueued(auditId);
   let flushed = 0;
 
   for (const entry of entries) {
-    const ok = await patchFn({
+    const result = await patchFn({
       itemId: entry.itemId,
       value: entry.value,
       na: entry.na,
       notes: entry.notes
     });
-    if (ok) {
-      await removeQueued(auditId, entry.itemId);
-      flushed++;
+    const saved = result === true || result === 'saved';
+    if (saved || result === 'rejected') {
+      // 'rejected' (4xx): el server nunca lo va a aceptar — se saca de la cola
+      // para no reintentar infinitamente contra el mismo error.
+      await removeFn(auditId, entry.itemId);
     }
+    if (saved) flushed++;
   }
+
+  return flushed;
+}
+
+export async function flushQueue(auditId: string, patchFn: PatchFn): Promise<number> {
+  const entries = await listQueued(auditId);
+  const flushed = await flushEntries(auditId, entries, patchFn, removeQueued);
 
   return flushed;
 }
 
 export function registerOnlineFlush(
   auditId: string,
-  patchFn: (payload: SavePayload) => Promise<boolean>,
+  patchFn: PatchFn,
   onFlushed?: (count: number) => void
 ): () => void {
   const handler = () => {

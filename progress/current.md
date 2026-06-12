@@ -81,3 +81,61 @@ tasks completas y gates; si aprueba → `done` + commit (una feature, un commit)
 - QA visual manual de impresión con 3/4/5 riesgos (T16 lo pide como verificación humana).
 - `pnpm run check` estaba rojo en master por 4 errores ajenos a #14; se corrigieron acá
   (cambios mínimos, documentados en impl_14_informe_ia.md).
+
+## Hotfix inventario/fotos (2026-06-12)
+
+**Bug de producción: cada foto de fila pisaba el inventario guardado con datos viejos.**
+
+### Causa raíz
+
+- `+page.svelte` (`uploadPhoto` con `rowId`) reconstruía las filas de la tabla desde
+  `item.value` — snapshot del `load`, nunca refrescado tras los PATCH — y guardaba
+  ese estado viejo. Si el load arrancó vacío, mandaba `{rows: []}` y borraba todo.
+- Además: el PUT a R2 no chequeaba `res.ok` (confirmaba fotos no subidas), los errores
+  de presign/confirm eran `return` silenciosos, y un PATCH 4xx volvía a `idle` y se
+  reencolaba para siempre en la retry-queue.
+
+### Cambios por archivo
+
+- `src/lib/client/form/photo-upload.ts` (nuevo): flujo presign→PUT→confirm extraído y
+  testeable; chequea `ok` de los 3 pasos, captura excepciones, y mergea el attachment
+  sobre las filas **vivas** que pasa el FieldRenderer. Si la fila ya no existe, NO guarda
+  (jamás reconstruye/reduce filas).
+- `src/routes/(app)/auditorias/[id]/form/+page.svelte`: `uploadPhoto` usa el módulo nuevo,
+  try/catch con estado `error` visible, `pickPhoto`/`oncamera` propagan las filas vivas;
+  `saveItem` solo encola en retry-queue cuando el outcome es `offline`.
+- `src/lib/components/form/field-renderer.svelte`: `oncamera(rowId, currentRows)` pasa
+  snapshot de `tableRows` vivas.
+- `src/lib/client/form/autosave.ts`: `patch` devuelve `'saved' | 'offline' | 'rejected'`;
+  4xx → estado `error` con el mensaje del envelope y NO reintenta; red/5xx → `offline`.
+- `src/lib/client/form/retry-queue.ts`: `flushEntries` (puro, testeable); los `rejected`
+  se sacan de la cola sin contarlos como flusheados (corta el retry infinito contra 4xx).
+- `src/lib/components/form/save-indicator.svelte`: estado `error` con mensaje.
+- `src/lib/server/form/save-response.ts` + `src/lib/server/form/merge-table.ts` (nuevo):
+  red de seguridad server-side — para values de tabla, unión de `attachment_ids` por
+  `row_id` con lo ya guardado. Decisión: NO se rechaza un payload con menos filas
+  (borrar filas es legítimo); lo que se garantiza es que un cliente con estado viejo
+  no pueda des-asociar fotos confirmadas de filas que conserva. La pérdida de filas
+  queda eliminada por el fix client-side (merge sobre filas vivas + abort si la fila
+  no existe).
+- `Dockerfile` + `.env.example`: `BODY_SIZE_LIMIT=2M` (adapter-node default 512K).
+  **Pendiente ops: setear `BODY_SIZE_LIMIT=2M` en el environment de Dokploy.**
+- `tests/migrate.test.ts`: estaba roto en master (no incluía `005_client_contactos`,
+  commiteada en bd02bd9 sin actualizar el test). Actualizado.
+
+### Tests nuevos
+
+- `tests/form-photo-upload-flow.test.ts` (5): merge sobre filas vivas, una foto no puede
+  reducir/vaciar filas, PUT fallido no confirma, presign fallido devuelve mensaje del
+  envelope, excepción de red no se traga.
+- `tests/form-table-merge.test.ts` (4): merge server-side (unión, no resucita filas
+  borradas, passthrough).
+- `tests/form-autosave-errors.test.ts` (4): 4xx → `rejected` + error visible y no se
+  encola; 5xx/red → `offline`; `flushEntries` descarta `rejected` de la cola.
+
+### Gates
+
+- `pnpm run check` → 0 errores (warnings preexistentes).
+- `pnpm test` → 104 archivos / 419 tests verdes (2 skipped).
+- `./init.sh` → exit 0.
+- `pnpm exec playwright test` → (ver resultado abajo)

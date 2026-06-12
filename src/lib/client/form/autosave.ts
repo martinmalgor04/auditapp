@@ -20,8 +20,19 @@ export type SavePayload = {
   notes?: string | null;
 };
 
+export type SaveState = 'idle' | 'saving' | 'saved' | 'offline' | 'error';
+
+/**
+ * Resultado de un PATCH:
+ * - 'saved': persistido OK.
+ * - 'offline': error de red / 5xx → reintetable, va a la retry-queue.
+ * - 'rejected': 4xx → el server lo rechazó; reintentar daría siempre lo mismo,
+ *   NO se encola y se muestra error visible.
+ */
+export type PatchOutcome = 'saved' | 'offline' | 'rejected';
+
 export type AutosaveCallbacks = {
-  onStateChange?: (state: 'idle' | 'saving' | 'saved' | 'offline') => void;
+  onStateChange?: (state: SaveState, message?: string) => void;
   onSectionScore?: (sectionId: string, score: number | null, band: string) => void;
 };
 
@@ -33,7 +44,7 @@ export function createAutosave(auditId: string, callbacks: AutosaveCallbacks = {
     return AUTOSAVE_DEBOUNCE_MS;
   }
 
-  async function patch(payload: SavePayload): Promise<boolean> {
+  async function patch(payload: SavePayload): Promise<PatchOutcome> {
     callbacks.onStateChange?.('saving');
     try {
       const res = await fetch(`/api/audits/${auditId}/responses`, {
@@ -45,10 +56,18 @@ export function createAutosave(auditId: string, callbacks: AutosaveCallbacks = {
       if (!res.ok) {
         if (res.status >= 500 || !navigator.onLine) {
           callbacks.onStateChange?.('offline');
-          return false;
+          return 'offline';
         }
-        callbacks.onStateChange?.('idle');
-        return false;
+        // 4xx: rechazo definitivo del server — mostrar error, no reintentar.
+        let message = 'No se pudo guardar';
+        try {
+          const body = await res.json();
+          if (body && typeof body.error === 'string' && body.error) message = body.error;
+        } catch {
+          /* respuesta sin JSON */
+        }
+        callbacks.onStateChange?.('error', message);
+        return 'rejected';
       }
 
       const body = await res.json();
@@ -62,10 +81,10 @@ export function createAutosave(auditId: string, callbacks: AutosaveCallbacks = {
 
       callbacks.onStateChange?.('saved');
       setTimeout(() => callbacks.onStateChange?.('idle'), 2000);
-      return true;
+      return 'saved';
     } catch {
       callbacks.onStateChange?.('offline');
-      return false;
+      return 'offline';
     }
   }
 

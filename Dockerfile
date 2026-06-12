@@ -30,6 +30,8 @@ RUN corepack enable
 ENV NODE_ENV=production
 ENV PORT=3033
 ENV HOST=0.0.0.0
+# adapter-node: default 512K se queda corto para el form técnico (tablas/backup)
+ENV BODY_SIZE_LIMIT=2M
 
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --prod --frozen-lockfile
