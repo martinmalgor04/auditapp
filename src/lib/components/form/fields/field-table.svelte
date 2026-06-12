@@ -80,7 +80,14 @@
             </label>
           {/each}
         </div>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2 items-center">
+          <button
+            type="button"
+            class="min-h-[var(--sys-touch-min)] rounded border border-sys-electrico/30 bg-sys-electrico/5 px-3 text-sm font-medium text-sys-electrico"
+            onclick={() => onchange?.()}
+          >
+            Guardar fila
+          </button>
           <button
             type="button"
             class="min-h-[var(--sys-touch-min)] min-w-[var(--sys-touch-min)] rounded border border-slate-300 px-3 text-sm"

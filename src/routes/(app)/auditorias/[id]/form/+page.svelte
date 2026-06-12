@@ -126,6 +126,12 @@
     saveState = 'saving';
     saveErrorMessage = null;
     try {
+      // Persistir la grilla viva antes del confirm (celdas recién tipeadas).
+      if (rowId && currentRows && currentRows.length > 0) {
+        const preSave = await saveItem(itemId, 'table', { rows: currentRows }, false);
+        if (preSave === 'rejected') return;
+      }
+
       const prepared = await prepareImageForUpload(file);
       const result = await uploadPhotoFlow({
         auditId: data.auditId,
@@ -144,7 +150,8 @@
 
       if (result.mergedValue) {
         // Merge sobre las filas VIVAS del FieldRenderer (nunca el snapshot del load).
-        await saveItem(itemId, 'table', result.mergedValue, false);
+        const outcome = await saveItem(itemId, 'table', result.mergedValue, false);
+        if (outcome === 'rejected') return;
       } else {
         saveState = 'saved';
       }

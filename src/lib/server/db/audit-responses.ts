@@ -15,6 +15,15 @@ export async function upsertFileRefResponse(
     LIMIT 1
   `;
 
+  if (
+    existing?.value &&
+    typeof existing.value === 'object' &&
+    Array.isArray((existing.value as { rows?: unknown }).rows)
+  ) {
+    // Red de seguridad: nunca convertir una tabla en file_ref.
+    return;
+  }
+
   let attachmentIds: string[];
   if (existing?.value && typeof existing.value === 'object') {
     const parsed = fileRefValueSchema.safeParse(existing.value);

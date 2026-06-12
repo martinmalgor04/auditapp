@@ -1,5 +1,6 @@
 import type { AuditStatus } from '../db/audit-status';
 import { getAttachmentById, insertAttachment } from '../db/attachments';
+import { getFormItemForAudit } from '../db/audit-form';
 import { getTemplateItemSectionCode, upsertFileRefResponse } from '../db/audit-responses';
 import { getSql } from '../db/client';
 import {
@@ -110,8 +111,13 @@ export async function confirmUpload(input: {
       uploadedBy: input.userId
     });
 
+    // Solo file_ref: el value es { attachment_ids }. En table el link va en la fila
+    // (mergedValue del cliente); upsertFileRefResponse pisaba { rows } → data loss.
     if (input.itemId) {
-      await upsertFileRefResponse(input.auditId, input.itemId, attachmentId, input.userId);
+      const item = await getFormItemForAudit(input.auditId, input.itemId);
+      if (item?.field_type === 'file_ref') {
+        await upsertFileRefResponse(input.auditId, input.itemId, attachmentId, input.userId);
+      }
     }
 
     return { attachmentId };
