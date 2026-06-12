@@ -9,9 +9,8 @@ import {
   AuditNotFoundError,
   StorageValidationError
 } from './errors';
+import { logger } from '$lib/server/logger';
 import { buildR2Key, isR2KeyForAudit, sanitizeSectionCode } from './r2-keys';
-import { getAwsClient } from './r2-client';
-import { getR2Env } from './r2-config';
 import { presignGet, presignPut, type PresignGetResult, type PresignPutResult } from './presign';
 
 const EDITABLE_ATTACHMENT_STATUSES: AuditStatus[] = [
@@ -156,17 +155,24 @@ export async function uploadObjectToR2(input: {
     throw new StorageValidationError('r2_key no corresponde a la auditoría');
   }
 
-  const env = getR2Env();
-  const base = env.R2_ENDPOINT.replace(/\/$/, '');
-  const url = `${base}/${env.R2_BUCKET}/${input.r2Key}`;
-  const client = getAwsClient();
-  const res = await client.fetch(url, {
+  const { uploadUrl, headers } = await presignPut({
+    r2Key: input.r2Key,
+    contentType: input.contentType
+  });
+
+  const res = await fetch(uploadUrl, {
     method: 'PUT',
-    headers: { 'Content-Type': input.contentType },
+    headers,
     body: input.body
   });
 
   if (!res.ok) {
+    const r2Body = (await res.text()).slice(0, 200);
+    logger.warn('r2_server_put_failed', {
+      status: res.status,
+      r2Key: input.r2Key,
+      r2Body: r2Body || undefined
+    });
     throw new StorageValidationError(`Falló la subida a R2 (HTTP ${res.status})`);
   }
 }

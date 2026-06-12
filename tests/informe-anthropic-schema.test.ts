@@ -4,6 +4,23 @@ import { sanitizeAnthropicJsonSchema } from '../src/lib/server/informe/anthropic
 import { buildOutputFormat } from '../src/lib/server/informe/claude';
 import { reportDraftEnvelopeSchema } from '../src/lib/server/informe/schemas';
 
+function collectRefs(node: unknown, path = '', out: { path: string; ref: string }[] = []): typeof out {
+  if (!node || typeof node !== 'object') return out;
+  if (Array.isArray(node)) {
+    for (const item of node) collectRefs(item, path, out);
+    return out;
+  }
+  const obj = node as Record<string, unknown>;
+  if (typeof obj.$ref === 'string') {
+    out.push({ path, ref: obj.$ref });
+  }
+  for (const [key, val] of Object.entries(obj)) {
+    if (key === '$ref') continue;
+    collectRefs(val, path ? `${path}/${key}` : key, out);
+  }
+  return out;
+}
+
 function collectIntegerMinimums(node: unknown, out: unknown[] = []): unknown[] {
   if (!node || typeof node !== 'object') return out;
   if (Array.isArray(node)) {
@@ -33,5 +50,11 @@ describe('sanitizeAnthropicJsonSchema', () => {
     const format = buildOutputFormat();
     expect(collectIntegerMinimums(format.schema)).toHaveLength(0);
     expect(format.type).toBe('json_schema');
+  });
+
+  it('buildOutputFormat no usa $ref bajo properties (Anthropic lo rechaza)', () => {
+    const format = buildOutputFormat();
+    const refs = collectRefs(format.schema);
+    expect(refs).toHaveLength(0);
   });
 });

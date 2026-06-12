@@ -1,6 +1,7 @@
 /**
- * Anthropic structured outputs no acepta minimum/maximum en type integer.
- * Zod → JSON Schema sí los emite; los quitamos antes de output_config.format.
+ * Anthropic structured outputs:
+ * - No acepta minimum/maximum en type integer (sanitizamos).
+ * - No acepta $ref definidos bajo properties (buildOutputFormat usa $refStrategy: 'none').
  * La validación fuerte sigue en reportDraftEnvelopeSchema.parse() post-respuesta.
  */
 
