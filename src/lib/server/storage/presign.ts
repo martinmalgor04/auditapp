@@ -19,6 +19,15 @@ function objectUrl(r2Key: string): string {
   return `${base}/${env.R2_BUCKET}/${r2Key}`;
 }
 
+/** URL pública vía custom domain de R2 (sin firma). Requiere R2_PUBLIC_BASE_URL. */
+export function buildPublicObjectUrl(r2Key: string): string | null {
+  const base = getR2Env().R2_PUBLIC_BASE_URL?.replace(/\/$/, '');
+  if (!base) {
+    return null;
+  }
+  return `${base}/${r2Key}`;
+}
+
 function presignTargetUrl(r2Key: string, ttlSeconds: number): string {
   const url = new URL(objectUrl(r2Key));
   url.searchParams.set('X-Amz-Expires', String(ttlSeconds));
@@ -54,6 +63,15 @@ export async function presignGet(params: {
 }): Promise<PresignGetResult> {
   const env = getR2Env();
   const ttl = params.ttlSeconds ?? env.R2_PRESIGN_TTL_SECONDS;
+
+  const publicUrl = buildPublicObjectUrl(params.r2Key);
+  if (publicUrl) {
+    return {
+      downloadUrl: publicUrl,
+      expiresAt: new Date(Date.now() + ttl * 1000)
+    };
+  }
+
   const client = getAwsClient();
 
   const signed = await client.sign(presignTargetUrl(params.r2Key, ttl), {

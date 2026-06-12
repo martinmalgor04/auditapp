@@ -6,6 +6,8 @@ export const r2EnvSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().min(1),
   R2_BUCKET: z.string().min(1),
   R2_ENDPOINT: z.string().url(),
+  /** Dominio público del bucket (custom domain R2). Si está seteado, GET usa URL pública en lugar de presign S3. */
+  R2_PUBLIC_BASE_URL: z.string().url().optional(),
   R2_PRESIGN_TTL_SECONDS: z.coerce.number().int().positive().default(900)
 });
 

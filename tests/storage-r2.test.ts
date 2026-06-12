@@ -67,6 +67,17 @@ describe('storage R2 module', () => {
     expect(result.downloadUrl).not.toMatch(/^https:\/\/[^?]+$/);
   });
 
+  it('presignGet uses R2_PUBLIC_BASE_URL when configured', async () => {
+    process.env.R2_PUBLIC_BASE_URL = 'https://auditapp.example.com';
+    resetR2EnvForTests();
+
+    const key = buildR2Key({ auditId: AUDIT_ID, sectionCode: 'A1', uuid: FIXED_UUID });
+    const result = await presignGet({ r2Key: key });
+
+    expect(result.downloadUrl).toBe(`https://auditapp.example.com/${key}`);
+    expect(result.downloadUrl).not.toContain('X-Amz-Signature');
+  });
+
   it('respects R2_PRESIGN_TTL_SECONDS', async () => {
     applyTestR2Env('600');
     const key = buildR2Key({ auditId: AUDIT_ID, general: true, uuid: FIXED_UUID });

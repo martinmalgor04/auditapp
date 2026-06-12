@@ -62,8 +62,9 @@ Las fotos del formulario suben **vía servidor** (`/attachments/server-put`) par
 
 - `R2_ENDPOINT=https://<account_id>.r2.cloudflarestorage.com` (sin `/` final, sin nombre del bucket)
 - `R2_BUCKET` = nombre exacto del bucket en Cloudflare
+- `R2_PUBLIC_BASE_URL=https://auditapp.auditoriaserviciosysistemas.com.ar` si el bucket tiene **custom domain** público en Cloudflare (previews y «ver foto»). Sin esto, la app genera presigned GET contra la API S3 y puede responder 403 aunque la subida funcione.
 
-Si la miniatura no carga pero el contador dice «1 foto(s)», revisá credenciales R2 y que el objeto exista en el bucket.
+Si la miniatura no carga pero el contador dice «1 foto(s)», revisá credenciales R2, `R2_PUBLIC_BASE_URL`, y que el objeto exista en el bucket.
 
 ## Informe IA (Anthropic)
 
