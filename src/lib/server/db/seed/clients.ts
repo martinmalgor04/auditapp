@@ -44,7 +44,7 @@ export async function seedClients(sql: DbExecutor): Promise<number> {
     await sql`
       INSERT INTO client (
         id, razon_social, cuit, direccion, cp, provincia,
-        telefono, email, created_at, updated_at
+        telefono, email, origen, created_at, updated_at
       )
       VALUES (
         ${row.id}::uuid,
@@ -55,6 +55,7 @@ export async function seedClients(sql: DbExecutor): Promise<number> {
         ${emptyToNull(row.provincia)},
         ${emptyToNull(row.telefono)},
         ${emptyToNull(row.email)},
+        'presupuestos',
         ${parseTimestamptz(row.created_at)},
         ${parseTimestamptz(row.updated_at)}
       )

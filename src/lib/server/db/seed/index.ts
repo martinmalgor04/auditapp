@@ -1,5 +1,7 @@
 import type postgres from 'postgres';
 import { seedClients } from './clients';
+import { seedClientesTango } from './tango';
+import { seedProspectos } from './prospectos';
 import { seedTemplates } from './templates';
 import { seedUsers } from './users';
 
@@ -7,6 +9,8 @@ export type SeedOptions = {
   users?: boolean;
   templates?: boolean;
   clients?: boolean;
+  tango?: boolean;
+  prospectos?: boolean;
 };
 
 type DbExecutor = postgres.Sql | postgres.TransactionSql;
@@ -24,6 +28,13 @@ export async function runSeed(
   }
   if (opts.clients !== false) {
     await seedClients(sql);
+  }
+  // Después de clients: enriquecen por id filas ya cargadas desde presupuestos.
+  if (opts.tango !== false) {
+    await seedClientesTango(sql);
+  }
+  if (opts.prospectos !== false) {
+    await seedProspectos(sql);
   }
 }
 
@@ -59,3 +70,5 @@ export { seedUsers, DEV_USERS } from './users';
 export { seedTemplates, loadTemplateFixture } from './templates';
 export type { TemplateFixture, SectionFixture, TemplateItemFixture } from './templates';
 export { seedClients } from './clients';
+export { seedClientesTango } from './tango';
+export { seedProspectos } from './prospectos';

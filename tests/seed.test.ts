@@ -16,6 +16,18 @@ import type postgres from 'postgres';
 
 const MANIFEST_PATH = join(process.cwd(), 'seed', 'templates', 'manifest.json');
 const CSV_PATH = join(process.cwd(), 'seed', 'clientes-presupuestossys.csv');
+const TANGO_CSV_PATH = join(process.cwd(), 'seed', 'clientes-tango.csv');
+const PROSPECTOS_CSV_PATH = join(process.cwd(), 'seed', 'prospectos.csv');
+
+async function readCsvIds(path: string): Promise<string[]> {
+  const content = await readFile(path, 'utf8');
+  const records = parse(content, {
+    columns: true,
+    skip_empty_lines: true,
+    relax_quotes: true
+  }) as { id: string }[];
+  return records.map((r) => r.id);
+}
 
 describe('database seed', () => {
   let sql: postgres.Sql;
@@ -129,15 +141,77 @@ describe('database seed', () => {
   });
 
   it('imports clients from csv count', async () => {
-    const csvContent = await readFile(CSV_PATH, 'utf8');
-    const expectedCount = (
-      parse(csvContent, { columns: true, skip_empty_lines: true, relax_quotes: true }) as unknown[]
-    ).length;
+    // Los CSVs de tango y prospectos reusan ids de presupuestos cuando la
+    // razón social matchea, así que el total son los ids únicos de los tres.
+    const presupuestosIds = await readCsvIds(CSV_PATH);
+    const tangoIds = await readCsvIds(TANGO_CSV_PATH);
+    const prospectoIds = await readCsvIds(PROSPECTOS_CSV_PATH);
+    const expectedCount = new Set([...presupuestosIds, ...tangoIds, ...prospectoIds]).size;
 
     const [row] = await sql<{ count: string }[]>`
       SELECT COUNT(*)::text AS count FROM client
     `;
     expect(Number(row.count)).toBe(expectedCount);
+  });
+
+  it('seeds tango clients with license data', async () => {
+    const tangoIds = await readCsvIds(TANGO_CSV_PATH);
+    const [count] = await sql<{ count: string }[]>`
+      SELECT COUNT(*)::text AS count FROM client WHERE origen = 'tango'
+    `;
+    expect(Number(count.count)).toBe(tangoIds.length);
+
+    const [client] = await sql<
+      {
+        origen: string;
+        tango_tipo: string;
+        tango_terminales: number;
+        tango_version: string;
+        tango_sueldos: boolean;
+        erp_actual: string;
+        cuit: string | null;
+      }[]
+    >`
+      SELECT origen, tango_tipo, tango_terminales, tango_version,
+        tango_sueldos, erp_actual, cuit
+      FROM client
+      WHERE razon_social ILIKE 'ABREGO MARTIN%'
+      LIMIT 1
+    `;
+    expect(client.origen).toBe('tango');
+    expect(client.tango_tipo).toBe('GESTION');
+    expect(client.tango_terminales).toBe(5);
+    expect(client.tango_version).toBe('24.01.000');
+    expect(client.tango_sueldos).toBe(false);
+    expect(client.erp_actual).toBe('Tango Gestión');
+    // matcheado con presupuestos: conserva el cuit que vino de ese seed
+    expect(client.cuit).toBe('27218623714');
+  });
+
+  it('seeds prospectos with relevamiento data', async () => {
+    const prospectoIds = await readCsvIds(PROSPECTOS_CSV_PATH);
+    const [count] = await sql<{ count: string }[]>`
+      SELECT COUNT(*)::text AS count FROM client WHERE origen = 'prospecto'
+    `;
+    expect(Number(count.count)).toBe(prospectoIds.length);
+
+    const [client] = await sql<
+      {
+        origen: string;
+        nivel_interes: string;
+        observaciones: string;
+        relevado_at: Date;
+      }[]
+    >`
+      SELECT origen, nivel_interes, observaciones, relevado_at
+      FROM client
+      WHERE razon_social ILIKE 'gualok%'
+      LIMIT 1
+    `;
+    expect(client.origen).toBe('prospecto');
+    expect(client.nivel_interes).toBe('Medio');
+    expect(client.observaciones).toContain('Tiene software de gestión: SI');
+    expect(client.relevado_at).toBeInstanceOf(Date);
   });
 
   it('maps csv columns to client fields', async () => {
