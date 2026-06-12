@@ -34,7 +34,16 @@ Configurar en Dokploy:
 | `R2_SECRET_ACCESS_KEY` | Cloudflare R2 |
 | `R2_BUCKET` | Nombre del bucket |
 | `R2_ENDPOINT` | URL del endpoint R2 |
+| `ANTHROPIC_API_KEY` | API key de Anthropic — **obligatoria** para «Generar informe» |
 | `LOG_LEVEL` | `debug` \| `info` \| `warn` \| `error` (default `info`) — logs JSON en stdout del contenedor |
+
+Opcionales (Informe IA):
+
+| Variable | Descripción |
+|---|---|
+| `INFORME_CLAUDE_MODEL` | Modelo Claude (default `claude-opus-4-8`) |
+| `INFORME_GENERATION_TIMEOUT_MS` | Timeout del guard de generación (default `300000`) |
+| `BODY_SIZE_LIMIT` | Límite body adapter-node (default `2M` en Dockerfile) |
 
 Opcionales (Postgres admin):
 

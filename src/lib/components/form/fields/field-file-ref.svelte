@@ -1,4 +1,6 @@
 <script lang="ts">
+  import AttachmentThumb from '../attachment-thumb.svelte';
+
   let {
     id,
     label,
@@ -44,7 +46,12 @@
   </div>
 
   {#if attachmentIds.length > 0}
-    <p class="text-xs text-emerald-600">{attachmentIds.length} archivo(s) adjunto(s)</p>
+    <p class="text-xs font-medium text-emerald-600">{attachmentIds.length} archivo(s) adjunto(s)</p>
+    <div class="flex flex-wrap gap-2">
+      {#each attachmentIds as attachmentId (attachmentId)}
+        <AttachmentThumb {attachmentId} />
+      {/each}
+    </div>
   {/if}
 </div>
 

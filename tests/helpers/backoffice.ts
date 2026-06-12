@@ -117,3 +117,23 @@ export async function getFirstTemplateItemId(
   }
   return row.id;
 }
+
+export async function getFileRefTemplateItemId(
+  sql: postgres.Sql,
+  templateCode = 'it'
+): Promise<string> {
+  const templateId = await getTemplateIdByCode(sql, templateCode);
+  const [row] = await sql<{ id: string }[]>`
+    SELECT ti.id
+    FROM template_item ti
+    JOIN section s ON s.id = ti.section_id
+    WHERE s.template_id = ${templateId}
+      AND ti.field_type = 'file_ref'
+    ORDER BY s.sort_order, ti.sort_order
+    LIMIT 1
+  `;
+  if (!row) {
+    throw new Error(`file_ref item not found in template: ${templateCode}`);
+  }
+  return row.id;
+}

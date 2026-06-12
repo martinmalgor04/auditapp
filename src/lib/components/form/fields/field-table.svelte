@@ -1,4 +1,6 @@
 <script lang="ts">
+  import AttachmentThumb from '../attachment-thumb.svelte';
+
   export type TableRow = {
     row_id: string;
     cells: Record<string, unknown>;
@@ -26,7 +28,7 @@
     columns?: TableColumn[];
     rows?: TableRow[];
     onchange?: () => void;
-    oncamera?: (rowId: string) => void;
+    oncamera?: (rowId: string) => void | Promise<void>;
   } = $props();
 
   function addRow() {
@@ -92,12 +94,14 @@
             type="button"
             class="min-h-[var(--sys-touch-min)] min-w-[var(--sys-touch-min)] rounded border border-slate-300 px-3 text-sm"
             aria-label="Tomar foto de fila"
-            onclick={() => oncamera?.(row.row_id)}
+            onclick={() => void oncamera?.(row.row_id)}
           >
             📷
           </button>
           {#if row.attachment_ids.length > 0}
-            <span class="text-xs text-emerald-600 self-center">{row.attachment_ids.length} foto(s)</span>
+            <span class="self-center text-xs font-medium text-emerald-600">
+              {row.attachment_ids.length} foto(s)
+            </span>
           {/if}
           <button
             type="button"
@@ -107,6 +111,13 @@
             Quitar
           </button>
         </div>
+        {#if row.attachment_ids.length > 0}
+          <div class="flex flex-wrap gap-2 pt-1" data-row-photos={row.row_id}>
+            {#each row.attachment_ids as attachmentId (attachmentId)}
+              <AttachmentThumb {attachmentId} />
+            {/each}
+          </div>
+        {/if}
       </div>
     {/each}
   </div>

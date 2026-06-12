@@ -24,7 +24,8 @@ describe('deploy production env', () => {
       'R2_ACCESS_KEY_ID',
       'R2_SECRET_ACCESS_KEY',
       'R2_BUCKET',
-      'R2_ENDPOINT'
+      'R2_ENDPOINT',
+      'ANTHROPIC_API_KEY'
     ];
     const requiredInEnvExample = [
       'DATABASE_URL',
@@ -46,5 +47,10 @@ describe('deploy production env', () => {
       'PUBLIC_APP_URL=https://app.auditoriaserviciosysistemas.com.ar'
     );
     expect(deployDoc).toContain('4043');
+  });
+
+  it('dokploy app compose forwards ANTHROPIC_API_KEY to the container', () => {
+    const compose = readFileSync(resolve(root, 'deploy/dokploy-app.compose.yml'), 'utf8');
+    expect(compose).toContain('ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY');
   });
 });

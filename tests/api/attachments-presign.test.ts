@@ -18,7 +18,7 @@ import { GET as presignGetHandler } from '../../src/routes/api/attachments/[atta
 import type { AppUser } from '../../src/lib/server/auth/types';
 import { applyTestR2Env } from '../fixtures/r2-mock';
 import { findUserIdByEmail } from '../helpers/auth';
-import { getFirstTemplateItemId, insertTestAuditRow } from '../helpers/backoffice';
+import { getFileRefTemplateItemId, insertTestAuditRow } from '../helpers/backoffice';
 import { setupTestDb, teardownTestDb } from '../helpers/db';
 import type postgres from 'postgres';
 
@@ -70,7 +70,7 @@ describe('attachments presign API', () => {
       status: 'en_relevamiento'
     });
     auditId = row.auditId;
-    itemId = await getFirstTemplateItemId(sql, 'it');
+    itemId = await getFileRefTemplateItemId(sql, 'it');
     sectionCode = await getSectionCodeForItem(sql, itemId);
   });
 

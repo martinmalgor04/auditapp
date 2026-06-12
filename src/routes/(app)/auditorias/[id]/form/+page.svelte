@@ -122,14 +122,14 @@
     file: File,
     rowId?: string,
     currentRows?: PhotoTableRow[]
-  ) {
+  ): Promise<{ rows: PhotoTableRow[] } | null> {
     saveState = 'saving';
     saveErrorMessage = null;
     try {
       // Persistir la grilla viva antes del confirm (celdas recién tipeadas).
       if (rowId && currentRows && currentRows.length > 0) {
         const preSave = await saveItem(itemId, 'table', { rows: currentRows }, false);
-        if (preSave === 'rejected') return;
+        if (preSave === 'rejected') return null;
       }
 
       const prepared = await prepareImageForUpload(file);
@@ -145,33 +145,50 @@
       if (!result.ok) {
         saveState = 'error';
         saveErrorMessage = result.error;
-        return;
+        return null;
       }
 
       if (result.mergedValue) {
         // Merge sobre las filas VIVAS del FieldRenderer (nunca el snapshot del load).
         const outcome = await saveItem(itemId, 'table', result.mergedValue, false);
-        if (outcome === 'rejected') return;
-      } else {
-        saveState = 'saved';
+        if (outcome === 'rejected') return null;
+        await invalidateAll();
+        return result.mergedValue;
       }
+
+      saveState = 'saved';
       await invalidateAll();
+      return null;
     } catch (err) {
       saveState = 'error';
       saveErrorMessage =
         err instanceof Error ? `Error subiendo la foto: ${err.message}` : 'Error subiendo la foto';
+      return null;
     }
   }
 
-  function pickPhoto(itemId: string, sectionCode: string, rowId?: string, currentRows?: PhotoTableRow[]) {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = () => {
-      const file = input.files?.[0];
-      if (file) void uploadPhoto(itemId, sectionCode, file, rowId, currentRows);
-    };
-    input.click();
+  function pickPhoto(
+    itemId: string,
+    sectionCode: string,
+    rowId?: string,
+    currentRows?: PhotoTableRow[]
+  ): Promise<{ rows: PhotoTableRow[] } | void> {
+    return new Promise((resolve) => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = () => {
+        const file = input.files?.[0];
+        if (file) {
+          void uploadPhoto(itemId, sectionCode, file, rowId, currentRows).then((merged) =>
+            resolve(merged ?? undefined)
+          );
+        } else {
+          resolve(undefined);
+        }
+      };
+      input.click();
+    });
   }
 
   const activeScore = $derived(sectionScores.get(activeSection?.id ?? '') ?? {

@@ -44,7 +44,10 @@
     onnoteschange?: (notes: string) => void;
     onnchange?: (na: boolean) => void;
     /** Pasa también las filas VIVAS para que el flujo de foto nunca use un snapshot viejo. */
-    oncamera?: (rowId: string, currentRows: TableRow[]) => void;
+    oncamera?: (
+      rowId: string,
+      currentRows: TableRow[]
+    ) => void | Promise<{ rows: TableRow[] } | void>;
     onphotocapture?: () => void;
     onphotogallery?: () => void;
   } = $props();
@@ -228,7 +231,11 @@
         {columns}
         bind:rows={tableRows}
         onchange={emitChange}
-        oncamera={(rowId) => oncamera?.(rowId, $state.snapshot(tableRows) as TableRow[])}
+        oncamera={async (rowId) => {
+          const snapshot = $state.snapshot(tableRows) as TableRow[];
+          const merged = await oncamera?.(rowId, snapshot);
+          if (merged?.rows) tableRows = merged.rows;
+        }}
       />
     {:else if item.fieldType === 'file_ref'}
       <FieldFileRef

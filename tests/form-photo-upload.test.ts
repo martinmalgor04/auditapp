@@ -96,6 +96,7 @@ describe('form photo upload', () => {
     const itemsByType = await listTecnicoItemsByFieldType(sql, auditId);
     const tableItemId = itemsByType.get('table');
     expect(tableItemId).toBeTruthy();
+    if (!tableItemId) return;
 
     const tableValue = {
       rows: [
