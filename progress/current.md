@@ -1,5 +1,18 @@
 # Sesión actual
 
+## Specs masivos (2026-06-12, tarde)
+
+Pedido de Martín: specs de TODO el backlog. 6 spec_authors en paralelo →
+`specs/{13_crm_leads,15_entrega_informe,16_presupuesto_psys,17_contexto_ia,18_dashboard_mercado,19_template_informe_it}/`
+completos (EARS + design + tasks). Los 6 marcados `spec_ready` en feature_list.json.
+
+⚠️ **Colisión conocida:** los designs de #13/#15/#16/#17 asumen migración `006_*.sql`
+(se escribieron en paralelo). El número real lo asigna el implementer según orden de
+implementación — ajustar el design al entrar cada feature a in_progress.
+
+⏸ **Puertas humanas pendientes (6):** open questions en cada design.md.
+Implementación: una feature a la vez (regla SDD); orden sugerido del roadmap: 15 → 16 → 13 → 17/18/19.
+
 - **Feature en curso:** `14_informe_ia` (#14)
 - **Estado:** `done — review aprobado (2026-06-12); pendiente: commit + QA visual de impresión`
 - **Agente:** leader (cierre)

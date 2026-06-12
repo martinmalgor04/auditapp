@@ -250,7 +250,7 @@
         "Tests de máquina de estados, dedupe del endpoint y guards de permisos pasan"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 14,
@@ -286,7 +286,7 @@
         "Tests de token, permisos y e2e del flujo aprobar → compartir → ver pasan"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 16,
@@ -304,7 +304,7 @@
         "Tests con presupuestossys mockeado: contrato, idempotencia, permisos y errores de red pasan"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 17,
@@ -321,7 +321,7 @@
         "Tests con mocks de vector store: selección de contexto, fallback sin contexto y límites de tokens pasan"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 18,
@@ -338,7 +338,7 @@
         "Tests de agregaciones SQL y de la ruta pasan"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 19,
@@ -354,7 +354,7 @@
         "Tests de snapshot del render IT y mixto pasan; los snapshots ERP existentes no cambian"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     }
   ]
 }
