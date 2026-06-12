@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Informe Auditoría ERP — [NOMBRE CLIENTE]</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap');
+
+:root {
+  --font: 'Montserrat','Helvetica Neue',Arial,sans-serif;
+  --azul-profundo: #0A1929;
+  --azul-medio:   #102A43;
+  --azul-electrico: #2196F3;
+  --celeste:      #A2C6D4;
+  --verde:        #27AE60;
+  --rojo:         #E63946;
+  --naranja:      #F39C12;
+  --gris-neutro:  #908A82;
+  --offwhite:     #F7F9FB;
+}
+
+/* ── reset ── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+/* ── página A4 ── */
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  max-height: 297mm;
+  overflow: hidden;
+  padding: 18mm 18mm 14mm;
+  font-family: var(--font);
+  font-size: 10.5pt;
+  line-height: 1.55;
+  color: var(--azul-profundo);
+  background: #fff;
+  border-top: 6mm solid var(--azul-electrico);
+  position: relative;
+  page-break-after: always;
+}
+.page:last-child { page-break-after: auto; }
+
+/* ── cover / dark ── */
+.page.dark {
+  background: linear-gradient(135deg, var(--azul-profundo) 0%, #0F2238 60%, var(--azul-medio) 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.page.dark .eyebrow { color: var(--celeste); }
+
+/* ── tipografía ── */
+.eyebrow {
+  font-size: 8pt; font-weight: 700; letter-spacing: 3pt; text-transform: uppercase;
+  color: var(--azul-electrico); margin-bottom: 5mm;
+}
+h1 { font-size: 34pt; font-weight: 800; letter-spacing: -1pt; line-height: 1.05; color: #fff; }
+h2 { font-size: 20pt; font-weight: 800; letter-spacing: -0.5pt; color: var(--azul-profundo); margin-bottom: 5mm; line-height: 1.1; }
+h3 { font-size: 13pt; font-weight: 700; color: var(--azul-profundo); margin-bottom: 3mm; }
+p  { font-size: 10.5pt; line-height: 1.6; }
+.lead { font-size: 12pt; line-height: 1.6; color: var(--azul-medio); }
+strong { font-weight: 700; }
+
+/* ── footer de página ── */
+.footer {
+  position: absolute; bottom: 10mm; left: 18mm; right: 18mm;
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 3mm; border-top: 0.3mm solid rgba(0,0,0,0.1);
+}
+.footer img { height: 7mm; }
+.pagenum { font-size: 8pt; font-weight: 700; color: var(--gris-neutro); letter-spacing: 1pt; }
+
+/* ── stat cards ── */
+.stats { display: flex; gap: 5mm; margin: 6mm 0; }
+.stat {
+  flex: 1; background: #fff; border-top: 2mm solid var(--azul-electrico);
+  border-radius: 1mm; padding: 5mm 4mm 6mm;
+  box-shadow: 0 2mm 6mm rgba(0,0,0,0.08);
+  text-align: center;
+}
+.stat .num { font-size: 38pt; font-weight: 800; letter-spacing: -1pt; color: var(--azul-electrico); line-height: 1; }
+.stat .num.bad  { color: var(--rojo); }
+.stat .num.warn { color: var(--naranja); }
+.stat .num.ok   { color: var(--verde); }
+.stat .num small { font-size: 16pt; color: var(--gris-neutro); font-weight: 600; }
+.stat .label { font-size: 8.5pt; font-weight: 600; color: var(--azul-medio); margin-top: 2mm; line-height: 1.35; }
+
+@media print {
+  .stat { box-shadow: none; border: 0.3mm solid rgba(0,0,0,0.1); border-top: 2mm solid var(--azul-electrico); }
+}
+
+/* ── tabla de circuitos ── */
+table { width: 100%; border-collapse: collapse; margin-top: 4mm; font-size: 9.5pt; }
+th {
+  text-align: left; font-size: 8pt; font-weight: 700; letter-spacing: 1pt;
+  text-transform: uppercase; color: var(--gris-neutro);
+  border-bottom: 0.5mm solid rgba(0,0,0,0.12); padding: 2.5mm 3mm;
+}
+th.num, td.num { text-align: center; }
+tr:nth-child(even) td { background: var(--offwhite); }
+td { padding: 2.8mm 3mm; border-bottom: 0.3mm solid rgba(0,0,0,0.06); }
+td strong { color: var(--azul-profundo); }
+
+.dot { display: inline-block; width: 2.2mm; height: 2.2mm; border-radius: 50%; margin-right: 1.5mm; vertical-align: middle; }
+.dot.red    { background: var(--rojo); }
+.dot.orange { background: var(--naranja); }
+.dot.green  { background: var(--verde); }
+
+.score-pill { font-weight: 800; font-size: 10pt; }
+
+/* ── riesgos ── */
+.risks { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; margin-top: 4mm; }
+.risk {
+  background: var(--offwhite); border-left: 3mm solid var(--rojo);
+  border-radius: 1mm; padding: 4mm 4.5mm;
+}
+.risk .n { font-size: 7.5pt; font-weight: 700; letter-spacing: 2pt; text-transform: uppercase; color: var(--rojo); margin-bottom: 2mm; }
+.risk h3 { font-size: 11pt; margin-bottom: 2mm; }
+.risk p  { font-size: 9pt; color: #3a4a5a; line-height: 1.5; }
+.risk .ev { font-size: 8pt; color: var(--gris-neutro); margin-top: 2.5mm; }
+
+/* ── callout ── */
+.callout {
+  background: rgba(33,150,243,0.06); border: 0.3mm solid rgba(33,150,243,0.3);
+  border-left: 3mm solid var(--azul-electrico); border-radius: 1mm;
+  padding: 4mm 5mm; margin: 5mm 0;
+}
+.callout p { font-size: 10pt; }
+
+/* ── timeline (horizontal) ── */
+.timeline { display: grid; grid-template-columns: repeat(6,1fr); gap: 3mm; margin-top: 6mm; position: relative; }
+.timeline::before {
+  content: ''; position: absolute; top: 3.5mm; left: 8%; right: 8%;
+  height: 0.5mm; background: rgba(33,150,243,0.25);
+}
+.tl-item { text-align: center; position: relative; }
+.tl-dot {
+  width: 7mm; height: 7mm; border-radius: 50%;
+  background: var(--azul-electrico); margin: 0 auto 3mm;
+  border: 1mm solid #fff; position: relative; z-index: 1;
+  box-shadow: 0 0 0 0.5mm rgba(33,150,243,0.3);
+}
+.tl-week { font-size: 7pt; font-weight: 700; letter-spacing: 1pt; text-transform: uppercase; color: var(--azul-electrico); margin-bottom: 2mm; }
+.tl-item h3 { font-size: 9pt; font-weight: 700; margin-bottom: 1.5mm; }
+.tl-item p  { font-size: 8pt; color: #4a5a6a; line-height: 1.45; }
+
+/* ── circuitos (qué cambia) ── */
+.circuitos { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; margin: 4mm 0; }
+.circuito {
+  background: var(--offwhite); border-left: 2.5mm solid var(--azul-electrico);
+  border-radius: 1mm; padding: 4mm 4.5mm;
+}
+.circuito h3 { font-size: 10.5pt; margin-bottom: 2mm; }
+.circuito ul { list-style: none; }
+.circuito li { font-size: 9pt; line-height: 1.5; color: #2a3a4a; padding-left: 3.5mm; position: relative; margin-bottom: 1.5mm; }
+.circuito li::before { content: ''; position: absolute; left: 0; top: 2.2mm; width: 1.8mm; height: 1.8mm; background: var(--azul-electrico); border-radius: 0.3mm; }
+
+/* ── cover específico ── */
+.cover { padding: 22mm 20mm; }
+.cover .logo-vert { height: 28mm; margin-bottom: auto; display: block; }
+.cover .eyebrow-cover { font-size: 9pt; font-weight: 700; letter-spacing: 3pt; text-transform: uppercase; color: var(--celeste); margin-bottom: 6mm; }
+.cover h1 { margin-bottom: 8mm; }
+.cover .client { font-size: 18pt; font-weight: 700; color: var(--celeste); margin-bottom: 2mm; }
+.cover .cuit   { font-size: 10pt; color: rgba(255,255,255,0.5); margin-bottom: 10mm; }
+.cover .meta   { font-size: 9pt; color: rgba(255,255,255,0.55); line-height: 2; }
+.circle { position: absolute; border-radius: 50%; border: 1px solid var(--celeste); opacity: 0.06; pointer-events: none; }
+.c1 { width: 130mm; height: 130mm; top: -40mm; right: -50mm; }
+.c2 { width: 90mm;  height: 90mm;  bottom: -30mm; left: -35mm; }
+
+/* ── cierre ── */
+.backcover { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 22mm 20mm; }
+.backcover .logo-vert  { height: 28mm; margin-bottom: 10mm; }
+.backcover .firma { font-size: 22pt; font-weight: 800; letter-spacing: -0.5pt; color: #fff; margin-bottom: 10mm; }
+.backcover .contact { font-size: 9pt; color: rgba(255,255,255,0.6); line-height: 2; }
+
+/* ── lectura transversal ── */
+ul.clean { list-style: none; }
+ul.clean li { padding-left: 5mm; position: relative; margin-bottom: 2.5mm; font-size: 10pt; }
+ul.clean li::before { content: ''; position: absolute; left: 0; top: 2.2mm; width: 2mm; height: 2mm; background: var(--azul-electrico); }
+
+/* ── twocol ── */
+.twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; margin-top: 4mm; }
+.twocol h3 { font-size: 11pt; margin-bottom: 2mm; }
+.twocol ul.clean li { font-size: 9pt; }
+
+/* ── gauge svg en portada ── */
+.gauge-cover { margin: 8mm auto 0; max-width: 55mm; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     PÁGINA 1 · PORTADA
+     ✏️ eyebrow-cover (mes/año), h1, nombre cliente, CUIT, meta
+     ════════════════════════════════════════════════════════════ -->
+<section class="page dark cover">
+  <div class="circle c1"></div>
+  <div class="circle c2"></div>
+
+  <!-- ✏️ Logo: reemplazar __LOGO_VERT__ con base64 al generar el PDF -->
+  <img class="logo-vert" src="data:image/png;base64,__LOGO_VERT__" alt="Servicios y Sistemas">
+
+  <div>
+    <!-- ✏️ --> <div class="eyebrow-cover">Informe de auditoría ERP · [MES AÑO]</div>
+    <h1>Auditoría<br>ERP</h1>
+    <div style="height:8mm"></div>
+    <!-- ✏️ --> <div class="client">[NOMBRE CLIENTE]</div>
+    <!-- ✏️ --> <div class="cuit">CUIT [00-00000000-0]</div>
+    <!-- ✏️ --> <div class="meta">Módulos relevados: [lista módulos]<br>[DD de mes de AAAA] · Sistema: Tango Gestión</div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     PÁGINA 2 · RESUMEN EJECUTIVO
+     ✏️ h2, lead, stat cards (scores y labels), párrafos, callout
+     ════════════════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="eyebrow">01 · Resumen ejecutivo</div>
+  <!-- ✏️ --> <h2>[Diagnóstico central en una línea]</h2>
+  <!-- ✏️ --> <p class="lead">[NOMBRE CLIENTE] opera Tango Gestión con [N] módulos —[lista]—, pero el relevamiento muestra [descripción del problema principal].</p>
+
+  <div style="height:5mm"></div>
+
+  <!-- ✏️ Ajustar score, clase (bad/warn/ok), label y small (/100, de N, etc.) -->
+  <div class="stats">
+    <div class="stat">
+      <!-- gauge SVG: el radio del arco es 80, longitud total ≈ 251.4mm -->
+      <!-- stroke-dasharray="[SCORE*2.514] 251.4" → ej. score 18 = "45.2 251.4" -->
+      <svg viewBox="0 0 200 112" style="max-width:54mm; width:100%; margin:0 auto; display:block;">
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="14" stroke-linecap="round"/>
+        <!-- ✏️ stroke-dasharray: [SCORE × 2.514] 251.4 · stroke: color según score -->
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#E63946" stroke-width="14" stroke-linecap="round"
+              stroke-dasharray="0 251.4"/>
+        <!-- ✏️ → score number -->
+        <text x="100" y="84" text-anchor="middle" font-family="Montserrat,Arial" font-weight="800" font-size="46" fill="#E63946" letter-spacing="-1">[N]</text>
+        <text x="100" y="104" text-anchor="middle" font-family="Montserrat,Arial" font-weight="600" font-size="12" fill="#908A82">de 100</text>
+      </svg>
+      <div class="label">Índice ERP general</div>
+    </div>
+    <div class="stat">
+      <div class="num warn">[N]<small>&nbsp;de&nbsp;[T]</small></div>
+      <div class="label">circuitos con controles internos aplicados</div>
+    </div>
+    <div class="stat">
+      <div class="num">[N]</div>
+      <div class="label">módulos Tango en uso: [lista]</div>
+    </div>
+  </div>
+
+  <div style="height:5mm"></div>
+  <!-- ✏️ --> <p>[Interpretación del índice y su impacto en el negocio.]</p>
+  <div style="height:3mm"></div>
+  <!-- ✏️ --> <p>Nuestra recomendación: <strong>[recomendación central]</strong>.</p>
+
+  <!-- ✏️ Fortalezas. Borrar si no aplica. -->
+  <div style="height:4mm"></div>
+  <div class="callout">
+    <p><strong style="color:var(--verde);">Lo que está bien y vamos a preservar:</strong> [circuitos o áreas con score positivo].</p>
+  </div>
+
+  <div class="footer">
+    <img src="data:image/png;base64,__LOGO_COLOR__" alt="SyS">
+    <span class="pagenum">02</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     PÁGINA 3 · HALLAZGOS POR CIRCUITO
+     ✏️ Scores, doc, controles, madurez de cada circuito
+     dot: .red (<40) · .orange (40-69) · .green (70+)
+     ════════════════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="eyebrow">02 · Hallazgos por circuito</div>
+  <h2>Qué encontramos, sección por sección</h2>
+
+  <table>
+    <tr>
+      <th style="width:42%">Circuito</th>
+      <th class="num" style="width:14%">Score</th>
+      <th style="width:14%">Doc.</th>
+      <th style="width:16%">Controles</th>
+      <th style="width:14%">Madurez</th>
+    </tr>
+    <!-- ✏️ Una fila por circuito. Clase del dot: red/orange/green -->
+    <tr><td>Administración y parametrización</td><td class="num"><span class="dot red"></span><span class="score-pill">0</span></td><td>No</td><td>No</td><td>Manual</td></tr>
+    <tr><td>Ventas y facturación</td>            <td class="num"><span class="dot red"></span><span class="score-pill">0</span></td><td>[doc]</td><td>[ctrl]</td><td>[mad]</td></tr>
+    <tr><td>Compras y proveedores</td>            <td class="num"><span class="dot red"></span><span class="score-pill">0</span></td><td>[doc]</td><td>[ctrl]</td><td>[mad]</td></tr>
+    <tr><td>Stock e inventarios</td>              <td class="num"><span class="dot red"></span><span class="score-pill">0</span></td><td>[doc]</td><td>[ctrl]</td><td>[mad]</td></tr>
+    <tr><td>Tesorería</td>                        <td class="num"><span class="dot red"></span><span class="score-pill">0</span></td><td>[doc]</td><td>[ctrl]</td><td>[mad]</td></tr>
+    <tr><td>Sueldos y RRHH</td>                   <td class="num"><span class="dot red"></span><span class="score-pill">0</span></td><td>[doc]</td><td>[ctrl]</td><td>[mad]</td></tr>
+    <tr><td>Producción / costos</td>              <td class="num"><span class="dot red"></span><span class="score-pill">0</span></td><td>[doc]</td><td>[ctrl]</td><td>[mad]</td></tr>
+    <tr><td>Integraciones y Nexo</td>             <td class="num"><span class="dot red"></span><span class="score-pill">0</span></td><td>[doc]</td><td>[ctrl]</td><td>[mad]</td></tr>
+    <tr><td>Seguridad y usuarios Tango</td>       <td class="num"><span class="dot red"></span><span class="score-pill">0</span></td><td>[doc]</td><td>[ctrl]</td><td>—</td></tr>
+  </table>
+
+  <div style="height:14mm"></div>
+  <h3>Lectura transversal</h3>
+  <ul class="clean">
+    <!-- ✏️ 3-4 observaciones transversales que cruzan varios circuitos -->
+    <li><strong>[Observación 1].</strong> [Explicación breve con evidencia numérica.]</li>
+    <li><strong>[Observación 2].</strong> [Explicación breve.]</li>
+    <li><strong>[Observación 3].</strong> [Explicación breve.]</li>
+    <li><strong>[Observación 4].</strong> [Explicación breve.]</li>
+  </ul>
+
+  <div class="footer">
+    <img src="data:image/png;base64,__LOGO_COLOR__" alt="SyS">
+    <span class="pagenum">03</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     PÁGINA 4 · RIESGOS PRIORIZADOS
+     ✏️ Título, descripción y evidencia de cada riesgo
+     ════════════════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="eyebrow">03 · Riesgos priorizados</div>
+  <h2>Qué está en juego si esto sigue igual</h2>
+  <!-- ✏️ --> <p style="color:var(--gris-neutro); font-size:9.5pt;">Los riesgos surgen directamente de los hallazgos del relevamiento, ordenados por impacto en el negocio.</p>
+  <div style="height:5mm"></div>
+
+  <div class="risks">
+    <div class="risk">
+      <div class="n">Riesgo 1</div>
+      <!-- ✏️ --> <h3>[Título del riesgo 1]</h3>
+      <p>[Qué puede pasar y por qué importa.]</p>
+      <div class="ev">Evidencia: [dato del relevamiento].</div>
+    </div>
+    <div class="risk">
+      <div class="n">Riesgo 2</div>
+      <!-- ✏️ --> <h3>[Título del riesgo 2]</h3>
+      <p>[Descripción.]</p>
+      <div class="ev">Evidencia: [dato].</div>
+    </div>
+    <div class="risk">
+      <div class="n">Riesgo 3</div>
+      <!-- ✏️ --> <h3>[Título del riesgo 3]</h3>
+      <p>[Descripción.]</p>
+      <div class="ev">Evidencia: [dato].</div>
+    </div>
+    <div class="risk">
+      <div class="n">Riesgo 4</div>
+      <!-- ✏️ --> <h3>[Título del riesgo 4]</h3>
+      <p>[Descripción.]</p>
+      <div class="ev">Evidencia: [dato].</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <img src="data:image/png;base64,__LOGO_COLOR__" alt="SyS">
+    <span class="pagenum">04</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     PÁGINA 5 · RECOMENDACIÓN + PLAN
+     ✏️ Callout de recomendación y etapas del timeline
+     ════════════════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="eyebrow">04 · Recomendación y plan</div>
+  <!-- ✏️ --> <h2>[Título del plan de acción]</h2>
+
+  <div class="callout">
+    <!-- ✏️ -->
+    <p>[Descripción de la recomendación principal: qué se hace, por qué es el mejor enfoque, qué queda funcionando al final.]</p>
+  </div>
+
+  <div style="height:7mm"></div>
+  <!-- ✏️ Timeline: ajustar semanas, títulos y descripciones -->
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-week">Sem 1</div><h3>Relevamiento</h3><p>Circuitos actuales y procesos objetivo.</p></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-week">Sem 1–2</div><h3>Parametrización</h3><p>Módulos, circuitos, usuarios y permisos.</p></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-week">Sem 2–3</div><h3>Migración</h3><p>Extracción, validación e importación.</p></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-week">Sem 3–4</div><h3>Pruebas</h3><p>Funcionales con usuarios clave.</p></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-week">Sem 4–5</div><h3>Capacitación</h3><p>Por módulo, sobre datos reales.</p></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-week">Sem 5–6</div><h3>Puesta en marcha</h3><p>Acompañamiento post arranque.</p></div>
+  </div>
+
+  <div style="height:7mm"></div>
+  <div class="twocol">
+    <div>
+      <!-- ✏️ -->
+      <h3>Qué necesitamos de [CLIENTE]</h3>
+      <ul class="clean">
+        <li>[Referente del proyecto designado].</li>
+        <li>[Información a migrar, en Excel validado].</li>
+        <li>[Participación en validaciones].</li>
+        <li>[Disponibilidad de usuarios en capacitación].</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Qué no incluye esta etapa</h3>
+      <ul class="clean">
+        <li>[Desarrollo a medida / reportes personalizados].</li>
+        <li>[Integraciones con sistemas de terceros].</li>
+        <li>[Módulos fuera del alcance acordado].</li>
+        <li>[Historial completo de comprobantes].</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    <img src="data:image/png;base64,__LOGO_COLOR__" alt="SyS">
+    <span class="pagenum">05</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     PÁGINA 6 · QUÉ CAMBIA EN EL DÍA A DÍA
+     ✏️ Una card por circuito débil + callout de herramienta transversal
+     ════════════════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="eyebrow">05 · Qué cambia en el día a día</div>
+  <h2>Lo que Tango ya sabe hacer<br>y hoy no se usa</h2>
+  <!-- ✏️ --> <p style="font-size:9.5pt; color:var(--gris-neutro);">No hace falta desarrollo a medida: la funcionalidad ya está en el producto. Hace falta parametrizarla y capacitar.</p>
+
+  <div style="height:4mm"></div>
+  <div class="circuitos">
+
+    <div class="circuito">
+      <!-- ✏️ --> <h3>[Circuito 1] — hoy [N]/100</h3>
+      <ul>
+        <li><strong>[Funcionalidad Tango]</strong>: [qué resuelve].</li>
+        <li><strong>[Funcionalidad Tango]</strong>: [qué resuelve].</li>
+        <li><strong>[Funcionalidad Tango]</strong>: [qué resuelve].</li>
+      </ul>
+    </div>
+
+    <div class="circuito">
+      <!-- ✏️ --> <h3>[Circuito 2] — hoy [N]/100</h3>
+      <ul>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+      </ul>
+    </div>
+
+    <div class="circuito">
+      <!-- ✏️ --> <h3>[Circuito 3] — hoy [N]/100</h3>
+      <ul>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+      </ul>
+    </div>
+
+    <div class="circuito">
+      <!-- ✏️ --> <h3>[Circuito 4] — hoy [N]/100</h3>
+      <ul>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- ✏️ Callout transversal (ej. Tango Live). Borrar si no aplica. -->
+  <div style="height:4mm"></div>
+  <div class="callout">
+    <p><strong>Para la dirección — Tango Live:</strong> informes predefinidos y consultas personalizadas sobre los datos en línea. Deja de depender de planillas para saber cuánto hay, cuánto se debe y cuánto se vendió.</p>
+  </div>
+
+  <div class="footer">
+    <img src="data:image/png;base64,__LOGO_COLOR__" alt="SyS">
+    <span class="pagenum">06</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     PÁGINA 7 · CIERRE
+     ✏️ pasos (ol), datos de contacto ya precompletados
+     ════════════════════════════════════════════════════════════ -->
+<section class="page dark backcover">
+  <div class="circle c1"></div>
+  <div class="circle c2"></div>
+
+  <div style="text-align:left; width:100%; margin-bottom:16mm;">
+    <div class="eyebrow" style="color:var(--celeste);">06 · Próximos pasos</div>
+    <h2 style="color:#fff;">Cómo arrancamos</h2>
+    <!-- ✏️ Ajustar pasos si cambia el proceso -->
+    <ol style="list-style:none; counter-reset:steps; color:rgba(255,255,255,0.88);">
+      <li style="display:flex; gap:4mm; margin-bottom:3mm; font-size:10.5pt; align-items:flex-start;">
+        <span style="min-width:6mm; height:6mm; border-radius:50%; background:var(--azul-electrico); display:grid; place-items:center; font-weight:800; font-size:9pt;">1</span>
+        <!-- ✏️ -->[NOMBRE CLIENTE] aprueba este informe y designa su referente del proyecto.
+      </li>
+      <li style="display:flex; gap:4mm; margin-bottom:3mm; font-size:10.5pt; align-items:flex-start;">
+        <span style="min-width:6mm; height:6mm; border-radius:50%; background:var(--azul-electrico); display:grid; place-items:center; font-weight:800; font-size:9pt;">2</span>
+        Presentamos la propuesta comercial y coordinamos el calendario del proyecto.
+      </li>
+      <li style="display:flex; gap:4mm; margin-bottom:3mm; font-size:10.5pt; align-items:flex-start;">
+        <span style="min-width:6mm; height:6mm; border-radius:50%; background:var(--azul-electrico); display:grid; place-items:center; font-weight:800; font-size:9pt;">3</span>
+        <!-- ✏️ -->[NOMBRE CLIENTE] entrega la información a migrar en Excel validado.
+      </li>
+      <li style="display:flex; gap:4mm; font-size:10.5pt; align-items:flex-start;">
+        <span style="min-width:6mm; height:6mm; border-radius:50%; background:var(--azul-electrico); display:grid; place-items:center; font-weight:800; font-size:9pt;">4</span>
+        Kickoff de Etapa 1 — relevamiento de circuitos objetivo.
+      </li>
+    </ol>
+  </div>
+
+  <img class="logo-vert" src="data:image/png;base64,__LOGO_VERT__" alt="Servicios y Sistemas">
+  <div class="firma">Integral de verdad.</div>
+  <div class="contact">
+    Servicios y Sistemas SRL · CUIT 30-70859237-0<br>
+    Centro de Ventas y Servicios Certificado Tango · Más de 30 años en el NEA<br>
+    San Martín 1180, Corrientes · +54 3794 426022<br>
+    info@serviciosysistemas.com.ar · www.serviciosysistemas.com.ar
+  </div>
+</section>
+
+</body>
+</html>

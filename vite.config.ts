@@ -14,7 +14,8 @@ export default defineConfig({
     },
     sequence: { concurrent: false, hooks: 'list' },
     globalSetup: ['tests/global-setup.ts'],
-    globalTeardown: ['tests/global-teardown.ts'],
+    // globalTeardown no está tipado en InlineConfig de esta versión de vitest
+    ...({ globalTeardown: ['tests/global-teardown.ts'] } as object),
     setupFiles: ['tests/setup.ts'],
     retry: 0,
     testTimeout: 30_000,

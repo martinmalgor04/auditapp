@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<!-- ✏️ --> <title>Auditoría ERP — [NOMBRE CLIENTE] · Servicios y Sistemas</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap');
+
+:root {
+  --font: 'Montserrat','Helvetica Neue',Arial,sans-serif;
+  --bg: #0A1929; --bg2: #102A43;
+  --blanco: #fff; --celeste: #A2C6D4;
+  --electrico: #2196F3; --verde: #27AE60;
+  --rojo: #E63946; --naranja: #F39C12; --gris: #908A82;
+  --ease: cubic-bezier(0.33,1,0.68,1);
+}
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family:var(--font);
+  background: linear-gradient(160deg,var(--bg) 0%,#0D2035 55%,var(--bg2) 100%) fixed;
+  color:rgba(255,255,255,0.88); overflow-x:hidden;
+}
+
+/* ── progress bar ── */
+#prog {
+  position:fixed; top:0; left:0; height:3px; width:0%;
+  background:linear-gradient(90deg,var(--electrico),var(--celeste));
+  z-index:9999; transition:width .08s linear; pointer-events:none;
+}
+
+/* ── layout ── */
+.wrap { max-width:860px; margin:0 auto; padding-left:28px; padding-right:28px; }
+section { padding:96px 0; }
+section.wrap + section.wrap { border-top:1px solid rgba(255,255,255,0.06); }
+
+/* ── type ── */
+.eyebrow {
+  font-size:11px; font-weight:700; letter-spacing:4px; text-transform:uppercase;
+  color:var(--electrico); margin-bottom:22px;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::before { content:''; display:block; width:24px; height:2px; background:var(--electrico); flex-shrink:0; }
+h1 { font-size:clamp(38px,7vw,64px); font-weight:800; letter-spacing:-1.5px; color:#fff; line-height:1.04; }
+h2 { font-size:clamp(24px,4vw,38px); font-weight:800; letter-spacing:-0.8px; color:#fff; margin-bottom:20px; line-height:1.1; }
+p { font-size:16px; line-height:1.7; }
+.lead { font-size:18px; line-height:1.65; color:rgba(255,255,255,0.82); }
+.muted { color:rgba(255,255,255,0.55); }
+.hl { color:var(--celeste); }
+
+/* ── reveal ── */
+.reveal { opacity:0; transform:translateY(18px); transition:opacity .75s var(--ease),transform .75s var(--ease); }
+.reveal.in { opacity:1; transform:none; }
+
+/* ── hero ── */
+.hero {
+  min-height:100vh; display:grid; place-items:center; text-align:center;
+  padding:80px 28px; position:relative; overflow:hidden;
+}
+.hero::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse 70% 55% at 50% 38%,rgba(33,150,243,0.09) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-inner { position:relative; z-index:1; }
+.hero img.logo { height:110px; margin:0 auto 52px; display:block; }
+.hero .tag {
+  display:inline-block; font-size:11px; font-weight:700; letter-spacing:3px;
+  text-transform:uppercase; color:var(--electrico);
+  background:rgba(33,150,243,0.1); border:1px solid rgba(33,150,243,0.25);
+  padding:6px 18px; border-radius:2px; margin-bottom:36px;
+}
+.hero .client { font-size:26px; font-weight:700; color:#fff; margin-top:28px; }
+.hero .cuit { font-size:14px; color:rgba(255,255,255,0.4); margin-top:8px; }
+.hero .meta { font-size:13px; color:rgba(255,255,255,0.4); margin-top:44px; line-height:2; }
+
+/* gauge */
+.gauge-wrap { margin:52px auto 0; max-width:380px; }
+.gauge-badge {
+  display:inline-block; font-size:11px; font-weight:700; letter-spacing:2.5px;
+  text-transform:uppercase; padding:5px 16px; border-radius:2px; margin-top:14px;
+}
+.gauge-label { font-size:12px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,0.45); margin-top:8px; }
+
+/* stat cards */
+.cardrow { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-top:48px; }
+.card {
+  background:#fff; border-top:3px solid var(--electrico); border-radius:3px;
+  padding:32px 24px; text-align:center;
+  box-shadow:0 8px 32px rgba(0,0,0,0.22),0 1px 4px rgba(0,0,0,0.12);
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease);
+}
+.card:hover { transform:translateY(-4px); box-shadow:0 20px 48px rgba(0,0,0,0.3); }
+.card .num { font-size:54px; font-weight:800; letter-spacing:-2px; line-height:1; color:var(--electrico); }
+.card .num.bad { color:var(--rojo); }
+.card .num.warn { color:var(--naranja); }
+.card .num.ok { color:var(--verde); }
+.card .num span { font-size:20px; color:var(--gris); font-weight:600; letter-spacing:0; }
+.card .label { font-size:13px; font-weight:600; color:#102A43; margin-top:12px; line-height:1.45; }
+
+/* score rows */
+.score-list { margin-top:44px; display:flex; flex-direction:column; gap:8px; }
+.score-row {
+  display:grid; grid-template-columns:1fr auto; gap:20px; align-items:center;
+  background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+  border-left:3px solid transparent; border-radius:3px; padding:14px 20px;
+  transition:background .2s;
+}
+.score-row:hover { background:rgba(255,255,255,0.055); }
+.score-row.r { border-left-color:var(--rojo); }
+.score-row.o { border-left-color:var(--naranja); }
+.score-row.g { border-left-color:var(--verde); }
+.score-info .name { font-size:14px; font-weight:600; color:rgba(255,255,255,0.9); }
+.score-info .detail { font-size:11px; color:rgba(255,255,255,0.42); margin-top:4px; }
+.score-right { display:flex; align-items:center; gap:14px; }
+.bar { width:140px; height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; }
+.bar i { display:block; height:100%; width:0; border-radius:3px; transition:width 1.2s var(--ease); }
+.score-row.r .bar i { background:var(--rojo); }
+.score-row.o .bar i { background:var(--naranja); }
+.score-row.g .bar i { background:var(--verde); }
+.score-val { font-size:18px; font-weight:800; font-variant-numeric:tabular-nums; min-width:34px; text-align:right; }
+.score-row.r .score-val { color:var(--rojo); }
+.score-row.o .score-val { color:var(--naranja); }
+.score-row.g .score-val { color:var(--verde); }
+.legend { margin-top:24px; font-size:13px; color:rgba(255,255,255,0.48); border-left:2px solid rgba(255,255,255,0.1); padding-left:14px; }
+
+/* riesgos */
+.risks { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:48px; }
+.risk {
+  background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+  border-left:4px solid var(--rojo); border-radius:3px; padding:28px 26px;
+  position:relative; overflow:hidden;
+  transition:background .2s,transform .3s var(--ease);
+}
+.risk:hover { background:rgba(255,255,255,0.055); transform:translateY(-2px); }
+.risk .wm {
+  position:absolute; right:-6px; top:-18px; font-size:120px; font-weight:800;
+  color:rgba(255,255,255,0.025); line-height:1; pointer-events:none; user-select:none;
+}
+.risk .n { font-size:10px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--rojo); margin-bottom:12px; }
+.risk h3 { font-size:17px; font-weight:700; color:#fff; margin-bottom:12px; line-height:1.3; }
+.risk p { font-size:14px; color:rgba(255,255,255,0.7); line-height:1.6; }
+.risk .ev { font-size:11px; color:rgba(255,255,255,0.36); margin-top:16px; font-style:italic; }
+
+/* fix cards */
+.fix-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:48px; }
+.fix {
+  background:#fff; border-radius:3px; padding:28px 24px; border-top:3px solid var(--electrico);
+  box-shadow:0 8px 32px rgba(0,0,0,0.22);
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease);
+}
+.fix:hover { transform:translateY(-3px); box-shadow:0 18px 48px rgba(0,0,0,0.28); }
+.fix h3 { font-size:16px; font-weight:700; color:#0A1929; display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; }
+.fix .badge { font-size:11px; font-weight:700; color:var(--rojo); background:rgba(230,57,70,0.08); padding:2px 8px; border-radius:2px; }
+.fix .badge.warn { color:var(--naranja); background:rgba(243,156,18,0.08); }
+.fix .antes { font-size:12px; color:var(--gris); margin:10px 0 18px; padding-left:10px; border-left:2px solid rgba(0,0,0,0.08); }
+.fix ul { list-style:none; }
+.fix li { font-size:13px; line-height:1.55; color:#102A43; padding-left:18px; position:relative; margin-bottom:10px; }
+.fix li::before { content:''; position:absolute; left:0; top:6px; width:7px; height:7px; background:var(--electrico); border-radius:1px; }
+
+/* callouts */
+.callout { margin-top:32px; background:rgba(33,150,243,0.07); border:1px solid rgba(33,150,243,0.18); border-left:4px solid var(--electrico); border-radius:3px; padding:26px 30px; }
+.callout p { font-size:15px; color:rgba(255,255,255,0.88); }
+.callout-green { margin-top:32px; background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.18); border-left:4px solid var(--verde); border-radius:3px; padding:26px 30px; }
+.callout-green p { font-size:15px; color:rgba(255,255,255,0.88); }
+
+/* timeline horizontal */
+.tl-h { display:grid; grid-template-columns:repeat(6,1fr); margin-top:64px; position:relative; }
+.tl-h::before { content:''; position:absolute; top:9px; left:8%; right:8%; height:2px; background:rgba(33,150,243,0.2); }
+.tl-step { text-align:center; padding:0 8px; position:relative; }
+.tl-dot { width:20px; height:20px; border-radius:50%; background:var(--electrico); border:3px solid var(--bg); margin:0 auto 18px; position:relative; z-index:1; box-shadow:0 0 0 4px rgba(33,150,243,0.15); }
+.tl-step .week { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--electrico); margin-bottom:8px; }
+.tl-step h3 { font-size:14px; font-weight:700; color:#fff; margin-bottom:6px; }
+.tl-step p { font-size:12px; color:rgba(255,255,255,0.5); line-height:1.5; }
+
+/* CTA / cierre */
+.cta { text-align:center; padding:24px 0 16px; }
+.cta img.logo { height:100px; margin:0 auto 48px; display:block; }
+.firma { font-size:clamp(26px,4.5vw,44px); font-weight:800; letter-spacing:-1px; color:#fff; margin-bottom:40px; line-height:1.08; }
+.btn {
+  display:inline-block; background:var(--electrico); color:#fff;
+  font-family:var(--font); font-size:15px; font-weight:700;
+  padding:18px 44px; border-radius:3px; text-decoration:none;
+  transition:transform .25s var(--ease),box-shadow .25s var(--ease);
+  box-shadow:0 8px 28px rgba(33,150,243,0.35);
+}
+.btn:hover { transform:translateY(-3px); box-shadow:0 16px 44px rgba(33,150,243,0.45); }
+.contact { font-size:14px; color:rgba(255,255,255,0.48); line-height:2.3; margin-top:48px; }
+.contact a { color:var(--celeste); text-decoration:none; }
+.contact a:hover { text-decoration:underline; }
+
+footer { border-top:1px solid rgba(255,255,255,0.07); padding:28px 0 36px; text-align:center; font-size:12px; color:rgba(255,255,255,0.3); letter-spacing:0.3px; }
+
+/* mobile */
+@media (max-width:720px){
+  section { padding:68px 0; }
+  .risks,.fix-grid { grid-template-columns:1fr; }
+  .tl-h { grid-template-columns:1fr; }
+  .tl-h::before { top:0; bottom:0; left:9px; right:auto; width:2px; height:auto; }
+  .tl-step { text-align:left; padding:0 0 28px 38px; position:relative; }
+  .tl-dot { position:absolute; left:0; top:0; margin:0; }
+  .score-right .bar { width:80px; }
+}
+</style>
+</head>
+<body>
+
+<div id="prog"></div>
+
+<!-- ════════════════════════════════════════════════════════════
+     HERO
+     ✏️ tag (mes/año), nombre cliente, CUIT, meta (fecha relevamiento)
+     El SCORE del gauge se configura en el bloque JS al final.
+     ════════════════════════════════════════════════════════════ -->
+<section class="hero wrap">
+  <div class="hero-inner">
+    <img class="logo" src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_vertical_w.png" alt="Servicios y Sistemas">
+    <!-- ✏️ --> <div class="tag">Auditoría ERP · [MES AÑO]</div>
+    <h1>Informe de<br>Auditoría ERP</h1>
+    <!-- ✏️ --> <div class="client">[NOMBRE CLIENTE]</div>
+    <!-- ✏️ --> <div class="cuit">CUIT [00-00000000-0]</div>
+
+    <div class="gauge-wrap">
+      <svg viewBox="0 0 220 124" style="width:100%">
+        <path d="M 22 108 A 88 88 0 0 1 198 108" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="16" stroke-linecap="round"/>
+        <path id="gaugeArc" d="M 22 108 A 88 88 0 0 1 198 108" fill="none" stroke="#E63946" stroke-width="16" stroke-linecap="round"
+              stroke-dasharray="276.5" stroke-dashoffset="276.5" style="transition:stroke-dashoffset 1.8s var(--ease);"/>
+        <text id="gaugeNum" x="110" y="92" text-anchor="middle" font-family="Montserrat,Arial" font-weight="800" font-size="52" fill="#E63946" letter-spacing="-1">0</text>
+        <text x="110" y="114" text-anchor="middle" font-family="Montserrat,Arial" font-weight="600" font-size="13" fill="rgba(255,255,255,0.45)">de 100</text>
+      </svg>
+      <div id="gaugeBadge" class="gauge-badge"></div>
+      <div class="gauge-label">Índice ERP general</div>
+    </div>
+
+    <!-- ✏️ --> <div class="meta">Relevamiento presencial · [DD de mes de AAAA] · Sistema auditado: Tango Gestión</div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     01 · RESUMEN EJECUTIVO
+     ✏️ h2 (diagnóstico en una línea), lead, stat cards, párrafos, fortalezas
+     ════════════════════════════════════════════════════════════ -->
+<section class="wrap">
+  <div class="reveal">
+    <div class="eyebrow">01 · Resumen ejecutivo</div>
+    <!-- ✏️ --> <h2>[Diagnóstico central en una línea]</h2>
+    <!-- ✏️ --> <p class="lead">[NOMBRE CLIENTE] opera Tango Gestión con [N] módulos —[lista]—, pero el relevamiento muestra [descripción del problema principal].</p>
+  </div>
+
+  <!-- ✏️ Ajustar data-count, clase (bad/warn/ok) y label de cada card -->
+  <div class="cardrow reveal">
+    <div class="card">
+      <div class="num bad" data-count="[SCORE]">0<span>/100</span></div>
+      <div class="label">Índice ERP general</div>
+    </div>
+    <div class="card">
+      <div class="num warn" data-count="[N]">0<span>&nbsp;de&nbsp;[TOTAL]</span></div>
+      <div class="label">circuitos con controles internos aplicados</div>
+    </div>
+    <div class="card">
+      <div class="num" data-count="[N]">0</div>
+      <div class="label">módulos Tango en uso: [lista]</div>
+    </div>
+  </div>
+
+  <div class="reveal" style="margin-top:48px;">
+    <!-- ✏️ --> <p style="color:rgba(255,255,255,0.78);">[Interpretación del índice y su impacto en el negocio.]</p>
+    <!-- ✏️ --> <p style="margin-top:18px; color:rgba(255,255,255,0.78);">Nuestra recomendación: <strong class="hl">[recomendación central]</strong>.</p>
+    <!-- ✏️ Fortalezas del cliente. Borrar este bloque si no hay puntos positivos. -->
+    <div class="callout-green">
+      <p><strong style="color:var(--verde);">Lo que está bien y vamos a preservar:</strong> [circuitos o áreas con score positivo — qué funciona bien y no se toca].</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     02 · HALLAZGOS POR CIRCUITO
+     ✏️ Por fila: clase (r/o/g), data-w (score), nombre, detail, val
+     r = rojo (<40) · o = naranja (40–69) · g = verde (70+)
+     ════════════════════════════════════════════════════════════ -->
+<section class="wrap">
+  <div class="reveal">
+    <div class="eyebrow">02 · Hallazgos por circuito</div>
+    <h2>Qué encontramos, sección por sección</h2>
+    <p class="muted">Cada circuito se evaluó en tres dimensiones: proceso documentado, controles internos y madurez operativa.</p>
+  </div>
+
+  <div class="score-list">
+    <div class="score-row reveal r">
+      <div class="score-info"><div class="name">Administración y parametrización</div><div class="detail">[doc] · [controles] · [madurez]</div></div>
+      <div class="score-right"><div class="bar"><i data-w="0"></i></div><div class="score-val">0</div></div>
+    </div>
+    <div class="score-row reveal r">
+      <div class="score-info"><div class="name">Ventas y facturación</div><div class="detail">[doc] · [controles] · [madurez]</div></div>
+      <div class="score-right"><div class="bar"><i data-w="0"></i></div><div class="score-val">0</div></div>
+    </div>
+    <div class="score-row reveal r">
+      <div class="score-info"><div class="name">Compras y proveedores</div><div class="detail">[doc] · [controles] · [madurez]</div></div>
+      <div class="score-right"><div class="bar"><i data-w="0"></i></div><div class="score-val">0</div></div>
+    </div>
+    <div class="score-row reveal r">
+      <div class="score-info"><div class="name">Stock e inventarios</div><div class="detail">[doc] · [controles] · [madurez]</div></div>
+      <div class="score-right"><div class="bar"><i data-w="0"></i></div><div class="score-val">0</div></div>
+    </div>
+    <div class="score-row reveal r">
+      <div class="score-info"><div class="name">Tesorería</div><div class="detail">[doc] · [controles] · [madurez]</div></div>
+      <div class="score-right"><div class="bar"><i data-w="0"></i></div><div class="score-val">0</div></div>
+    </div>
+    <div class="score-row reveal r">
+      <div class="score-info"><div class="name">Sueldos y RRHH</div><div class="detail">[doc] · [controles] · [madurez]</div></div>
+      <div class="score-right"><div class="bar"><i data-w="0"></i></div><div class="score-val">0</div></div>
+    </div>
+    <div class="score-row reveal r">
+      <div class="score-info"><div class="name">Producción / costos</div><div class="detail">[doc] · [controles] · [madurez]</div></div>
+      <div class="score-right"><div class="bar"><i data-w="0"></i></div><div class="score-val">0</div></div>
+    </div>
+    <div class="score-row reveal r">
+      <div class="score-info"><div class="name">Integraciones y Nexo</div><div class="detail">[doc] · [controles] · [madurez]</div></div>
+      <div class="score-right"><div class="bar"><i data-w="0"></i></div><div class="score-val">0</div></div>
+    </div>
+    <div class="score-row reveal r">
+      <div class="score-info"><div class="name">Seguridad y usuarios Tango</div><div class="detail">[doc] · [controles] · [madurez]</div></div>
+      <div class="score-right"><div class="bar"><i data-w="0"></i></div><div class="score-val">0</div></div>
+    </div>
+  </div>
+  <!-- ✏️ --> <div class="legend reveal">[Frase que resume el patrón dominante de los hallazgos.]</div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     03 · RIESGOS PRIORIZADOS
+     ✏️ Completar los 4 riesgos: título, descripción, evidencia
+     ════════════════════════════════════════════════════════════ -->
+<section class="wrap">
+  <div class="reveal">
+    <div class="eyebrow">03 · Riesgos priorizados</div>
+    <h2>Qué está en juego si esto sigue igual</h2>
+  </div>
+  <div class="risks">
+    <div class="risk reveal">
+      <div class="wm">1</div>
+      <div class="n">Riesgo 1</div>
+      <h3>[Título del riesgo 1]</h3>
+      <p>[Qué puede pasar y por qué importa al negocio.]</p>
+      <!-- ✏️ --> <div class="ev">Evidencia: [dato del relevamiento].</div>
+    </div>
+    <div class="risk reveal">
+      <div class="wm">2</div>
+      <div class="n">Riesgo 2</div>
+      <h3>[Título del riesgo 2]</h3>
+      <p>[Descripción.]</p>
+      <div class="ev">Evidencia: [dato].</div>
+    </div>
+    <div class="risk reveal">
+      <div class="wm">3</div>
+      <div class="n">Riesgo 3</div>
+      <h3>[Título del riesgo 3]</h3>
+      <p>[Descripción.]</p>
+      <div class="ev">Evidencia: [dato].</div>
+    </div>
+    <div class="risk reveal">
+      <div class="wm">4</div>
+      <div class="n">Riesgo 4</div>
+      <h3>[Título del riesgo 4]</h3>
+      <p>[Descripción.]</p>
+      <div class="ev">Evidencia: [dato].</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     04 · QUÉ CAMBIA EN EL DÍA A DÍA
+     ✏️ Una card por circuito débil. badge sin clase = rojo, .warn = naranja
+     ════════════════════════════════════════════════════════════ -->
+<section class="wrap">
+  <div class="reveal">
+    <div class="eyebrow">04 · Qué cambia en el día a día</div>
+    <h2>Lo que Tango ya sabe hacer<br>y hoy no se usa</h2>
+    <p class="muted">No hace falta desarrollo a medida: la funcionalidad ya está en el producto.</p>
+  </div>
+  <div class="fix-grid">
+
+    <div class="fix reveal">
+      <h3>[Circuito 1] <span class="badge">hoy [N]/100</span></h3>
+      <div class="antes">Hoy: [descripción del estado actual].</div>
+      <ul>
+        <li><strong>[Funcionalidad Tango]</strong>: [qué resuelve].</li>
+        <li><strong>[Funcionalidad Tango]</strong>: [qué resuelve].</li>
+        <li><strong>[Funcionalidad Tango]</strong>: [qué resuelve].</li>
+      </ul>
+    </div>
+
+    <div class="fix reveal">
+      <h3>[Circuito 2] <span class="badge">hoy [N]/100</span></h3>
+      <div class="antes">Hoy: [estado actual].</div>
+      <ul>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+      </ul>
+    </div>
+
+    <div class="fix reveal">
+      <h3>[Circuito 3] <span class="badge">hoy [N]/100</span></h3>
+      <div class="antes">Hoy: [estado actual].</div>
+      <ul>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+      </ul>
+    </div>
+
+    <div class="fix reveal">
+      <!-- ✏️ .warn si el circuito no está tan mal (40-69) -->
+      <h3>[Circuito 4] <span class="badge warn">hoy [N]/100</span></h3>
+      <div class="antes">Hoy: [estado actual].</div>
+      <ul>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+        <li><strong>[Funcionalidad]</strong>: [qué resuelve].</li>
+      </ul>
+    </div>
+
+  </div>
+  <!-- ✏️ Borrar si no aplica Tango Live -->
+  <div class="callout reveal">
+    <p><strong>Para la dirección — Tango Live:</strong> informes predefinidos y consultas personalizadas sobre los datos en línea. Deja de depender de planillas para saber cuánto hay, cuánto se debe y cuánto se vendió.</p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     05 · EL PLAN
+     ✏️ h2, lead, etapas del timeline
+     ════════════════════════════════════════════════════════════ -->
+<section class="wrap">
+  <div class="reveal">
+    <div class="eyebrow">05 · El plan</div>
+    <!-- ✏️ --> <h2>[Título del plan de acción]</h2>
+    <!-- ✏️ --> <p class="lead">[Descripción del enfoque: qué se hace, qué se migra, qué se genera de cero.] Duración estimada: <strong style="color:#fff;">[N a M semanas]</strong>.</p>
+  </div>
+
+  <!-- ✏️ Ajustar semanas, títulos y descripciones. Agregar/quitar .tl-step según etapas. -->
+  <div class="tl-h reveal">
+    <div class="tl-step"><div class="tl-dot"></div><div class="week">Sem 1</div><h3>Relevamiento</h3><p>Circuitos actuales y procesos objetivo.</p></div>
+    <div class="tl-step"><div class="tl-dot"></div><div class="week">Sem 1–2</div><h3>Parametrización</h3><p>Módulos, circuitos, usuarios y permisos.</p></div>
+    <div class="tl-step"><div class="tl-dot"></div><div class="week">Sem 2–3</div><h3>Migración</h3><p>Extracción, validación e importación.</p></div>
+    <div class="tl-step"><div class="tl-dot"></div><div class="week">Sem 3–4</div><h3>Pruebas</h3><p>Funcionales y validación con usuarios.</p></div>
+    <div class="tl-step"><div class="tl-dot"></div><div class="week">Sem 4–5</div><h3>Capacitación</h3><p>Por módulo, sobre datos reales.</p></div>
+    <div class="tl-step"><div class="tl-dot"></div><div class="week">Sem 5–6</div><h3>Puesta en marcha</h3><p>Acompañamiento y soporte post arranque.</p></div>
+  </div>
+</section>
+
+<!-- ════ CIERRE ════ -->
+<section class="wrap cta">
+  <div class="reveal">
+    <img class="logo" src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_vertical_w.png" alt="Servicios y Sistemas">
+    <div class="firma">Integral de verdad.</div>
+    <!-- ✏️ subject del mailto -->
+    <a class="btn" href="mailto:info@serviciosysistemas.com.ar?subject=Auditor%C3%ADa%20ERP%20[CLIENTE]%20%E2%80%94%20pr%C3%B3ximos%20pasos">Coordinar próximos pasos</a>
+    <div class="contact">
+      Servicios y Sistemas SRL · Más de 30 años y +1000 implementaciones Tango en el NEA<br>
+      San Martín 1180, Corrientes · +54 3794 426022<br>
+      <a href="mailto:info@serviciosysistemas.com.ar">info@serviciosysistemas.com.ar</a> ·
+      <a href="https://www.serviciosysistemas.com.ar">www.serviciosysistemas.com.ar</a>
+    </div>
+  </div>
+</section>
+
+<!-- ✏️ --> <footer>Informe confidencial preparado para [NOMBRE CLIENTE] · [MES AÑO]</footer>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   CONFIGURACIÓN — ÚNICA ZONA A EDITAR
+   ════════════════════════════════════════════════════════ */
+const SCORE = 0;   // ✏️ Score ERP (0–100)
+
+/* ════════════════════════════════════════════════════════
+   NO EDITAR DE AQUÍ PARA ABAJO
+   ════════════════════════════════════════════════════════ */
+
+/* color y badge automáticos */
+const COLOR  = SCORE < 40 ? '#E63946' : SCORE < 70 ? '#F39C12' : '#27AE60';
+const LABEL  = SCORE < 40 ? 'CRÍTICO' : SCORE < 70 ? 'REGULAR' : 'BUENO';
+const BG_LBL = SCORE < 40 ? 'rgba(230,57,70,0.12)'  : SCORE < 70 ? 'rgba(243,156,18,0.12)' : 'rgba(39,174,96,0.12)';
+const BD_LBL = SCORE < 40 ? 'rgba(230,57,70,0.3)'   : SCORE < 70 ? 'rgba(243,156,18,0.3)'  : 'rgba(39,174,96,0.3)';
+
+document.getElementById('gaugeArc').style.stroke = COLOR;
+document.getElementById('gaugeNum').style.fill   = COLOR;
+const badge = document.getElementById('gaugeBadge');
+badge.textContent = LABEL;
+badge.style.background  = BG_LBL;
+badge.style.border      = `1px solid ${BD_LBL}`;
+badge.style.color       = COLOR;
+
+/* scroll progress */
+window.addEventListener('scroll', () => {
+  const s = document.documentElement;
+  const pct = s.scrollTop / (s.scrollHeight - s.clientHeight) * 100;
+  document.getElementById('prog').style.width = pct + '%';
+});
+
+/* reveal on scroll */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('in');
+    e.target.querySelectorAll('.bar i').forEach(b => { b.style.width = b.dataset.w + '%'; });
+    e.target.querySelectorAll('[data-count]').forEach(el => animateCount(el));
+    io.unobserve(e.target);
+  });
+}, { threshold: 0.2 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+function animateCount(el) {
+  if (el.dataset.done) return;
+  el.dataset.done = '1';
+  const target = parseInt(el.dataset.count, 10) || 0;
+  const suffix = el.querySelector('span');
+  const sufHTML = suffix ? suffix.outerHTML : '';
+  const dur = 1100, t0 = performance.now();
+  function tick(t) {
+    const p = Math.min((t - t0) / dur, 1);
+    const e = 1 - Math.pow(1 - p, 3);
+    el.innerHTML = Math.round(e * target) + sufHTML;
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+/* gauge */
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('gaugeArc').style.strokeDashoffset = 276.5 * (1 - SCORE / 100);
+    const num = document.getElementById('gaugeNum');
+    const dur = 1800, t0 = performance.now();
+    function tick(t) {
+      const p = Math.min((t - t0) / dur, 1);
+      const e = 1 - Math.pow(1 - p, 3);
+      num.textContent = Math.round(e * SCORE);
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }, 350);
+});
+</script>
+</body>
+</html>

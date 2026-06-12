@@ -211,7 +211,7 @@ export async function buildCanonicalAuditJson(
     WHERE audit_id = ${auditId}
   `;
 
-  const itemsBySection = new Map<string, typeof itemRows>();
+  const itemsBySection = new Map<string, (typeof itemRows)[number][]>();
   for (const item of itemRows) {
     const list = itemsBySection.get(item.section_id) ?? [];
     list.push(item);

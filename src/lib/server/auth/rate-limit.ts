@@ -15,6 +15,9 @@ export function resetLoginRateLimit(): void {
 
 /** Incrementa contador; retorna true si debe bloquearse (≥5 en 60s). */
 export function isLoginRateLimited(clientIp: string): boolean {
+  // E2E (Playwright, workers seriales sobre una sola IP): la suite completa supera
+  // los 5 logins/min legítimos. Solo se desactiva con el flag explícito de tests.
+  if (process.env.LOGIN_RATE_LIMIT_DISABLED === '1') return false;
   const now = Date.now();
   const state = loginAttempts.get(clientIp);
 

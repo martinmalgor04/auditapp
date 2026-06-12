@@ -5,7 +5,13 @@
     "one_feature_at_a_time": true,
     "require_tests_to_close": true,
     "require_approved_spec_to_implement": true,
-    "valid_status": ["pending", "spec_ready", "in_progress", "done", "blocked"],
+    "valid_status": [
+      "pending",
+      "spec_ready",
+      "in_progress",
+      "done",
+      "blocked"
+    ],
     "sdd_required_when": "feature has \"sdd\": true"
   },
   "features": [
@@ -225,7 +231,7 @@
         "Tests de flujo feliz, permisos y validación Zod de propuestas pasan"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "pending"
     },
     {
       "id": 13,
@@ -242,6 +248,110 @@
         "Cambio de estado manual desde la vista (técnico y admin), con registro de quién y cuándo",
         "Leads descartados conservan historial (borrado lógico, no físico)",
         "Tests de máquina de estados, dedupe del endpoint y guards de permisos pasan"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 14,
+      "name": "14_informe_ia",
+      "title": "Informe IA — procesamiento de auditoría cerrada",
+      "description": "Pipeline en-app (decisión SPEC-07i: no hay sistema aparte) que procesa el JSON canónico de una auditoría cerrada: genera borrador de informe con Claude API, revisión/edición humana obligatoria, render HTML branded SyS apto PDF con score, top 5 riesgos, quick wins y roadmap; salida interna separada con recomendaciones de qué presupuestar. Publicación en CDN con token público y RAG Tango quedan para fase 2. Cierra Fase 4 del plan lead magnet y desbloquea el procesamiento de la primera auditoría real.",
+      "source": "docs/source-specs/specs-07/09-contrato-datos-ia/spec.md + plan lead magnet §7.5 Etapa 6 (sysaudit/docs/2026-06-03_plan_sys_auditoria-lead-magnet_v1.md)",
+      "acceptance": [
+        "Acción Generar informe disponible solo para auditorías en estado cerrada (solo admin)",
+        "Generación asíncrona consume el JSON canónico v1.0 del endpoint de export sin transformaciones manuales; estados pendiente/generando/borrador/aprobado/error visibles en UI",
+        "Borrador estructurado validado con Zod: resumen ejecutivo, índices con semáforo, top 5 riesgos, quick wins, roadmap por fases, próximo paso",
+        "upsell_findings y recomendaciones de presupuesto nunca aparecen en el informe cliente; viven en una vista interna separada (solo SyS)",
+        "UI de revisión: editar texto por sección y regenerar; aprobar es acción humana explícita, nunca auto-publicación",
+        "Render HTML branded con tokens SyS (feature 11), imprimible a PDF, con campo opcional para URL de video Loom embebido",
+        "Informe aprobado se persiste versionado y vinculado a la auditoría (tabla audit_report)",
+        "Tests de máquina de estados, permisos, validación Zod del borrador y snapshot del render pasan"
+      ],
+      "sdd": true,
+      "status": "done"
+    },
+    {
+      "id": 15,
+      "name": "15_entrega_informe",
+      "title": "Entrega del informe al cliente",
+      "description": "Entrega real del informe aprobado (#14): link público de solo lectura con token firmado, revocable y con expiración (patrón briefing), registro de enviado y de vistas, embed Loom, y export PDF (decidir en spec: server-side vs print optimizado). Solo el render cliente: nunca material interno. Contrato visual: docs/plantillas/informe/template_informe_web_v2.html (gauge animado, score-rows, reveal on scroll).",
+      "source": "Plan lead magnet §7.5 Salida 1 + etapa 7 (canal del informe) — fase 2 declarada en specs/14_informe_ia/requirements.md",
+      "acceptance": [
+        "Ruta pública /informe/[token] sin auth renderiza solo informes en estado aprobado, con branding SyS y embed Loom si hay loom_url",
+        "Token único firmado por informe: generar/regenerar (revoca el anterior) y expiración configurable; informe no aprobado o token inválido → pantalla amable",
+        "Registro de enviado (quién/cuándo) y registro de vistas (primera vez y contador) visibles en el backoffice",
+        "Export o vista PDF del informe cliente con CSS print branded",
+        "El render público no contiene upsell_findings ni recomendaciones internas (test explícito)",
+        "Tests de token, permisos y e2e del flujo aprobar → compartir → ver pasan"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 16,
+      "name": "16_presupuesto_psys",
+      "title": "Presupuesto vía presupuestossys (integración)",
+      "description": "Puente auditapp → presupuestossys (~/presupuestossys, presupuestos.serviciosysistemas.com.ar): desde un informe aprobado, crear el presupuesto comercial en presupuestossys con las recomendaciones internas como insumo, y reflejar en auditapp el vínculo y el ciclo de vida (borrador → enviado → aceptado/rechazado). Requiere feature espejo en presupuestossys: endpoint machine-to-machine con API key para alta de proposal precargada y consulta de estado (su backlog, feature_list.json propio).",
+      "source": "Decisión humana 2026-06-11 (Martín): presupuestos se importan desde presupuestossys, no se duplican. Plan lead magnet etapas 7-8.",
+      "acceptance": [
+        "Acción Crear presupuesto (solo admin) sobre informe aprobado envía a presupuestossys cliente (match/alta por CUIT) + recomendaciones internas como payload versionado con validación Zod",
+        "Auth machine-to-machine por API key dedicada; sin key configurada la acción falla con mensaje claro y sin efectos",
+        "Auditapp persiste el vínculo: proposal_id, number_display y URL del presupuesto en presupuestossys",
+        "Estado del presupuesto visible en el detalle de la auditoría (sincronización por polling o webhook, decidir en spec)",
+        "Contrato de integración documentado y versionado (payload + endpoints + auth) en specs/16_presupuesto_psys/",
+        "Idempotencia: reintentar el envío no duplica proposals (dedupe por audit_id/report version)",
+        "Tests con presupuestossys mockeado: contrato, idempotencia, permisos y errores de red pasan"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 17,
+      "name": "17_contexto_ia",
+      "title": "Contexto IA fase 2 — RAG Tango + catálogo",
+      "description": "Enriquecer el motor de #14: RAG Tango (vector store existente) como contexto del prompt, catálogo de servicios SyS con rangos de proveedores (HPE/Lenovo/Dell/Sophos), few-shot con informes aprobados bien calificados y benchmarks por rubro. Activable por env; el motor debe seguir funcionando sin contexto extra. Encarar recién con varias auditorías reales procesadas.",
+      "source": "Plan lead magnet §7.5 (insumos a la IA) — fase 2 declarada en specs/14_informe_ia/requirements.md",
+      "acceptance": [
+        "El prompt de generación incorpora contexto RAG Tango relevante a los hallazgos de la auditoría (recuperación por similitud, no dump completo)",
+        "Catálogo de líneas de servicio SyS con rangos de precio versionado en el repo e inyectado a la salida interna (sigue sin producto cerrado)",
+        "Few-shot: informes aprobados marcados como ejemplares alimentan el prompt",
+        "Todo el contexto extra es activable/desactivable por env vars y el pipeline funciona sin él",
+        "prompt_version distingue generaciones con y sin contexto enriquecido",
+        "Tests con mocks de vector store: selección de contexto, fallback sin contexto y límites de tokens pasan"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 18,
+      "name": "18_dashboard_mercado",
+      "title": "Dashboard estudio de mercado NEA",
+      "description": "Vista de métricas agregadas en el backoffice (SPEC-07i §6) sobre auditorías cerradas: distribución de ERP en uso, módulos Tango adoptados, índices IT/ERP promedio por segmento, oportunidades de upsell agregadas. Solo lectura; la data ya se captura desde #2/#9 (market_data del canónico).",
+      "source": "docs/source-specs/specs-07/09-contrato-datos-ia/spec.md §6 (dashboard v2) + plan lead magnet Fase 5 (base de datos de mercado regional)",
+      "acceptance": [
+        "Vista backoffice solo admin con métricas agregadas de auditorías cerradas",
+        "Distribución de ERP actual y módulos Tango (desde market_data), índices IT/ERP promedio y por segmento A/B/C",
+        "Upsell agregado: conteo de upsell_findings por tipo (solo interno)",
+        "Filtros por segmento, rubro y rango de fechas",
+        "Con cero o pocas auditorías la vista degrada con mensajes claros (sin divisiones por cero ni gráficos rotos)",
+        "Tests de agregaciones SQL y de la ruta pasan"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 19,
+      "name": "19_template_informe_it",
+      "title": "Template de informe IT propio",
+      "description": "Template A4 específico para auditorías IT puras y mixtas (infraestructura, seguridad, backups, networking): hoy #14 reutiliza el template ERP parametrizando títulos según types. Incluye estructura de páginas propia (secciones IT en vez de circuitos ERP), selección de template en el render según canonical.types y definición del caso mixto IT+ERP. Decisión de la puerta humana de #14 (2026-06-12, open question 5).",
+      "source": "specs/14_informe_ia/design.md — decisión puerta 5 + docs/plantillas/informe/template_informe_pdf_a4_v1.html (base ERP)",
+      "acceptance": [
+        "Template A4 propio para auditorías IT puras, coherente con el branding SyS del template ERP (tokens --sys-*, logos CDN R2)",
+        "El render de #14 selecciona template ERP, IT o mixto según canonical.types sin romper el caso ERP existente",
+        "Schema del client_draft extendido/parametrizado para las secciones IT sin afectar los informes ERP ya generados",
+        "Caso mixto IT+ERP definido: qué páginas comparte y cuáles duplica por dominio",
+        "Tests de snapshot del render IT y mixto pasan; los snapshots ERP existentes no cambian"
       ],
       "sdd": true,
       "status": "pending"

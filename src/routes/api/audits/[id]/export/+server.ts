@@ -1,25 +1,9 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
-import type { AppUser } from '$lib/server/auth/types';
+import { requireAdminApi } from '$lib/server/api/guards';
 import { AuditNotFoundError } from '$lib/server/backoffice/errors';
 import { buildCanonicalAuditJson } from '$lib/server/canonical/build';
 import { AuditNotClosedError, CanonicalBuildError } from '$lib/server/canonical/errors';
 import { CANONICAL_SCHEMA_VERSION } from '$lib/server/canonical/version';
-
-function requireAdminApi(locals: App.Locals): AppUser | Response {
-  if (!locals.user) {
-    return new Response(JSON.stringify({ error: 'No autorizado' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-  if (locals.user.role !== 'admin') {
-    return new Response(JSON.stringify({ error: 'No tenés permiso para esta acción' }), {
-      status: 403,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-  return locals.user;
-}
 
 export const GET: RequestHandler = async ({ params, locals }) => {
   const userOrResponse = requireAdminApi(locals);

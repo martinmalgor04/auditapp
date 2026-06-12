@@ -1,0 +1,263 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`informe render (R12, R16, R25, R26, R30) > snapshot estable del render 1`] = `
+"
+<style>
+.informe-a4 { font-family: var(--sys-font, 'Montserrat', Arial, sans-serif); color: var(--sys-azul-profundo); }
+.informe-a4 *, .informe-a4 *::before, .informe-a4 *::after { margin:0; padding:0; box-sizing:border-box; }
+.informe-a4 .page {
+  width:210mm; min-height:297mm; max-height:297mm; overflow:hidden;
+  padding:18mm 18mm 14mm; font-size:10.5pt; line-height:1.55;
+  color:var(--sys-azul-profundo); background:#fff;
+  border-top:6mm solid var(--sys-azul-electrico); position:relative; page-break-after:always;
+  margin:0 auto;
+}
+.informe-a4 .page:last-of-type { page-break-after:auto; }
+.informe-a4 .page.dark {
+  background: var(--sys-bg-gradient, linear-gradient(135deg, var(--sys-azul-profundo) 0%, #0F2238 60%, var(--sys-azul-medio) 100%));
+  color:#fff; display:flex; flex-direction:column; justify-content:space-between;
+}
+.informe-a4 .page.dark .eyebrow { color: var(--sys-celeste); }
+.informe-a4 .eyebrow { font-size:8pt; font-weight:700; letter-spacing:3pt; text-transform:uppercase; color:var(--sys-azul-electrico); margin-bottom:5mm; }
+.informe-a4 h1 { font-size:34pt; font-weight:800; letter-spacing:-1pt; line-height:1.05; color:#fff; }
+.informe-a4 h2 { font-size:20pt; font-weight:800; letter-spacing:-0.5pt; color:var(--sys-azul-profundo); margin-bottom:5mm; line-height:1.1; }
+.informe-a4 h3 { font-size:13pt; font-weight:700; color:var(--sys-azul-profundo); margin-bottom:3mm; }
+.informe-a4 p { font-size:10.5pt; line-height:1.6; }
+.informe-a4 .lead { font-size:12pt; line-height:1.6; color:var(--sys-azul-medio); }
+.informe-a4 strong { font-weight:700; }
+.informe-a4 .footer { position:absolute; bottom:10mm; left:18mm; right:18mm; display:flex; justify-content:space-between; align-items:center; padding-top:3mm; border-top:0.3mm solid rgba(0,0,0,0.1); }
+.informe-a4 .footer img { height:7mm; }
+.informe-a4 .pagenum { font-size:8pt; font-weight:700; color:var(--sys-gris-neutro); letter-spacing:1pt; }
+.informe-a4 .stats { display:flex; gap:5mm; margin:6mm 0; }
+.informe-a4 .stat { flex:1; background:#fff; border-top:2mm solid var(--sys-azul-electrico); border-radius:1mm; padding:5mm 4mm 6mm; box-shadow:0 2mm 6mm rgba(0,0,0,0.08); text-align:center; }
+.informe-a4 .stat .num { font-size:38pt; font-weight:800; letter-spacing:-1pt; color:var(--sys-azul-electrico); line-height:1; }
+.informe-a4 .stat .num.bad { color:var(--sys-rojo); }
+.informe-a4 .stat .num.warn { color:var(--sys-naranja); }
+.informe-a4 .stat .num.ok { color:var(--sys-verde); }
+.informe-a4 .stat .num small { font-size:16pt; color:var(--sys-gris-neutro); font-weight:600; }
+.informe-a4 .stat .label { font-size:8.5pt; font-weight:600; color:var(--sys-azul-medio); margin-top:2mm; line-height:1.35; }
+.informe-a4 table { width:100%; border-collapse:collapse; margin-top:4mm; font-size:9.5pt; }
+.informe-a4 th { text-align:left; font-size:8pt; font-weight:700; letter-spacing:1pt; text-transform:uppercase; color:var(--sys-gris-neutro); border-bottom:0.5mm solid rgba(0,0,0,0.12); padding:2.5mm 3mm; }
+.informe-a4 th.num, .informe-a4 td.num { text-align:center; }
+.informe-a4 tr:nth-child(even) td { background:var(--sys-offwhite); }
+.informe-a4 td { padding:2.8mm 3mm; border-bottom:0.3mm solid rgba(0,0,0,0.06); }
+.informe-a4 .dot { display:inline-block; width:2.2mm; height:2.2mm; border-radius:50%; margin-right:1.5mm; vertical-align:middle; }
+.informe-a4 .dot.red { background:var(--sys-rojo); }
+.informe-a4 .dot.orange { background:var(--sys-naranja); }
+.informe-a4 .dot.green { background:var(--sys-verde); }
+.informe-a4 .score-pill { font-weight:800; font-size:10pt; }
+.informe-a4 .risks { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin-top:4mm; }
+.informe-a4 .risk { background:var(--sys-offwhite); border-left:3mm solid var(--sys-rojo); border-radius:1mm; padding:4mm 4.5mm; }
+.informe-a4 .risk .n { font-size:7.5pt; font-weight:700; letter-spacing:2pt; text-transform:uppercase; color:var(--sys-rojo); margin-bottom:2mm; }
+.informe-a4 .risk h3 { font-size:11pt; margin-bottom:2mm; }
+.informe-a4 .risk p { font-size:9pt; color:#3a4a5a; line-height:1.5; }
+.informe-a4 .risk .ev { font-size:8pt; color:var(--sys-gris-neutro); margin-top:2.5mm; }
+.informe-a4 .callout { background:rgba(33,150,243,0.06); border:0.3mm solid rgba(33,150,243,0.3); border-left:3mm solid var(--sys-azul-electrico); border-radius:1mm; padding:4mm 5mm; margin:5mm 0; }
+.informe-a4 .callout p { font-size:10pt; }
+.informe-a4 .timeline { display:grid; grid-template-columns:repeat(6,1fr); gap:3mm; margin-top:6mm; position:relative; }
+.informe-a4 .timeline::before { content:''; position:absolute; top:3.5mm; left:8%; right:8%; height:0.5mm; background:rgba(33,150,243,0.25); }
+.informe-a4 .tl-item { text-align:center; position:relative; }
+.informe-a4 .tl-dot { width:7mm; height:7mm; border-radius:50%; background:var(--sys-azul-electrico); margin:0 auto 3mm; border:1mm solid #fff; position:relative; z-index:1; box-shadow:0 0 0 0.5mm rgba(33,150,243,0.3); }
+.informe-a4 .tl-week { font-size:7pt; font-weight:700; letter-spacing:1pt; text-transform:uppercase; color:var(--sys-azul-electrico); margin-bottom:2mm; }
+.informe-a4 .tl-item h3 { font-size:9pt; font-weight:700; margin-bottom:1.5mm; }
+.informe-a4 .tl-item p { font-size:8pt; color:#4a5a6a; line-height:1.45; }
+.informe-a4 .circuitos { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:4mm 0; }
+.informe-a4 .circuito { background:var(--sys-offwhite); border-left:2.5mm solid var(--sys-azul-electrico); border-radius:1mm; padding:4mm 4.5mm; }
+.informe-a4 .circuito h3 { font-size:10.5pt; margin-bottom:2mm; }
+.informe-a4 .circuito ul { list-style:none; }
+.informe-a4 .circuito li { font-size:9pt; line-height:1.5; color:#2a3a4a; padding-left:3.5mm; position:relative; margin-bottom:1.5mm; }
+.informe-a4 .circuito li::before { content:''; position:absolute; left:0; top:2.2mm; width:1.8mm; height:1.8mm; background:var(--sys-azul-electrico); border-radius:0.3mm; }
+.informe-a4 .cover { padding:22mm 20mm; }
+.informe-a4 .cover .logo-vert { height:28mm; margin-bottom:auto; display:block; }
+.informe-a4 .cover .eyebrow-cover { font-size:9pt; font-weight:700; letter-spacing:3pt; text-transform:uppercase; color:var(--sys-celeste); margin-bottom:6mm; }
+.informe-a4 .cover h1 { margin-bottom:8mm; }
+.informe-a4 .cover .client { font-size:18pt; font-weight:700; color:var(--sys-celeste); margin-bottom:2mm; }
+.informe-a4 .cover .cuit { font-size:10pt; color:rgba(255,255,255,0.5); margin-bottom:10mm; }
+.informe-a4 .cover .meta { font-size:9pt; color:rgba(255,255,255,0.55); line-height:2; }
+.informe-a4 .circle { position:absolute; border-radius:50%; border:1px solid var(--sys-celeste); opacity:0.06; pointer-events:none; }
+.informe-a4 .c1 { width:130mm; height:130mm; top:-40mm; right:-50mm; }
+.informe-a4 .c2 { width:90mm; height:90mm; bottom:-30mm; left:-35mm; }
+.informe-a4 .backcover { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:22mm 20mm; }
+.informe-a4 .backcover .logo-vert { height:28mm; margin-bottom:10mm; }
+.informe-a4 .backcover .firma { font-size:22pt; font-weight:800; letter-spacing:-0.5pt; color:#fff; margin-bottom:10mm; }
+.informe-a4 .backcover .contact { font-size:9pt; color:rgba(255,255,255,0.6); line-height:2; }
+.informe-a4 ul.clean { list-style:none; }
+.informe-a4 ul.clean li { padding-left:5mm; position:relative; margin-bottom:2.5mm; font-size:10pt; }
+.informe-a4 ul.clean li::before { content:''; position:absolute; left:0; top:2.2mm; width:2mm; height:2mm; background:var(--sys-azul-electrico); }
+.informe-a4 .twocol { display:grid; grid-template-columns:1fr 1fr; gap:6mm; margin-top:4mm; }
+.informe-a4 .twocol h3 { font-size:11pt; margin-bottom:2mm; }
+.informe-a4 .twocol ul.clean li { font-size:9pt; }
+.informe-a4 .informe-loom { max-width:210mm; margin:8mm auto; }
+.informe-a4 .informe-loom iframe { width:100%; aspect-ratio:16/9; border:0; border-radius:2mm; }
+.informe-a4 [contenteditable="true"] { outline:1px dashed var(--sys-azul-electrico); outline-offset:2px; min-width:1em; display:inline-block; }
+.informe-a4 [data-field].informe-field-error { outline:2px solid var(--sys-rojo); }
+@media print {
+  .informe-a4 .stat { box-shadow:none; border:0.3mm solid rgba(0,0,0,0.1); border-top:2mm solid var(--sys-azul-electrico); }
+  .informe-a4 .informe-loom { display:none; }
+}
+</style>
+<div class="informe-a4">
+
+<section class="page dark cover">
+  <div class="circle c1"></div><div class="circle c2"></div>
+  <img class="logo-vert" src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_vertical_w.png" alt="Servicios y Sistemas">
+  <div>
+    <div class="eyebrow-cover">Informe de auditoría IT + ERP · Junio 2026</div>
+    <h1>Auditoría<br>IT + ERP</h1>
+    <div style="height:8mm"></div>
+    <div class="client">Fixture Form Técnico SA</div>
+    <div class="cuit">CUIT 30-12345678-9</div>
+    <div class="meta">Módulos relevados: ventas, stock<br>8 de junio de 2026 · Sistema: Tango Gestión</div>
+  </div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">01 · Resumen ejecutivo</div>
+  <h2><span data-field="resumen.diagnostico">El ERP funciona pero sin controles internos aplicados</span></h2>
+  <p class="lead"><span data-field="resumen.lead">El relevamiento muestra circuitos operativos sin controles formalizados.</span></p>
+  <div style="height:5mm"></div>
+  <div class="stats">
+    <div class="stat" data-canonical="gauge">
+    <svg viewBox="0 0 200 112" style="max-width:54mm; width:100%; margin:0 auto; display:block;">
+      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="var(--sys-naranja)" stroke-width="14" stroke-linecap="round" stroke-dasharray="105.6 251.4"/>
+      <text x="100" y="84" text-anchor="middle" font-family="Montserrat,Arial" font-weight="800" font-size="46" fill="var(--sys-naranja)" letter-spacing="-1">42</text>
+      <text x="100" y="104" text-anchor="middle" font-family="Montserrat,Arial" font-weight="600" font-size="12" fill="#908A82">de 100</text>
+    </svg>
+    <div class="label">Índice ERP general</div></div>
+    <div class="stat">
+      <div class="num warn" data-field="resumen.circuitos_con_controles">2<small>&nbsp;de&nbsp;9</small></div>
+      <div class="label">circuitos con controles internos aplicados</div>
+    </div>
+    <div class="stat">
+      <div class="num">2</div>
+      <div class="label">módulos Tango en uso: ventas, stock</div>
+    </div>
+  </div>
+  <div style="height:5mm"></div>
+  <p><span data-field="resumen.interpretacion">El índice refleja un uso parcial del sistema.</span></p>
+  <div style="height:3mm"></div>
+  <p>Nuestra recomendación: <strong><span data-field="resumen.recomendacion_central">ordenar circuitos y activar los controles existentes</span></strong>.</p>
+  <div style="height:4mm"></div><div class="callout"><p><strong style="color:var(--sys-verde);">Lo que está bien y vamos a preservar:</strong> <span data-field="resumen.fortalezas">La infraestructura de servidores está al día.</span></p></div>
+  <div class="footer"><img src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_horizontal_b.png" alt="SyS"><span class="pagenum">02</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">02 · Hallazgos por circuito</div>
+  <h2>Qué encontramos, sección por sección</h2>
+  <table>
+    <tr><th style="width:42%">Circuito</th><th class="num" style="width:14%">Score</th><th style="width:14%">Doc.</th><th style="width:16%">Controles</th><th style="width:14%">Madurez</th></tr>
+    <tr><td>Inventario de activos / hardware</td><td class="num"><span class="dot red"></span><span class="score-pill" data-canonical="score">20</span></td><td><span data-field="hallazgos.circuitos.0.doc">Parcial</span></td><td><span data-field="hallazgos.circuitos.0.controles">No</span></td><td><span data-field="hallazgos.circuitos.0.madurez">Manual</span></td></tr>
+<tr><td>Software / licencias</td><td class="num"><span class="dot green"></span><span class="score-pill" data-canonical="score">100</span></td><td><span data-field="hallazgos.circuitos.1.doc">Parcial</span></td><td><span data-field="hallazgos.circuitos.1.controles">No</span></td><td><span data-field="hallazgos.circuitos.1.madurez">Manual</span></td></tr>
+<tr><td>Gestión de datos</td><td class="num"><span class="dot orange"></span><span class="score-pill" data-canonical="score">55</span></td><td><span data-field="hallazgos.circuitos.2.doc">Parcial</span></td><td><span data-field="hallazgos.circuitos.2.controles">No</span></td><td><span data-field="hallazgos.circuitos.2.madurez">Manual</span></td></tr>
+  </table>
+  <div style="height:14mm"></div>
+  <h3>Lectura transversal</h3>
+  <ul class="clean"><li><strong><span data-field="hallazgos.lectura_transversal.0.titulo">Controles manuales</span>.</strong> <span data-field="hallazgos.lectura_transversal.0.detalle">El 80% de los circuitos depende de planillas.</span></li>
+<li><strong><span data-field="hallazgos.lectura_transversal.1.titulo">Sin documentación</span>.</strong> <span data-field="hallazgos.lectura_transversal.1.detalle">No hay procedimientos escritos.</span></li>
+<li><strong><span data-field="hallazgos.lectura_transversal.2.titulo">Datos dispersos</span>.</strong> <span data-field="hallazgos.lectura_transversal.2.detalle">La información operativa vive fuera del sistema.</span></li></ul>
+  <div class="footer"><img src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_horizontal_b.png" alt="SyS"><span class="pagenum">03</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">03 · Riesgos priorizados</div>
+  <h2>Qué está en juego si esto sigue igual</h2>
+  <p style="color:var(--sys-gris-neutro); font-size:9.5pt;"><span data-field="riesgos.intro">Los riesgos surgen directamente de los hallazgos del relevamiento.</span></p>
+  <div style="height:5mm"></div>
+  <div class="risks">
+    <div class="risk">
+      <div class="n">Riesgo 1</div>
+      <h3><span data-field="riesgos.items.0.titulo">Riesgo operativo 1</span></h3>
+      <p><span data-field="riesgos.items.0.descripcion">Puede generar pérdidas si no se corrige.</span></p>
+      <div class="ev">Evidencia: <span data-field="riesgos.items.0.evidencia">Backup sin probar según relevamiento.</span></div>
+    </div>
+
+    <div class="risk">
+      <div class="n">Riesgo 2</div>
+      <h3><span data-field="riesgos.items.1.titulo">Riesgo operativo 2</span></h3>
+      <p><span data-field="riesgos.items.1.descripcion">Puede generar pérdidas si no se corrige.</span></p>
+      <div class="ev">Evidencia: <span data-field="riesgos.items.1.evidencia">Backup sin probar según relevamiento.</span></div>
+    </div>
+
+    <div class="risk">
+      <div class="n">Riesgo 3</div>
+      <h3><span data-field="riesgos.items.2.titulo">Riesgo operativo 3</span></h3>
+      <p><span data-field="riesgos.items.2.descripcion">Puede generar pérdidas si no se corrige.</span></p>
+      <div class="ev">Evidencia: <span data-field="riesgos.items.2.evidencia">Backup sin probar según relevamiento.</span></div>
+    </div>
+
+    <div class="risk">
+      <div class="n">Riesgo 4</div>
+      <h3><span data-field="riesgos.items.3.titulo">Riesgo operativo 4</span></h3>
+      <p><span data-field="riesgos.items.3.descripcion">Puede generar pérdidas si no se corrige.</span></p>
+      <div class="ev">Evidencia: <span data-field="riesgos.items.3.evidencia">Backup sin probar según relevamiento.</span></div>
+    </div></div>
+  <div class="footer"><img src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_horizontal_b.png" alt="SyS"><span class="pagenum">04</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">04 · Recomendación y plan</div>
+  <h2><span data-field="plan.titulo">Plan de ordenamiento de circuitos</span></h2>
+  <div class="callout"><p><span data-field="plan.descripcion">Se ordenan los circuitos críticos y quedan controles funcionando.</span></p></div>
+  <div style="height:7mm"></div>
+  <div class="timeline" style="grid-template-columns:repeat(3,1fr);"><div class="tl-item"><div class="tl-dot"></div><div class="tl-week"><span data-field="plan.etapas.0.semana">Sem 1</span></div><h3><span data-field="plan.etapas.0.titulo">Relevamiento</span></h3><p><span data-field="plan.etapas.0.descripcion">Circuitos objetivo.</span></p></div>
+<div class="tl-item"><div class="tl-dot"></div><div class="tl-week"><span data-field="plan.etapas.1.semana">Sem 2–3</span></div><h3><span data-field="plan.etapas.1.titulo">Parametrización</span></h3><p><span data-field="plan.etapas.1.descripcion">Módulos y permisos.</span></p></div>
+<div class="tl-item"><div class="tl-dot"></div><div class="tl-week"><span data-field="plan.etapas.2.semana">Sem 4</span></div><h3><span data-field="plan.etapas.2.titulo">Capacitación</span></h3><p><span data-field="plan.etapas.2.descripcion">Usuarios clave.</span></p></div></div>
+  <div style="height:7mm"></div>
+  <div class="twocol">
+    <div><h3>Qué necesitamos de Fixture Form Técnico SA</h3><ul class="clean"><li><span data-field="plan.necesitamos_cliente.0">Referente del proyecto designado.</span></li>
+<li><span data-field="plan.necesitamos_cliente.1">Datos a migrar validados.</span></li></ul></div>
+    <div><h3>Qué no incluye esta etapa</h3><ul class="clean"><li><span data-field="plan.no_incluye.0">Desarrollo a medida.</span></li>
+<li><span data-field="plan.no_incluye.1">Integraciones con terceros.</span></li></ul></div>
+  </div>
+  <div class="footer"><img src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_horizontal_b.png" alt="SyS"><span class="pagenum">05</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">05 · Qué cambia en el día a día</div>
+  <h2>Lo que Tango ya sabe hacer<br>y hoy no se usa</h2>
+  <p style="font-size:9.5pt; color:var(--sys-gris-neutro);"><span data-field="dia_a_dia.intro">No hace falta desarrollo a medida: la funcionalidad ya está en el producto.</span></p>
+  <div style="height:4mm"></div>
+  <div class="circuitos"><div class="circuito"><h3>Inventario de activos / hardware — hoy <span data-canonical="score">20</span>/100</h3><ul><li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.0.nombre">Perfiles de usuario</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.0.que_resuelve">limita qué puede hacer cada puesto</span>.</li>
+<li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.1.nombre">Tango Live</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.1.que_resuelve">informes en línea sin planillas</span>.</li>
+<li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.2.nombre">Circuito de autorización</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.2.que_resuelve">controles antes de emitir comprobantes</span>.</li></ul></div>
+<div class="circuito"><h3>Software / licencias — hoy <span data-canonical="score">100</span>/100</h3><ul><li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.0.nombre">Perfiles de usuario</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.0.que_resuelve">limita qué puede hacer cada puesto</span>.</li>
+<li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.1.nombre">Tango Live</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.1.que_resuelve">informes en línea sin planillas</span>.</li>
+<li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.2.nombre">Circuito de autorización</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.2.que_resuelve">controles antes de emitir comprobantes</span>.</li></ul></div></div>
+  <div style="height:4mm"></div><div class="callout"><p><span data-field="dia_a_dia.callout_transversal">Para la dirección — Tango Live: informes en línea.</span></p></div>
+  <div class="footer"><img src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_horizontal_b.png" alt="SyS"><span class="pagenum">06</span></div>
+</section>
+
+<section class="page dark backcover">
+  <div class="circle c1"></div><div class="circle c2"></div>
+  <div style="text-align:left; width:100%; margin-bottom:16mm;">
+    <div class="eyebrow" style="color:var(--sys-celeste);">06 · Próximos pasos</div>
+    <h2 style="color:#fff;">Cómo arrancamos</h2>
+    <ol style="list-style:none; counter-reset:steps; color:rgba(255,255,255,0.88);">
+      <li style="display:flex; gap:4mm; margin-bottom:3mm; font-size:10.5pt; align-items:flex-start;">
+        <span style="min-width:6mm; height:6mm; border-radius:50%; background:var(--sys-azul-electrico); display:grid; place-items:center; font-weight:800; font-size:9pt;">1</span>
+        <span data-field="proximos_pasos.0">El cliente aprueba este informe y designa su referente.</span>
+      </li>
+
+      <li style="display:flex; gap:4mm; margin-bottom:3mm; font-size:10.5pt; align-items:flex-start;">
+        <span style="min-width:6mm; height:6mm; border-radius:50%; background:var(--sys-azul-electrico); display:grid; place-items:center; font-weight:800; font-size:9pt;">2</span>
+        <span data-field="proximos_pasos.1">Presentamos la propuesta comercial.</span>
+      </li>
+
+      <li style="display:flex; gap:4mm; margin-bottom:3mm; font-size:10.5pt; align-items:flex-start;">
+        <span style="min-width:6mm; height:6mm; border-radius:50%; background:var(--sys-azul-electrico); display:grid; place-items:center; font-weight:800; font-size:9pt;">3</span>
+        <span data-field="proximos_pasos.2">Kickoff de la etapa 1.</span>
+      </li></ol>
+  </div>
+  <img class="logo-vert" src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_vertical_w.png" alt="Servicios y Sistemas">
+  <div class="firma">Integral de verdad.</div>
+  <div class="contact">
+    Servicios y Sistemas SRL · CUIT 30-70859237-0<br>
+    Centro de Ventas y Servicios Certificado Tango · Más de 30 años en el NEA<br>
+    San Martín 1180, Corrientes · +54 3794 426022<br>
+    info@serviciosysistemas.com.ar · www.serviciosysistemas.com.ar
+  </div>
+</section>
+
+</div>"
+`;

@@ -48,7 +48,8 @@ describe('users admin', () => {
       email: 'nuevo@example.com',
       name: 'Nuevo Técnico',
       role: 'tecnico',
-      temporaryPassword: 'temp-pass-123'
+      temporaryPassword: 'temp-pass-123',
+      auditTypes: ['it']
     });
 
     let users = await listUsers();

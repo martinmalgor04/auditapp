@@ -46,7 +46,7 @@ function scoreMultiselect(
     .map((v) => scoreMap[v])
     .filter((s): s is 0 | 50 | 100 => s === 0 || s === 50 || s === 100);
   if (scores.length === 0) return null;
-  const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+  const avg = Math.round(scores.reduce((a: number, b) => a + b, 0) / scores.length);
   if (avg <= 0) return 0;
   if (avg >= 100) return 100;
   if (avg <= 25) return 0;

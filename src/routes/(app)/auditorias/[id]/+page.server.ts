@@ -14,6 +14,7 @@ import {
 } from '$lib/server/backoffice/briefing-link';
 import { parseCabResponses } from '$lib/server/backoffice/form-parsers';
 import { failFromError } from '$lib/server/backoffice/route-helpers';
+import { listReportsByAudit } from '$lib/server/db/informe-reports';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
   const user = requireStaff(locals);
@@ -27,12 +28,32 @@ export const load: PageServerLoad = async ({ locals, params }) => {
   const readonly = audit.status === 'cerrada';
   const isAdmin = locals.user?.role === 'admin';
 
+  // Informe IA (R27): listado de versiones; técnico asignado solo ve aprobadas (R1).
+  let reports: Awaited<ReturnType<typeof listReportsByAudit>> = [];
+  if (audit.status === 'cerrada') {
+    const all = await listReportsByAudit(audit.id);
+    reports = isAdmin
+      ? all
+      : audit.assignedTechId === user.id
+        ? all.filter((r) => r.status === 'aprobado')
+        : [];
+  }
+
   return {
     audit,
     technicians,
     readonly,
     isAdmin,
-    briefingUrl: audit.publicToken ? getBriefingUrl(audit.publicToken) : null
+    briefingUrl: audit.publicToken ? getBriefingUrl(audit.publicToken) : null,
+    reports: reports.map((r) => ({
+      report_id: r.id,
+      version: r.version,
+      status: r.status,
+      created_at: r.createdAt.toISOString(),
+      approved_by: r.approvedBy,
+      approved_at: r.approvedAt ? r.approvedAt.toISOString() : null,
+      error_message: r.errorMessage
+    }))
   };
 };
 

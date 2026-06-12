@@ -2,11 +2,36 @@ import { expect, type Page } from '@playwright/test';
 import type { AuditScenario } from '../fixtures/audit-scenarios';
 
 export async function login(page: Page, email: string, password: string) {
-  await page.goto('/login');
-  await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Contraseña').fill(password);
-  await page.getByRole('button', { name: 'Ingresar' }).click();
-  await page.waitForURL(/tablero/);
+  // Limpia la sesión previa: con sesión activa /login redirige a /tablero
+  // (src/routes/login/+page.server.ts) y el form nunca aparece.
+  await page.context().clearCookies();
+
+  // El login tiene rate limit (5 intentos/min por IP); en e2e serial se alcanza.
+  // Si aparece el alert, esperamos la ventana de 60 s y reintentamos.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await page.goto('/login');
+    await page.getByLabel('Email').fill(email);
+    await page.getByLabel('Contraseña').fill(password);
+    await page.getByRole('button', { name: 'Ingresar' }).click();
+
+    const rateLimited = page
+      .getByRole('alert')
+      .filter({ hasText: 'Demasiados intentos' })
+      .waitFor({ timeout: 30_000 })
+      .then(() => 'rate-limited' as const);
+    const ok = page.waitForURL(/tablero/, { timeout: 30_000 }).then(() => 'ok' as const);
+    const result = await Promise.race([
+      ok.catch(() => 'rate-limited' as const),
+      rateLimited.catch(() => 'ok' as const)
+    ]);
+
+    if (result === 'ok') {
+      await page.waitForURL(/tablero/);
+      return;
+    }
+    await page.waitForTimeout(61_000);
+  }
+  throw new Error(`login: rate limit persistente para ${email}`);
 }
 
 export async function createAuditViaUi(page: Page, scenario: AuditScenario, suffix: string) {
@@ -139,7 +164,7 @@ export async function closeAudit(page: Page, auditId: string, scenario: AuditSce
 
   await page.getByRole('button', { name: 'Confirmar cierre' }).click();
   await page.waitForURL(new RegExp(`/auditorias/${auditId}$`), { timeout: 20_000 });
-  await expect(page.getByText('Cerrada')).toBeVisible();
+  await expect(page.getByText('Cerrada', { exact: true })).toBeVisible();
 }
 
 export async function runFullAuditFlow(

@@ -4,6 +4,7 @@
   import AuditProgressBar from '$lib/components/backoffice/audit-progress-bar.svelte';
   import CabSectionForm from '$lib/components/backoffice/cab-section-form.svelte';
   import CopyLinkButton from '$lib/components/backoffice/copy-link-button.svelte';
+  import InformeSection from '$lib/components/informe/informe-section.svelte';
 
   let { data, form }: { data: PageData; form?: { error?: string; url?: string } } = $props();
 
@@ -64,6 +65,15 @@
       <a href="/auditorias/{data.audit.id}/cierre" class="sys-btn-secondary mt-2">Pantalla de cierre</a>
     {/if}
   </section>
+
+  {#if data.audit.status === 'cerrada'}
+    <InformeSection
+      auditId={data.audit.id}
+      reports={data.reports}
+      isAdmin={data.isAdmin}
+      canGenerate={data.isAdmin && data.audit.status === 'cerrada'}
+    />
+  {/if}
 
   {#if !data.readonly}
     <form method="POST" action="?/update" class="space-y-5">
