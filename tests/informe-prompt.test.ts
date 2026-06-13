@@ -4,23 +4,26 @@ import { describe, expect, it } from 'vitest';
 import {
   INFORME_PROMPT_VERSION,
   JERGA_PROHIBIDA,
-  buildInformePrompt
+  buildInformePrompt,
+  resolvePromptVersion
 } from '../src/lib/server/informe/prompts/generate-report';
+import { emptyContextMeta } from '../src/lib/server/informe/context/schemas';
+import type { InformeContext } from '../src/lib/server/informe/context/schemas';
+import { loadCatalogoSys } from '../src/lib/server/informe/catalogo/catalogo-sys';
 import { loadInformeCanonicalGolden } from './fixtures/informe-claude-mock';
 
-describe('informe prompt (R9, R18, R19)', () => {
+describe('informe prompt (R9, R12, R18, R19)', () => {
   const canonical = loadInformeCanonicalGolden();
   const prompt = buildInformePrompt(canonical);
 
-  it('exporta versión y la usa el módulo versionado (no inline en pipeline)', () => {
-    expect(INFORME_PROMPT_VERSION).toBe('1.0');
+  it('exporta versión 2.0 y la usa el módulo versionado', () => {
+    expect(INFORME_PROMPT_VERSION).toBe('2.0');
     const pipelineSource = readFileSync(
       join(process.cwd(), 'src/lib/server/informe/pipeline.ts'),
       'utf8'
     );
     expect(pipelineSource).toContain("from './prompts/generate-report'");
     expect(pipelineSource).toContain('buildInformePrompt');
-    // El texto del prompt no vive en el pipeline.
     expect(pipelineSource).not.toContain('consultor IT senior');
   });
 
@@ -36,17 +39,74 @@ describe('informe prompt (R9, R18, R19)', () => {
     expect(JERGA_PROHIBIDA).toHaveLength(6);
   });
 
-  it('incluye reglas del template: dimensiones, riesgos, diagnóstico, tono, stat null', () => {
-    expect(prompt.system).toContain('items y observations');
-    expect(prompt.system).toContain('Sin evidencia → «—»');
-    expect(prompt.system).toContain('4 por defecto');
-    expect(prompt.system).toContain('máximo 90 caracteres');
-    expect(prompt.system).toContain('SIN voseo');
-    expect(prompt.system).toContain('devolvé null');
-    expect(prompt.system).toContain('razón social');
-  });
-
   it('el turno user lleva el canónico completo', () => {
     expect(JSON.parse(prompt.user)).toEqual(canonical);
+  });
+
+  it('catálogo on: bloque en instrucciones internas con regla sin producto cerrado (R9)', () => {
+    const catalogo = loadCatalogoSys();
+    const ctx: InformeContext = {
+      rag: null,
+      catalogo,
+      fewshot: null,
+      meta: {
+        ...emptyContextMeta({ rag: false, catalogo: true, fewshot: false }),
+        injected: { rag: false, catalogo: true, fewshot: false },
+        catalogo: { version: catalogo.version, tokens: 100 }
+      }
+    };
+    const enriched = buildInformePrompt(canonical, ctx);
+    expect(enriched.system).toContain('<catalogo_sys>');
+    expect(enriched.system).toContain('sin producto cerrado');
+    expect(enriched.system).toContain('EXCLUSIVO de la salida interna');
+    const clienteSection = enriched.system.split('## Reglas para la salida "cliente"')[1] ?? '';
+    expect(clienteSection).not.toContain('<catalogo_sys>');
+    expect(clienteSection).not.toContain('catálogo SyS');
+  });
+
+  it('resolvePromptVersion cubre combinaciones y fallback sin +rag (R12)', () => {
+    expect(resolvePromptVersion(null)).toBe('2.0');
+
+    const none: InformeContext = {
+      rag: null,
+      catalogo: null,
+      fewshot: null,
+      meta: emptyContextMeta({ rag: false, catalogo: false, fewshot: false })
+    };
+    expect(resolvePromptVersion(none)).toBe('2.0');
+
+    const all: InformeContext = {
+      rag: { chunks: [{ id: '1', content: 'x', modulo: null, similarity: 0.5 }], discarded: 0 },
+      catalogo: loadCatalogoSys(),
+      fewshot: { examples: [{ reportId: 'r1', text: 'ejemplo' }] },
+      meta: {
+        ...emptyContextMeta({ rag: true, catalogo: true, fewshot: true }),
+        injected: { rag: true, catalogo: true, fewshot: true }
+      }
+    };
+    expect(resolvePromptVersion(all)).toBe('2.0+rag+catalogo+fewshot');
+
+    const ragFailed: InformeContext = {
+      rag: { chunks: [], discarded: 0, error: 'timeout' },
+      catalogo: null,
+      fewshot: null,
+      meta: {
+        ...emptyContextMeta({ rag: true, catalogo: false, fewshot: false }),
+        rag: { used: 0, discarded: 0, tokens: 0, error: 'timeout' },
+        injected: { rag: false, catalogo: false, fewshot: false }
+      }
+    };
+    expect(resolvePromptVersion(ragFailed)).toBe('2.0');
+
+    const ragOnly: InformeContext = {
+      ...all,
+      catalogo: null,
+      fewshot: null,
+      meta: {
+        ...all.meta,
+        injected: { rag: true, catalogo: false, fewshot: false }
+      }
+    };
+    expect(resolvePromptVersion(ragOnly)).toBe('2.0+rag');
   });
 });

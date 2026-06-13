@@ -1,5 +1,6 @@
 import { getSql } from './client';
 import type { CanonicalAudit } from '$lib/server/canonical/schema';
+import type { ContextMeta } from '$lib/server/informe/context/schemas';
 import type { ReportClientDraft, ReportInternalDraft } from '$lib/server/informe/schemas';
 import { assertInformeTransition, type InformeStatus } from '$lib/server/informe/state';
 import { InformeInvalidTransitionError } from '$lib/server/informe/errors';
@@ -22,6 +23,8 @@ export type AuditReportRow = {
   editedAt: Date | null;
   approvedBy: string | null;
   approvedAt: Date | null;
+  ejemplar: boolean;
+  contextMeta: ContextMeta | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -39,7 +42,8 @@ export type AuditReportEditRow = {
 const REPORT_COLUMNS = `
   id, audit_id, version, status, canonical_json, schema_version,
   client_draft, internal_draft, prompt_version, model, error_message, loom_url,
-  requested_by, edited_by, edited_at, approved_by, approved_at, created_at, updated_at
+  requested_by, edited_by, edited_at, approved_by, approved_at,
+  ejemplar, context_meta, created_at, updated_at
 `;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -62,6 +66,8 @@ function mapRow(row: Record<string, any>): AuditReportRow {
     editedAt: row.edited_at,
     approvedBy: row.approved_by,
     approvedAt: row.approved_at,
+    ejemplar: row.ejemplar ?? false,
+    contextMeta: row.context_meta ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };
@@ -161,12 +167,14 @@ export async function saveDraftsAndFinish(input: {
   internalDraft: ReportInternalDraft;
   promptVersion: string;
   model: string;
+  contextMeta?: ContextMeta | null;
 }): Promise<AuditReportRow> {
   const sql = getSql();
   const rows = await sql.unsafe(
     `UPDATE audit_report
      SET status = 'borrador', client_draft = $2::jsonb, internal_draft = $3::jsonb,
-         prompt_version = $4, model = $5, error_message = NULL, updated_at = now()
+         prompt_version = $4, model = $5, error_message = NULL,
+         context_meta = $6::jsonb, updated_at = now()
      WHERE id = $1 AND status = 'generando'
      RETURNING ${REPORT_COLUMNS}`,
     [
@@ -174,7 +182,8 @@ export async function saveDraftsAndFinish(input: {
       input.clientDraft as never,
       input.internalDraft as never,
       input.promptVersion,
-      input.model
+      input.model,
+      input.contextMeta ?? null
     ]
   );
   if (rows.length !== 1) {
@@ -187,16 +196,22 @@ export async function saveDraftsAndFinish(input: {
 export async function markReportError(
   id: string,
   errorMessage: string,
-  meta?: { promptVersion?: string; model?: string }
+  meta?: { promptVersion?: string; model?: string; contextMeta?: ContextMeta | null }
 ): Promise<void> {
   const sql = getSql();
   await sql.unsafe(
     `UPDATE audit_report
      SET status = 'error', error_message = $2, client_draft = NULL, internal_draft = NULL,
          prompt_version = COALESCE($3, prompt_version), model = COALESCE($4, model),
-         updated_at = now()
+         context_meta = COALESCE($5::jsonb, context_meta), updated_at = now()
      WHERE id = $1 AND status = 'generando'`,
-    [id, errorMessage || 'Error desconocido', meta?.promptVersion ?? null, meta?.model ?? null]
+    [
+      id,
+      errorMessage || 'Error desconocido',
+      meta?.promptVersion ?? null,
+      meta?.model ?? null,
+      meta?.contextMeta ?? null
+    ]
   );
 }
 
@@ -293,6 +308,47 @@ export async function appendEditEntry(input: {
     editedBy: row.edited_by,
     editedAt: row.edited_at
   };
+}
+
+/** Marca/desmarca informe aprobado como ejemplar (#17 R10). */
+export async function setEjemplar(
+  reportId: string,
+  value: boolean
+): Promise<AuditReportRow | null> {
+  const sql = getSql();
+  const rows = await sql.unsafe(
+    `UPDATE audit_report
+     SET ejemplar = $2, updated_at = now()
+     WHERE id = $1 AND status = 'aprobado'
+     RETURNING ${REPORT_COLUMNS}`,
+    [reportId, value]
+  );
+  return rows[0] ? mapRow(rows[0]) : null;
+}
+
+/** Informes ejemplares aprobados, más recientes primero (#17 R11). */
+export async function listEjemplarReports(limit: number): Promise<
+  Array<{
+    id: string;
+    clientDraft: ReportClientDraft;
+    approvedAt: Date | null;
+  }>
+> {
+  const sql = getSql();
+  const rows = await sql.unsafe(
+    `SELECT id, client_draft, approved_at
+     FROM audit_report
+     WHERE ejemplar = true AND status = 'aprobado' AND client_draft IS NOT NULL
+     ORDER BY approved_at DESC NULLS LAST
+     LIMIT $1`,
+    [limit]
+  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return rows.map((row: Record<string, any>) => ({
+    id: row.id,
+    clientDraft: row.client_draft as ReportClientDraft,
+    approvedAt: row.approved_at as Date | null
+  }));
 }
 
 export async function listEditHistory(reportId: string): Promise<AuditReportEditRow[]> {

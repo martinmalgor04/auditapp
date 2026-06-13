@@ -10,6 +10,7 @@ import { logger } from '$lib/server/logger';
 import {
   getReportById,
   insertReport,
+  listEjemplarReports,
   markReportError,
   saveDraftsAndFinish,
   updateReportStatus
@@ -20,13 +21,20 @@ import {
   resolveInformeModel,
   type InformeClaudeAdapter
 } from './claude';
+import { buildInformeContext, type ContextDeps } from './context/build';
+import { resolveContextConfig } from './context/config';
+import type { ContextMeta } from './context/schemas';
+import { createRagRetriever } from './rag/retriever';
 import {
   InformeAuditNotClosedError,
   InformeDraftValidationError,
   InformeGenerationError,
   InformeReportNotFoundError
 } from './errors';
-import { INFORME_PROMPT_VERSION, buildInformePrompt } from './prompts/generate-report';
+import {
+  buildInformePrompt,
+  resolvePromptVersion
+} from './prompts/generate-report';
 import {
   reportClientDraftSchema,
   reportInternalDraftSchema,
@@ -37,7 +45,20 @@ export type CreateReportDeps = {
   buildCanonical?: typeof buildCanonicalAuditJson;
   runPipeline?: boolean;
   claude?: InformeClaudeAdapter;
+  context?: ContextDeps;
+  env?: Record<string, string | undefined>;
 };
+
+function defaultContextDeps(env: Record<string, string | undefined>): ContextDeps {
+  const config = resolveContextConfig(env);
+  const deps: ContextDeps = {
+    fewshot: { listEjemplarReports }
+  };
+  if (config.rag.enabled) {
+    deps.rag = createRagRetriever(env);
+  }
+  return deps;
+}
 
 /**
  * Crea una versión de informe (R2, R3, R4) y dispara el pipeline en background (R6).
@@ -71,8 +92,11 @@ export async function createReport(
   });
 
   if (deps.runPipeline !== false) {
-    // Fire-and-forget: la respuesta HTTP no espera al pipeline (R6).
-    void runInformePipeline(row.id, { claude: deps.claude });
+    void runInformePipeline(row.id, {
+      claude: deps.claude,
+      context: deps.context,
+      env: deps.env
+    });
   }
 
   return { reportId: row.id, version: row.version, status: 'pendiente' };
@@ -112,13 +136,19 @@ export function assertSeccionCodesExist(
   }
 }
 
+export type PipelineDeps = {
+  claude?: InformeClaudeAdapter;
+  context?: ContextDeps;
+  env?: Record<string, string | undefined>;
+};
+
 /**
  * Pipeline de generación (R5–R13, R24). pendiente|error → generando → borrador | error.
  * Nunca transiciona a aprobado.
  */
 export async function runInformePipeline(
   reportId: string,
-  deps: { claude?: InformeClaudeAdapter } = {}
+  deps: PipelineDeps = {}
 ): Promise<void> {
   const report = await getReportById(reportId);
   if (!report) {
@@ -133,7 +163,6 @@ export async function runInformePipeline(
   try {
     await updateReportStatus(reportId, report.status, 'generando');
   } catch (err) {
-    // Carrera con otra transición (p. ej. dos retries): el otro ganó, no hay nada que hacer.
     logger.warn('informe pipeline: no se pudo tomar la fila', {
       reportId,
       error: err instanceof Error ? err.message : String(err)
@@ -141,12 +170,25 @@ export async function runInformePipeline(
     return;
   }
 
+  const env = deps.env ?? process.env;
   const model = resolveInformeModel();
+  const config = resolveContextConfig(env);
+  const contextDeps = deps.context ?? defaultContextDeps(env);
+  let contextMeta: ContextMeta | undefined;
+  let promptVersion = resolvePromptVersion(null);
+
   try {
-    // R5: el snapshot debe coincidir con la versión del contrato canónico.
     assertSchemaVersionMatchesConstant(report.canonicalJson);
 
-    const prompt = buildInformePrompt(report.canonicalJson);
+    const context = await buildInformeContext(report.canonicalJson, config, contextDeps);
+    contextMeta = context.meta;
+    promptVersion = resolvePromptVersion(context);
+
+    if (context.promptBudgetError) {
+      throw new InformeGenerationError(context.promptBudgetError);
+    }
+
+    const prompt = buildInformePrompt(report.canonicalJson, context);
     const adapter = deps.claude ?? createClaudeAdapter();
     const raw = await adapter.generateDraft({ prompt, model });
 
@@ -171,15 +213,17 @@ export async function runInformePipeline(
       id: reportId,
       clientDraft,
       internalDraft: internalParsed.data,
-      promptVersion: INFORME_PROMPT_VERSION,
-      model
+      promptVersion,
+      model,
+      contextMeta
     });
   } catch (err) {
     const message = err instanceof Error && err.message ? err.message : 'Fallo de generación';
     logger.error('informe pipeline failed', { reportId, error: message });
     await markReportError(reportId, message, {
-      promptVersion: INFORME_PROMPT_VERSION,
-      model
+      promptVersion,
+      model,
+      contextMeta
     });
   }
 }

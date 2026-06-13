@@ -18,13 +18,13 @@
   let busy = $state(false);
   let actionError = $state('');
   let loomInput = $state(data.loomUrl ?? '');
+  let ejemplar = $state(data.ejemplar);
   let model = $state(data.model);
 
-  // Re-sincroniza tras invalidateAll() (p. ej. approve): sin esto el badge
-  // y los controles quedan clavados en el estado inicial de la página.
   $effect(() => {
     status = data.status;
     model = data.model;
+    ejemplar = data.ejemplar;
   });
 
   $effect(() => {
@@ -166,6 +166,23 @@
 
     {#if status === 'aprobado'}
       <SharePanel auditId={data.auditId} version={data.version} shares={data.shares} />
+      {#if data.isAdmin}
+        <div class="sys-card-pad flex flex-wrap items-center gap-3">
+          <span class="text-sm text-sys-medio">
+            {ejemplar ? 'Marcado como informe ejemplar para few-shot IA.' : 'No es ejemplar.'}
+          </span>
+          <button
+            type="button"
+            class="sys-btn-secondary"
+            disabled={busy}
+            data-testid="toggle-ejemplar"
+            onclick={() =>
+              call(`${base}/${data.version}/ejemplar`, 'POST', { ejemplar: !ejemplar })}
+          >
+            {ejemplar ? 'Quitar ejemplar' : 'Marcar ejemplar'}
+          </button>
+        </div>
+      {/if}
     {/if}
 
     {#if tab === 'cliente'}

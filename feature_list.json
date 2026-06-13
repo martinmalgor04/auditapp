@@ -321,7 +321,7 @@
         "Tests con mocks de vector store: selección de contexto, fallback sin contexto y límites de tokens pasan"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 18,

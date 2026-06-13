@@ -26,7 +26,8 @@ describe('migration runner', () => {
       '005_client_contactos',
       '006_entrega_informe',
       '007_psys_link',
-      '008_crm_leads'
+      '008_crm_leads',
+      '009_contexto_ia'
     ]);
   });
 
@@ -41,6 +42,7 @@ describe('migration runner', () => {
     expect(first.skipped).toContain('006_entrega_informe');
     expect(first.skipped).toContain('007_psys_link');
     expect(first.skipped).toContain('008_crm_leads');
+    expect(first.skipped).toContain('009_contexto_ia');
 
     const second = await runMigrations(sql);
     expect(second.applied).toEqual([]);
