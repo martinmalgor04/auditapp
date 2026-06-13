@@ -18,6 +18,12 @@
         Tablero
       </a>
       <a
+        href="/crm"
+        class="rounded-sys px-3 py-2 text-sys-medio transition-colors hover:bg-sys-offwhite hover:text-sys-electrico"
+      >
+        CRM
+      </a>
+      <a
         href="/auditorias/new"
         class="rounded-sys px-3 py-2 text-sys-medio transition-colors hover:bg-sys-offwhite hover:text-sys-electrico"
       >

@@ -1,4 +1,4 @@
-import { PSYS_PROPOSAL_STATUSES, type PsysProposalStatus } from '$lib/server/psys/schemas';
+import { PSYS_PROPOSAL_STATUSES, type PsysProposalStatus } from '$lib/psys/constants';
 
 const STATUS_LABELS: Record<PsysProposalStatus, string> = {
   borrador: 'Borrador',

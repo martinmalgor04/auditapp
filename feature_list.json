@@ -250,7 +250,7 @@
         "Tests de máquina de estados, dedupe del endpoint y guards de permisos pasan"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 14,

@@ -25,7 +25,7 @@ if (!process.env.PUBLIC_APP_URL) {
 }
 
 const SKIP_DB_RESET =
-  /(?:seed|migrate|schema|db-stub|smoke|docker-compose|docker|pwa-prod|audit-status|audit-access|field-type-schemas|briefing-validation|backoffice-status-badge|backoffice-progress|password|form-field-renderer|form-item-ux|form-section-nav|form-save-indicator|form-image-compress|form-table-camera|form-live-score|form-autosave|form-retry-queue|pwa-manifest|pwa-sw|brand-tokens|entrypoint|informe-schemas|informe-state-machine|informe-web-render|storage-r2|auth-cookie)\.test\.ts$/;
+  /(?:seed|migrate|schema|db-stub|smoke|docker-compose|docker|pwa-prod|audit-status|audit-access|field-type-schemas|briefing-validation|backoffice-status-badge|backoffice-progress|password|form-field-renderer|form-item-ux|form-section-nav|form-save-indicator|form-image-compress|form-table-camera|form-live-score|form-autosave|form-retry-queue|pwa-manifest|pwa-sw|brand-tokens|entrypoint|informe-schemas|informe-state-machine|informe-web-render|storage-r2|auth-cookie|crm-schema)\.test\.ts$/;
 
 const FULL_DB_RESET = /(?:users-admin|templates-admin|audit-create-flow)\.test\.ts$/;
 

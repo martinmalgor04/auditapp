@@ -158,7 +158,10 @@ export async function truncateSeedTablesUnsafe(sql: postgres.Sql): Promise<void>
       audit_report_share,
       audit_report_edit,
       audit_report,
+      audit_proposal_link,
       audit,
+      crm_lead_event,
+      crm_lead,
       template_item,
       section,
       template,
@@ -189,7 +192,10 @@ export async function resetVolatileTablesUnsafe(sql: postgres.Sql): Promise<void
       audit_report_share,
       audit_report_edit,
       audit_report,
+      audit_proposal_link,
       audit,
+      crm_lead_event,
+      crm_lead,
       session
     RESTART IDENTITY CASCADE
   `;

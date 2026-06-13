@@ -1,20 +1,15 @@
 import { z } from 'zod';
 import { reportInternalDraftSchema } from '$lib/server/informe/schemas';
 import { upsellFindingSchema } from '$lib/server/canonical/schema';
+import {
+  PSYS_PROPOSAL_STATUSES,
+  type PsysProposalStatus,
+  isKnownPsysStatus
+} from '$lib/psys/constants';
+
+export { PSYS_PROPOSAL_STATUSES, type PsysProposalStatus, isKnownPsysStatus };
 
 export const PSYS_CONTRACT_VERSION = '1.0';
-
-export const PSYS_PROPOSAL_STATUSES = [
-  'borrador',
-  'borrador-importado',
-  'revision',
-  'enviado',
-  'aceptado',
-  'rechazado',
-  'archivado'
-] as const;
-
-export type PsysProposalStatus = (typeof PSYS_PROPOSAL_STATUSES)[number];
 
 const psysClienteSchema = z
   .object({
@@ -76,7 +71,3 @@ export const psysProposalResponseSchema = z
 
 export type PsysProposalPayload = z.infer<typeof psysProposalPayloadSchema>;
 export type PsysProposalRef = z.infer<typeof psysProposalRefSchema>;
-
-export function isKnownPsysStatus(status: string): status is PsysProposalStatus {
-  return (PSYS_PROPOSAL_STATUSES as readonly string[]).includes(status);
-}
