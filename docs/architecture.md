@@ -43,6 +43,8 @@ técnico (form PWA) ─→ audit_response (source=tecnico) + attachment (R2)
 cierre ─→ audit_section_score + audit_closure + scoring determinístico
                               │
 export ─→ JSON canónico (schema_version) → pipeline IA (SPEC-08)
+                              │
+presupuesto ─→ POST presupuestossys M2M (contrato v1.0, #16)
 ```
 
 ## Estructura de directorios (post-scaffolding)
@@ -77,3 +79,6 @@ e2e/                     # playwright
 ## Referencia
 
 Specs archivadas: `docs/source-specs/specs-07/`. PRDs: `docs/source-specs/prds/`.
+
+Integración presupuestossys (#16): contrato M2M versionado en
+[`specs/16_presupuesto_psys/design.md`](../specs/16_presupuesto_psys/design.md) §Contrato.

@@ -115,6 +115,20 @@ export async function listReportsByAudit(auditId: string): Promise<AuditReportRo
   return rows.map(mapRow);
 }
 
+/** Última versión aprobada de informe para una auditoría (#16 R2). */
+export async function getLatestApprovedReport(auditId: string): Promise<AuditReportRow | null> {
+  const sql = getSql();
+  const rows = await sql.unsafe(
+    `SELECT ${REPORT_COLUMNS}
+     FROM audit_report
+     WHERE audit_id = $1 AND status = 'aprobado'
+     ORDER BY version DESC
+     LIMIT 1`,
+    [auditId]
+  );
+  return rows[0] ? mapRow(rows[0]) : null;
+}
+
 /**
  * Transición atómica de estado: UPDATE ... WHERE id AND status = from (R7).
  * Lanza InformeInvalidTransitionError si la transición no es válida o la fila cambió.

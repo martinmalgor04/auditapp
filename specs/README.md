@@ -15,6 +15,7 @@ Backlog activo: [`feature_list.json`](../feature_list.json). Mapa de trazabilida
 | 9 | [`09_contrato_datos/`](09_contrato_datos/requirements.md) | Contrato JSON / pipeline IA | spec_ready |
 | 10 | [`11_ui_branding_sys/`](11_ui_branding_sys/requirements.md) | Branding SyS global (UI) | spec_ready |
 | 11 | [`10_deploy_dokploy/`](10_deploy_dokploy/requirements.md) | Deploy Docker + Dokploy | spec_ready |
+| 16 | [`16_presupuesto_psys/`](16_presupuesto_psys/requirements.md) | Presupuesto vía presupuestossys | ✅ done |
 
 Cada carpeta contiene:
 

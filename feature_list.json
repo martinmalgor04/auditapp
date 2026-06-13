@@ -304,7 +304,7 @@
         "Tests con presupuestossys mockeado: contrato, idempotencia, permisos y errores de red pasan"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 17,

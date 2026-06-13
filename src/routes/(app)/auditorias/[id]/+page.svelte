@@ -5,6 +5,7 @@
   import CabSectionForm from '$lib/components/backoffice/cab-section-form.svelte';
   import CopyLinkButton from '$lib/components/backoffice/copy-link-button.svelte';
   import InformeSection from '$lib/components/informe/informe-section.svelte';
+  import PsysCard from '$lib/components/auditoria/psys-card.svelte';
 
   let { data, form }: { data: PageData; form?: { error?: string; url?: string } } = $props();
 
@@ -72,6 +73,12 @@
       reports={data.reports}
       isAdmin={data.isAdmin}
       canGenerate={data.isAdmin && data.audit.status === 'cerrada'}
+    />
+    <PsysCard
+      auditId={data.audit.id}
+      isAdmin={data.isAdmin}
+      hasApprovedReport={data.hasApprovedReport}
+      proposalLink={data.proposalLink}
     />
   {/if}
 

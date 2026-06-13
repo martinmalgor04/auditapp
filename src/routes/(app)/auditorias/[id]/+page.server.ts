@@ -15,6 +15,10 @@ import {
 import { parseCabResponses } from '$lib/server/backoffice/form-parsers';
 import { failFromError } from '$lib/server/backoffice/route-helpers';
 import { listReportsByAudit } from '$lib/server/db/informe-reports';
+import {
+  findLatestActiveLinkByAudit,
+  toProposalLinkView
+} from '$lib/server/db/psys-links';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
   const user = requireStaff(locals);
@@ -30,6 +34,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
   // Informe IA (R27): listado de versiones; técnico asignado solo ve aprobadas (R1).
   let reports: Awaited<ReturnType<typeof listReportsByAudit>> = [];
+  let proposalLink: ReturnType<typeof toProposalLinkView> | null = null;
   if (audit.status === 'cerrada') {
     const all = await listReportsByAudit(audit.id);
     reports = isAdmin
@@ -37,7 +42,11 @@ export const load: PageServerLoad = async ({ locals, params }) => {
       : audit.assignedTechId === user.id
         ? all.filter((r) => r.status === 'aprobado')
         : [];
+    const activeLink = await findLatestActiveLinkByAudit(audit.id);
+    proposalLink = activeLink ? toProposalLinkView(activeLink) : null;
   }
+
+  const hasApprovedReport = reports.some((r) => r.status === 'aprobado');
 
   return {
     audit,
@@ -53,7 +62,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
       approved_by: r.approvedBy,
       approved_at: r.approvedAt ? r.approvedAt.toISOString() : null,
       error_message: r.errorMessage
-    }))
+    })),
+    hasApprovedReport,
+    proposalLink
   };
 };
 
