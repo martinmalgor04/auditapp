@@ -2,8 +2,10 @@ import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { requireUser } from '$lib/server/auth/guards';
 import { getReportByAuditVersion } from '$lib/server/db/informe-reports';
+import { listSharesByReport } from '$lib/server/db/informe-shares';
 import { getAuditForReport } from '$lib/server/informe/access';
 import { buildInformeRenderModel } from '$lib/server/informe/model';
+import { buildShareView, type ShareView } from '$lib/server/informe/share';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
   const user = requireUser(locals);
@@ -30,8 +32,15 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     error(403, 'No tenés permiso para esta acción');
   }
 
+  // Entrega al cliente (#15, R8): share actual + historial, solo informe aprobado.
+  let shares: ShareView[] = [];
+  if (report.status === 'aprobado') {
+    shares = (await listSharesByReport(report.id)).map((s) => buildShareView(s));
+  }
+
   return {
     auditId: audit.id,
+    shares,
     version: report.version,
     status: report.status,
     errorMessage: report.errorMessage,

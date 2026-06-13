@@ -286,7 +286,7 @@
         "Tests de token, permisos y e2e del flujo aprobar → compartir → ver pasan"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 16,

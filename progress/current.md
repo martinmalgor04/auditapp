@@ -1,154 +1,30 @@
 # Sesión actual
 
-## Specs masivos (2026-06-12, tarde)
+## Batch de implementación (2026-06-12, noche)
 
-Pedido de Martín: specs de TODO el backlog. 6 spec_authors en paralelo →
-`specs/{13_crm_leads,15_entrega_informe,16_presupuesto_psys,17_contexto_ia,18_dashboard_mercado,19_template_informe_it}/`
-completos (EARS + design + tasks). Los 6 marcados `spec_ready` en feature_list.json.
+Mandato de Martín (goal autónomo): **implementar TODAS las features `spec_ready`**
+(#15, #16, #13, #17, #18, #19, #12 en ese orden), una a la vez, con commit + push
+por feature al quedar verde. La aprobación humana de la puerta SDD quedó dada por
+el mandato; las open questions de cada design se resuelven adoptando la propuesta
+del spec_author (documentado por feature abajo).
 
-⚠️ **Colisión conocida:** los designs de #13/#15/#16/#17 asumen migración `006_*.sql`
-(se escribieron en paralelo). El número real lo asigna el implementer según orden de
-implementación — ajustar el design al entrar cada feature a in_progress.
+## Feature en curso: #15 `15_entrega_informe`
 
-⏸ **Puertas humanas pendientes (6):** open questions en cada design.md.
-Implementación: una feature a la vez (regla SDD); orden sugerido del roadmap: 15 → 16 → 13 → 17/18/19.
+- **Estado:** in_progress — implementación T1–T16 completa; pendiente reviewer
+- **Specs:** `specs/15_entrega_informe/{requirements,design,tasks}.md` (tasks [x] T1–T16)
+- **Trazabilidad:** `progress/impl_15_entrega_informe.md`
+- **Verificación:** `./init.sh` verde · `pnpm test` 451 passed · e2e entrega-informe OK
 
-- **Feature en curso:** `14_informe_ia` (#14)
-- **Estado:** `done — review aprobado (2026-06-12); pendiente: commit + QA visual de impresión`
-- **Agente:** leader (cierre)
+## Cola pendiente
 
-## Cierre #14 (2026-06-12)
+| # | Feature | Estado |
+|---|---|---|
+| 16 | 16_presupuesto_psys | spec_ready (siguiente) |
+| 13 | 13_crm_leads | spec_ready |
+| 17 | 17_contexto_ia | spec_ready |
+| 18 | 18_dashboard_mercado | spec_ready |
+| 19 | 19_template_informe_it | spec_ready |
+| 12 | 12_reunion_asistente | spec_ready (último — mayor alcance) |
 
-Review inicial: CHANGES_REQUESTED solo por R29 (e2e colgado por bug preexistente del
-helper `login()`). Fix aplicado y verificado: e2e suite completa 17/17 verde,
-`e2e/informe.spec.ts` re-corrido en verde tras build limpio (1 passed, 37.7s),
-`./init.sh` exit 0, vitest 401 verdes. El fix además destapó y corrigió 2 bugs reales:
-autosave inline que nunca persistía (`$state.snapshot` antes de `structuredClone`) y
-badge de estado sin resincronizar tras approve. Flag `LOGIN_RATE_LIMIT_DISABLED=1`
-solo en env del webServer e2e (default producción: rate limit activo — verificado).
-#14 marcado `done` en feature_list.json.
-
-**Pendiente no bloqueante:** QA visual humana de impresión A4 con 3/4/5 riesgos (T16).
-
-## Plan ejecutado (tasks T1–T29 + T16b)
-
-Todas las tasks de `specs/14_informe_ia/tasks.md` quedaron marcadas `[x]`. Detalle y
-trazabilidad R↔test completa en `progress/impl_14_informe_ia.md`.
-
-Resumen por bloque:
-
-- **Schema/DB (T1–T2):** `migrations/004_informe_ia.sql` (`audit_report` +
-  `audit_report_edit` append-only) y `src/lib/server/db/informe-reports.ts`
-  (version/seq atómicos, transición atómica, drafts, approve, guard timeout, historial).
-- **Dominio (T3–T8):** `src/lib/server/informe/` — state machine, errores tipados,
-  schemas Zod strict (cliente/interno/envelope/loom/patch), prompt versionado 1.0,
-  adapter Claude (`@anthropic-ai/sdk` + `zod-to-json-schema` para `output_config.format`,
-  override de tests, fake e2e `INFORME_FAKE=1`), pipeline completo, guard timeout,
-  sanitize (texto plano inline), model (view-model render), access.
-- **API (T9–T13):** `requireAdminApi` extraído a `src/lib/server/api/guards.ts` (el export
-  lo reutiliza) + `requireReportReadAccess`; rutas `/api/audits/[id]/report` POST/GET,
-  `[version]` GET/PATCH, `/status`, `/retry`, `/approve`, `/edits`.
-- **UI (T14–T16b):** sección «Informe IA» en detalle de auditoría (CTA, polling, badges),
-  pantalla de revisión (tabs cliente/interna, edición por sección, Loom, acciones),
-  render A4 oficial (`src/lib/informe/render.ts` + `report-render.svelte`, logos CDN R2,
-  tokens `--sys-*`, gauge, `data-field`), edición inline con autosave 1 s e historial,
-  ruta `imprimir/` (técnico asignado solo aprobado).
-- **Env (T17):** `.env.example` + deps `@anthropic-ai/sdk`, `zod-to-json-schema`.
-- **Tests (T18–T27):** 5 suites unit + 3 suites API + fixtures (mock adapter, golden
-  canónico con 3 rangos de semáforo) + `e2e/informe.spec.ts` con Claude fake.
-
-## Gates (T28–T29)
-
-- `pnpm run check` → **0 errores** (se repararon además 4 errores de tipos preexistentes
-  en master: canonical/build, score-item, vite.config, users-admin.test).
-- `pnpm test` → **100 archivos / 401 tests verdes** (2 skipped preexistentes), sin
-  `ANTHROPIC_API_KEY` real.
-- `pnpm exec playwright test e2e/informe.spec.ts` → **1 passed** (fix post-review, 2026-06-12).
-- `pnpm exec playwright test` (suite completa) → **17 passed (1.8m)**.
-- `./init.sh` → **exit 0** (100 archivos / 401 tests verdes, 2 skipped).
-
-## Fix post-review (R29, 2026-06-12)
-
-El reviewer bloqueó por R29 (e2e colgado). Correcciones aplicadas:
-
-1. `e2e/helpers/audit-flow.ts` — `login()` limpia cookies antes de ir a `/login`
-   (con sesión activa redirige a `/tablero` y el form no aparece); reintenta si
-   aparece el alert de rate limit; `getByText('Cerrada', { exact: true })`.
-2. `src/lib/components/informe/inline-editor.svelte` — `setFieldOnDraft` recibía el
-   proxy `$state` y `structuredClone` tiraba `DataCloneError` silencioso (autosave
-   inline nunca guardaba). Ahora se pasa `$state.snapshot(draft)`.
-3. `src/routes/(app)/auditorias/[id]/informe/[version]/+page.svelte` — `status`/`model`
-   no se resincronizaban tras `invalidateAll()` (el badge quedaba en «Borrador» después
-   de aprobar). Se agregó `$effect` de sincronización con `data`.
-4. `src/lib/server/auth/rate-limit.ts` + `playwright.config.ts` — flag
-   `LOGIN_RATE_LIMIT_DISABLED=1` solo para el webServer e2e (la suite serial supera
-   los 5 logins/min por IP).
-
-## Próximo paso
-
-Lanzar **reviewer**: verificar trazabilidad R↔test (`progress/impl_14_informe_ia.md`),
-tasks completas y gates; si aprueba → `done` + commit (una feature, un commit).
-
-## Pendientes señalados para el reviewer
-
-- QA visual manual de impresión con 3/4/5 riesgos (T16 lo pide como verificación humana).
-- `pnpm run check` estaba rojo en master por 4 errores ajenos a #14; se corrigieron acá
-  (cambios mínimos, documentados en impl_14_informe_ia.md).
-
-## Hotfix inventario/fotos (2026-06-12)
-
-**Bug de producción: cada foto de fila pisaba el inventario guardado con datos viejos.**
-
-### Causa raíz
-
-- `+page.svelte` (`uploadPhoto` con `rowId`) reconstruía las filas de la tabla desde
-  `item.value` — snapshot del `load`, nunca refrescado tras los PATCH — y guardaba
-  ese estado viejo. Si el load arrancó vacío, mandaba `{rows: []}` y borraba todo.
-- Además: el PUT a R2 no chequeaba `res.ok` (confirmaba fotos no subidas), los errores
-  de presign/confirm eran `return` silenciosos, y un PATCH 4xx volvía a `idle` y se
-  reencolaba para siempre en la retry-queue.
-
-### Cambios por archivo
-
-- `src/lib/client/form/photo-upload.ts` (nuevo): flujo presign→PUT→confirm extraído y
-  testeable; chequea `ok` de los 3 pasos, captura excepciones, y mergea el attachment
-  sobre las filas **vivas** que pasa el FieldRenderer. Si la fila ya no existe, NO guarda
-  (jamás reconstruye/reduce filas).
-- `src/routes/(app)/auditorias/[id]/form/+page.svelte`: `uploadPhoto` usa el módulo nuevo,
-  try/catch con estado `error` visible, `pickPhoto`/`oncamera` propagan las filas vivas;
-  `saveItem` solo encola en retry-queue cuando el outcome es `offline`.
-- `src/lib/components/form/field-renderer.svelte`: `oncamera(rowId, currentRows)` pasa
-  snapshot de `tableRows` vivas.
-- `src/lib/client/form/autosave.ts`: `patch` devuelve `'saved' | 'offline' | 'rejected'`;
-  4xx → estado `error` con el mensaje del envelope y NO reintenta; red/5xx → `offline`.
-- `src/lib/client/form/retry-queue.ts`: `flushEntries` (puro, testeable); los `rejected`
-  se sacan de la cola sin contarlos como flusheados (corta el retry infinito contra 4xx).
-- `src/lib/components/form/save-indicator.svelte`: estado `error` con mensaje.
-- `src/lib/server/form/save-response.ts` + `src/lib/server/form/merge-table.ts` (nuevo):
-  red de seguridad server-side — para values de tabla, unión de `attachment_ids` por
-  `row_id` con lo ya guardado. Decisión: NO se rechaza un payload con menos filas
-  (borrar filas es legítimo); lo que se garantiza es que un cliente con estado viejo
-  no pueda des-asociar fotos confirmadas de filas que conserva. La pérdida de filas
-  queda eliminada por el fix client-side (merge sobre filas vivas + abort si la fila
-  no existe).
-- `Dockerfile` + `.env.example`: `BODY_SIZE_LIMIT=2M` (adapter-node default 512K).
-  **Pendiente ops: setear `BODY_SIZE_LIMIT=2M` en el environment de Dokploy.**
-- `tests/migrate.test.ts`: estaba roto en master (no incluía `005_client_contactos`,
-  commiteada en bd02bd9 sin actualizar el test). Actualizado.
-
-### Tests nuevos
-
-- `tests/form-photo-upload-flow.test.ts` (5): merge sobre filas vivas, una foto no puede
-  reducir/vaciar filas, PUT fallido no confirma, presign fallido devuelve mensaje del
-  envelope, excepción de red no se traga.
-- `tests/form-table-merge.test.ts` (4): merge server-side (unión, no resucita filas
-  borradas, passthrough).
-- `tests/form-autosave-errors.test.ts` (4): 4xx → `rejected` + error visible y no se
-  encola; 5xx/red → `offline`; `flushEntries` descarta `rejected` de la cola.
-
-### Gates
-
-- `pnpm run check` → 0 errores (warnings preexistentes).
-- `pnpm test` → 104 archivos / 419 tests verdes (2 skipped).
-- `./init.sh` → exit 0.
-- `pnpm exec playwright test` → (ver resultado abajo)
+⚠️ Los designs de #13/#16/#17 asumen migración `006_*.sql` (escritos en paralelo):
+el implementer de cada una debe renumerar a la próxima libre al entrar.

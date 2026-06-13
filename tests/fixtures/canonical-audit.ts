@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type postgres from 'postgres';
 import { setSqlForTests } from '../../src/lib/server/db/client';
 import { completeRelevamiento } from '../../src/lib/server/form/complete';
@@ -14,7 +15,7 @@ export async function seedCanonicalAuditFixture(
   const { auditId, clientId } = await seedAuditFormFixture(sql, {
     status: 'en_relevamiento',
     assignedTechEmail: 'facu@serviciosysistemas.com.ar',
-    publicToken: 'canonical-fixture-token'
+    publicToken: `canonical-${randomUUID()}`
   });
 
   const types = ['it', 'erp-tango'];

@@ -6,7 +6,9 @@ import {
   InformeDraftValidationError,
   InformeInvalidTransitionError,
   InformeNotConfiguredError,
-  InformeReportNotFoundError
+  InformeReportNotApprovedError,
+  InformeReportNotFoundError,
+  InformeShareNotFoundError
 } from './errors';
 
 export type AuditForReport = {
@@ -28,10 +30,14 @@ export async function getAuditForReport(auditId: string): Promise<AuditForReport
 
 /** Mapeo de errores de dominio informe → Response (envelope estándar). */
 export function informeErrorResponse(err: unknown): Response {
-  if (err instanceof AuditNotFoundError || err instanceof InformeReportNotFoundError) {
+  if (
+    err instanceof AuditNotFoundError ||
+    err instanceof InformeReportNotFoundError ||
+    err instanceof InformeShareNotFoundError
+  ) {
     return apiError(err.message, 404);
   }
-  if (err instanceof InformeAuditNotClosedError) {
+  if (err instanceof InformeAuditNotClosedError || err instanceof InformeReportNotApprovedError) {
     return apiError(err.message, 409);
   }
   if (err instanceof InformeNotConfiguredError) {

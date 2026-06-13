@@ -1,6 +1,7 @@
 import { createSql } from '../src/lib/server/db/client';
 import { runMigrations } from '../src/lib/server/db/migrate';
 import { closeTestDb, resetDatabaseToBaseline } from './helpers/db';
+import { withDbSuiteLock } from './helpers/db-lock';
 
 async function waitForPostgres(connectionString: string, attempts = 30): Promise<void> {
   let lastError: unknown;
@@ -8,7 +9,7 @@ async function waitForPostgres(connectionString: string, attempts = 30): Promise
     const sql = createSql(connectionString);
     try {
       await runMigrations(sql);
-      await resetDatabaseToBaseline(sql);
+      await withDbSuiteLock(sql, (s) => resetDatabaseToBaseline(s));
       await sql.end({ timeout: 5 });
       return;
     } catch (error) {

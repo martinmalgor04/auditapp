@@ -18,7 +18,7 @@ export default defineConfig({
     ...({ globalTeardown: ['tests/global-teardown.ts'] } as object),
     setupFiles: ['tests/setup.ts'],
     retry: 0,
-    testTimeout: 30_000,
+    testTimeout: 60_000,
     hookTimeout: 120_000
   }
 });

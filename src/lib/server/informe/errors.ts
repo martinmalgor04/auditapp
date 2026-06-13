@@ -40,6 +40,22 @@ export class InformeDraftValidationError extends Error {
   }
 }
 
+export class InformeShareNotFoundError extends Error {
+  readonly code = 'INFORME_SHARE_NOT_FOUND';
+  constructor(message = 'No hay link de entrega activo para este informe') {
+    super(message);
+    this.name = 'InformeShareNotFoundError';
+  }
+}
+
+export class InformeReportNotApprovedError extends Error {
+  readonly code = 'INFORME_REPORT_NOT_APPROVED';
+  constructor(message = 'Solo se puede compartir un informe aprobado') {
+    super(message);
+    this.name = 'InformeReportNotApprovedError';
+  }
+}
+
 export class InformeGenerationError extends Error {
   readonly code = 'INFORME_GENERATION_FAILED';
   constructor(message: string) {

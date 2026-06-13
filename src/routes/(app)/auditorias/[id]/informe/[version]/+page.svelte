@@ -5,6 +5,7 @@
   import ReportRender from '$lib/components/informe/report-render.svelte';
   import InlineEditor from '$lib/components/informe/inline-editor.svelte';
   import SectionEditor from '$lib/components/informe/section-editor.svelte';
+  import SharePanel from '$lib/components/informe/share-panel.svelte';
   import InternalView from '$lib/components/informe/internal-view.svelte';
   import { startReportPolling } from '$lib/client/informe/polling';
   import type { RenderClientDraft } from '$lib/informe/render';
@@ -162,6 +163,10 @@
         Vista interna
       </button>
     </div>
+
+    {#if status === 'aprobado'}
+      <SharePanel auditId={data.auditId} version={data.version} shares={data.shares} />
+    {/if}
 
     {#if tab === 'cliente'}
       {#if status === 'borrador'}

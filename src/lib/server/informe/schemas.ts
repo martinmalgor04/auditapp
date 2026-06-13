@@ -172,6 +172,18 @@ export const patchReportSchema = z
     message: 'Debe incluir client_draft o loom_url'
   });
 
+/**
+ * Generación del link de entrega (#15, R7): 1–365 días o null = sin vencimiento.
+ * Default 90 = INFORME_SHARE_DEFAULT_DAYS (constante de dominio en share.ts).
+ */
+export const createShareSchema = z
+  .object({
+    expires_in_days: z.number().int().min(1).max(365).nullable().default(90)
+  })
+  .strict();
+
+export type CreateShareInput = z.infer<typeof createShareSchema>;
+
 export type ReportClientDraft = z.infer<typeof reportClientDraftSchema>;
 export type ReportInternalDraft = z.infer<typeof reportInternalDraftSchema>;
 export type ReportDraftEnvelope = z.infer<typeof reportDraftEnvelopeSchema>;

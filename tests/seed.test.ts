@@ -6,8 +6,7 @@ import { runSeed, seedTemplates } from '../src/lib/server/db/seed';
 import { setSqlForTests } from '../src/lib/server/db/client';
 import {
   flushTestDbSerial,
-  resetAndSeedForTests,
-  resetBaselineSeedFlag,
+  resetDatabaseToBaseline,
   setupTestDb,
   teardownTestDb,
   withTestDbSerial
@@ -36,8 +35,7 @@ describe('database seed', () => {
     sql = await setupTestDb();
     setSqlForTests(sql);
     await flushTestDbSerial();
-    resetBaselineSeedFlag();
-    await resetAndSeedForTests(sql);
+    await withTestDbSerial(sql, (s) => resetDatabaseToBaseline(s));
   }, 120_000);
 
   afterAll(async () => {

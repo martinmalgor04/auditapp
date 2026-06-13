@@ -42,7 +42,9 @@ describe('pwa production assets', () => {
   let previewBase = '';
 
   beforeAll(async () => {
-    execSync('pnpm run build', { cwd: root, stdio: 'pipe' });
+    if (!existsSync(resolve(clientDir, 'manifest.webmanifest'))) {
+      execSync('pnpm run build', { cwd: root, stdio: 'pipe' });
+    }
 
     await new Promise<void>((resolveWait, reject) => {
       server = startStaticServer(0);

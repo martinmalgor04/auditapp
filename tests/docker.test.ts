@@ -1,10 +1,18 @@
 import { execSync, spawnSync } from 'node:child_process';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const root = resolve(import.meta.dirname, '..');
+const clientDir = resolve(root, 'build/client');
 const dockerAvailable = process.env.DOCKER_AVAILABLE === '1';
+
+function ensureClientBuild(): void {
+  if (existsSync(clientDir)) {
+    return;
+  }
+  execSync('pnpm run build', { cwd: root, stdio: 'pipe' });
+}
 
 function readDockerfile(): string {
   return readFileSync(resolve(root, 'Dockerfile'), 'utf8');
@@ -50,8 +58,7 @@ describe('Docker production image', () => {
   });
 
   it('client bundle does not contain SESSION_SECRET or R2_SECRET', () => {
-    execSync('pnpm run build', { cwd: root, stdio: 'pipe' });
-    const clientDir = resolve(root, 'build/client');
+    ensureClientBuild();
     const contents = walkClientFiles(clientDir)
       .filter((f) => /\.(js|css|html|json)$/.test(f))
       .map((f) => readFileSync(f, 'utf8'))

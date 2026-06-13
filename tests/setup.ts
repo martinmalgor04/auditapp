@@ -1,11 +1,15 @@
 import { afterEach, beforeAll, beforeEach, expect } from 'vitest';
 import { setSqlForTests } from '../src/lib/server/db/client';
 import {
-  ensureBaselineSeed,
+  acquireTestDbHold,
   flushTestDbSerial,
   getTestSql,
+  releaseTestDbHold,
   resetAndSeedForTests,
-  resetVolatileTablesForTests
+  resetDatabaseToBaseline,
+  resetVolatileTablesUnsafe,
+  syncBaselineSeedFlagFromDb,
+  withTestDbSerial
 } from './helpers/db';
 
 if (!process.env.DATABASE_URL) {
@@ -21,46 +25,52 @@ if (!process.env.PUBLIC_APP_URL) {
 }
 
 const SKIP_DB_RESET =
-  /(?:seed|migrate|schema|db-stub|smoke|docker-compose|audit-status|audit-access|field-type-schemas|briefing-validation|backoffice-status-badge|backoffice-progress|password|form-field-renderer|form-item-ux|form-section-nav|form-save-indicator|form-image-compress|form-table-camera|form-live-score|form-autosave|form-retry-queue|pwa-manifest|pwa-sw)\.test\.ts$/;
+  /(?:seed|migrate|schema|db-stub|smoke|docker-compose|docker|pwa-prod|audit-status|audit-access|field-type-schemas|briefing-validation|backoffice-status-badge|backoffice-progress|password|form-field-renderer|form-item-ux|form-section-nav|form-save-indicator|form-image-compress|form-table-camera|form-live-score|form-autosave|form-retry-queue|pwa-manifest|pwa-sw|brand-tokens|entrypoint|informe-schemas|informe-state-machine|informe-web-render|storage-r2|auth-cookie)\.test\.ts$/;
 
-// audit-create-flow necesita plantillas prístinas: templates-admin renombra
-// ítems CAB sin restaurarlos y el orden de archivos varía con el cache de vitest.
 const FULL_DB_RESET = /(?:users-admin|templates-admin|audit-create-flow)\.test\.ts$/;
 
-function currentTestFile(): string {
-  return expect.getState().testPath ?? '';
+function testFilePath(ctx?: { task?: { file?: { name?: string } } }): string {
+  return ctx?.task?.file?.name ?? expect.getState().testPath ?? '';
 }
 
-async function prepareDbForTestFile(file: string, scope: 'file' | 'test'): Promise<void> {
-  if (!file || SKIP_DB_RESET.test(file)) {
+function shouldSkipDbReset(file: string): boolean {
+  return !file || SKIP_DB_RESET.test(file);
+}
+
+beforeAll(async (ctx) => {
+  const file = testFilePath(ctx);
+  if (shouldSkipDbReset(file)) {
     return;
   }
+
   await flushTestDbSerial();
   const sql = getTestSql();
   setSqlForTests(sql);
+  await syncBaselineSeedFlagFromDb(sql);
+
   if (FULL_DB_RESET.test(file)) {
-    if (scope === 'file') {
-      await resetAndSeedForTests(sql);
-    } else {
-      await resetVolatileTablesForTests(sql);
-    }
+    await resetAndSeedForTests(sql);
     return;
   }
-  await ensureBaselineSeed(sql);
-}
 
-/** Antes del primer test del archivo: seed completo si aplica. */
-beforeAll(async () => {
-  await prepareDbForTestFile(currentTestFile(), 'file');
+  await resetAndSeedForTests(sql, { skipIfBaseline: true });
 });
 
-/** Antes de cada test: tablas volátiles limpias + bridge. */
-beforeEach(async () => {
-  await prepareDbForTestFile(currentTestFile(), 'test');
+beforeEach(async (ctx) => {
+  const file = testFilePath(ctx);
+  if (shouldSkipDbReset(file)) {
+    return;
+  }
+
+  await flushTestDbSerial();
+  const sql = getTestSql();
+  await acquireTestDbHold(sql);
+  await syncBaselineSeedFlagFromDb(sql);
+  await resetVolatileTablesUnsafe(sql);
 });
 
-/** Tras cada test: re-vincula bridge si un test cerró la conexión. */
 afterEach(async () => {
+  await releaseTestDbHold();
   if (process.env.DATABASE_URL) {
     setSqlForTests(getTestSql());
   }
