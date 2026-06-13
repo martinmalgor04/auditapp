@@ -17,6 +17,7 @@
   import { updateScoreFromApi } from '$lib/client/form/live-score';
   import { prepareImageForUpload } from '$lib/client/form/image-pipeline';
   import { uploadPhotoFlow, type PhotoTableRow } from '$lib/client/form/photo-upload';
+  import { deleteAttachmentFlow } from '$lib/client/form/attachment-delete';
   import { enqueueSave, flushQueue, listQueued, registerOnlineFlush } from '$lib/client/form/retry-queue';
   import type { PageData } from './$types';
 
@@ -191,6 +192,52 @@
     });
   }
 
+  async function deletePhoto(
+    itemId: string,
+    attachmentId: string,
+    rowId?: string,
+    currentRows?: PhotoTableRow[]
+  ): Promise<{ rows?: PhotoTableRow[] } | null> {
+    saveState = 'saving';
+    saveErrorMessage = null;
+    try {
+      const result = await deleteAttachmentFlow({
+        auditId: data.auditId,
+        itemId,
+        attachmentId,
+        rowId
+      });
+      if (!result.ok) {
+        saveState = 'error';
+        saveErrorMessage = result.error;
+        return null;
+      }
+
+      saveState = 'saved';
+      await invalidateAll();
+
+      if (rowId && currentRows) {
+        return {
+          rows: currentRows.map((row) =>
+            row.row_id === rowId
+              ? {
+                  ...row,
+                  attachment_ids: row.attachment_ids.filter((id) => id !== attachmentId)
+                }
+              : row
+          )
+        };
+      }
+
+      return {};
+    } catch (err) {
+      saveState = 'error';
+      saveErrorMessage =
+        err instanceof Error ? `Error al borrar la foto: ${err.message}` : 'Error al borrar la foto';
+      return null;
+    }
+  }
+
   const activeScore = $derived(sectionScores.get(activeSection?.id ?? '') ?? {
     score: activeSection?.liveScore ?? null,
     band: activeSection?.scoreBand ?? 'na'
@@ -259,6 +306,8 @@
             pickPhoto(item.id, activeSection?.code ?? '', rowId, currentRows as PhotoTableRow[])}
           onphotocapture={() => pickPhoto(item.id, activeSection?.code ?? '')}
           onphotogallery={() => pickPhoto(item.id, activeSection?.code ?? '')}
+          onphotodelete={(attachmentId, rowId, currentRows) =>
+            deletePhoto(item.id, attachmentId, rowId, currentRows as PhotoTableRow[] | undefined)}
         />
       {/each}
     </div>

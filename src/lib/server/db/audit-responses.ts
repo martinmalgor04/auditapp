@@ -51,6 +51,98 @@ export async function upsertFileRefResponse(
   `;
 }
 
+type TableRowValue = {
+  row_id: string;
+  cells: Record<string, unknown>;
+  attachment_ids: string[];
+};
+
+function isTableValue(v: unknown): v is { rows: TableRowValue[] } {
+  return (
+    !!v &&
+    typeof v === 'object' &&
+    Array.isArray((v as { rows?: unknown }).rows)
+  );
+}
+
+/** Quita un attachment_id del value guardado (file_ref o fila de tabla). */
+export async function removeAttachmentFromResponse(input: {
+  auditId: string;
+  itemId: string;
+  attachmentId: string;
+  userId: string;
+  rowId?: string;
+  fieldType: 'file_ref' | 'table';
+}): Promise<void> {
+  const sql = getSql();
+
+  const [existing] = await sql<{ value: unknown }[]>`
+    SELECT value FROM audit_response
+    WHERE audit_id = ${input.auditId} AND item_id = ${input.itemId}
+    LIMIT 1
+  `;
+
+  if (input.fieldType === 'table') {
+    if (!input.rowId) {
+      throw new Error('row_id requerido para borrar foto de tabla');
+    }
+    if (!isTableValue(existing?.value)) {
+      throw new Error('El ítem no tiene filas guardadas');
+    }
+
+    let found = false;
+    const rows = existing.value.rows.map((row) => {
+      if (row.row_id !== input.rowId) return row;
+      const ids = Array.isArray(row.attachment_ids) ? row.attachment_ids : [];
+      if (!ids.includes(input.attachmentId)) return row;
+      found = true;
+      return {
+        ...row,
+        attachment_ids: ids.filter((id) => id !== input.attachmentId)
+      };
+    });
+
+    if (!found) {
+      throw new Error('La foto no está asociada a esa fila');
+    }
+
+    await sql`
+      UPDATE audit_response
+      SET value = ${sql.json({ rows })},
+          source = 'tecnico',
+          updated_by = ${input.userId},
+          updated_at = now()
+      WHERE audit_id = ${input.auditId} AND item_id = ${input.itemId}
+    `;
+    return;
+  }
+
+  let attachmentIds: string[] = [];
+  if (existing?.value && typeof existing.value === 'object') {
+    const parsed = fileRefValueSchema.safeParse(existing.value);
+    if (parsed.success) {
+      attachmentIds = parsed.data.attachment_ids;
+    }
+  }
+
+  if (!attachmentIds.includes(input.attachmentId)) {
+    throw new Error('La foto no está asociada a este ítem');
+  }
+
+  const value = {
+    attachment_ids: attachmentIds.filter((id) => id !== input.attachmentId)
+  };
+
+  await sql`
+    UPDATE audit_response
+    SET value = ${sql.json(value)},
+        source = 'tecnico',
+        updated_by = ${input.userId},
+        updated_at = now()
+    WHERE audit_id = ${input.auditId} AND item_id = ${input.itemId}
+  `;
+}
+
 export async function getTemplateItemSectionCode(
   auditId: string,
   itemId: string

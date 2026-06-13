@@ -7,7 +7,8 @@
     helpText,
     attachmentIds = $bindable<string[]>([]),
     oncapture,
-    ongallery
+    ongallery,
+    onremovephoto
   }: {
     id: string;
     label: string;
@@ -15,6 +16,7 @@
     attachmentIds?: string[];
     oncapture?: () => void;
     ongallery?: () => void;
+    onremovephoto?: (attachmentId: string) => void | Promise<void>;
   } = $props();
 </script>
 
@@ -49,7 +51,7 @@
     <p class="text-xs font-medium text-emerald-600">{attachmentIds.length} archivo(s) adjunto(s)</p>
     <div class="flex flex-wrap gap-2">
       {#each attachmentIds as attachmentId (attachmentId)}
-        <AttachmentThumb {attachmentId} />
+        <AttachmentThumb {attachmentId} onremove={() => onremovephoto?.(attachmentId)} />
       {/each}
     </div>
   {/if}

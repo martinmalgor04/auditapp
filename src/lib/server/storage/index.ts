@@ -6,6 +6,7 @@ export {
   MAX_UPLOAD_BYTES,
   presignPutRequestSchema,
   confirmUploadSchema,
+  deleteAttachmentSchema,
   fileRefValueSchema
 } from './schemas';
 export { presignPut, presignGet } from './presign';
@@ -13,6 +14,7 @@ export {
   requestPresignedUpload,
   confirmUpload,
   requestPresignedDownload,
+  deleteAttachment,
   uploadObjectToR2
 } from './attachments';
 export {

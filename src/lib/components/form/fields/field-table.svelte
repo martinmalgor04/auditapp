@@ -20,7 +20,8 @@
     columns = [],
     rows = $bindable<TableRow[]>([]),
     onchange,
-    oncamera
+    oncamera,
+    onremovephoto
   }: {
     id: string;
     label: string;
@@ -29,6 +30,7 @@
     rows?: TableRow[];
     onchange?: () => void;
     oncamera?: (rowId: string) => void | Promise<void>;
+    onremovephoto?: (rowId: string, attachmentId: string) => void | Promise<void>;
   } = $props();
 
   function addRow() {
@@ -114,7 +116,10 @@
         {#if row.attachment_ids.length > 0}
           <div class="flex flex-wrap gap-2 pt-1" data-row-photos={row.row_id}>
             {#each row.attachment_ids as attachmentId (attachmentId)}
-              <AttachmentThumb {attachmentId} />
+              <AttachmentThumb
+                {attachmentId}
+                onremove={() => onremovephoto?.(row.row_id, attachmentId)}
+              />
             {/each}
           </div>
         {/if}

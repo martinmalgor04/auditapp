@@ -55,3 +55,16 @@ export async function getAttachmentById(attachmentId: string): Promise<Attachmen
   `;
   return row ?? null;
 }
+
+export async function deleteAttachmentById(
+  auditId: string,
+  attachmentId: string
+): Promise<string | null> {
+  const sql = getSql();
+  const [row] = await sql<{ r2_key: string }[]>`
+    DELETE FROM attachment
+    WHERE id = ${attachmentId} AND audit_id = ${auditId}
+    RETURNING r2_key
+  `;
+  return row?.r2_key ?? null;
+}

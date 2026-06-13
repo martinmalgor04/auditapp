@@ -45,6 +45,11 @@ export const confirmUploadSchema = z.object({
   kind: z.enum(['photo', 'export'])
 });
 
+export const deleteAttachmentSchema = z.object({
+  item_id: z.string().uuid(),
+  row_id: z.string().uuid().optional()
+});
+
 export const fileRefValueSchema = z.object({
-  attachment_ids: z.array(z.string().uuid()).min(1)
+  attachment_ids: z.array(z.string().uuid())
 });

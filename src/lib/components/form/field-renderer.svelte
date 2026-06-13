@@ -37,7 +37,8 @@
     onnchange,
     oncamera,
     onphotocapture,
-    onphotogallery
+    onphotogallery,
+    onphotodelete
   }: {
     item: FieldItem;
     onchange?: (value: unknown) => void;
@@ -50,6 +51,11 @@
     ) => void | Promise<{ rows: TableRow[] } | void>;
     onphotocapture?: () => void;
     onphotogallery?: () => void;
+    onphotodelete?: (
+      attachmentId: string,
+      rowId?: string,
+      currentRows?: TableRow[]
+    ) => Promise<{ rows?: TableRow[] } | null | void>;
   } = $props();
 
   const opts = $derived((item.options ?? {}) as {
@@ -236,6 +242,11 @@
           const merged = await oncamera?.(rowId, snapshot);
           if (merged?.rows) tableRows = merged.rows;
         }}
+        onremovephoto={async (rowId, attachmentId) => {
+          const snapshot = $state.snapshot(tableRows) as TableRow[];
+          const merged = await onphotodelete?.(attachmentId, rowId, snapshot);
+          if (merged?.rows) tableRows = merged.rows;
+        }}
       />
     {:else if item.fieldType === 'file_ref'}
       <FieldFileRef
@@ -245,6 +256,12 @@
         bind:attachmentIds
         oncapture={onphotocapture}
         ongallery={onphotogallery}
+        onremovephoto={async (attachmentId) => {
+          const result = await onphotodelete?.(attachmentId);
+          if (result !== null) {
+            attachmentIds = attachmentIds.filter((id) => id !== attachmentId);
+          }
+        }}
       />
     {/if}
   {:else}
