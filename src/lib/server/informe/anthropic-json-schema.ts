@@ -1,11 +1,10 @@
 /**
- * Anthropic structured outputs:
- * - No acepta minimum/maximum en type integer (sanitizamos).
- * - No acepta minItems > 1 ni maxItems en arrays (sanitizamos; Zod valida post-parse).
- * - No acepta $ref definidos bajo properties (buildOutputFormat usa $refStrategy: 'none').
- * - additionalProperties: false (de .strict()) dispara "grammar too large" → lo eliminamos.
- * - minLength/maxLength en strings también aumentan la gramática → los eliminamos.
- * La validación fuerte sigue en reportDraftEnvelopeSchema.parse() post-respuesta.
+ * Anthropic structured outputs — reglas conocidas (Zod valida todo post-parse):
+ * - Requiere additionalProperties: false en cada objeto (lo forzamos).
+ * - No acepta minimum/maximum en integers.
+ * - No acepta minItems > 1 ni maxItems en arrays.
+ * - No acepta $ref (buildOutputFormat usa $refStrategy: 'none').
+ * - minLength/maxLength en strings disparan "grammar too large" → los eliminamos.
  */
 
 function isIntegerType(type: unknown): boolean {
@@ -31,17 +30,24 @@ export function sanitizeAnthropicJsonSchema(schema: unknown): unknown {
   }
 
   if (out.type === 'array') {
-    // Anthropic solo acepta minItems 0 o 1; la validación real la hace Zod post-parse.
     if (typeof out.minItems === 'number' && out.minItems > 1) {
       delete out.minItems;
     }
     delete out.maxItems;
   }
 
-  // additionalProperties: false (de .strict()) y minLength/maxLength disparan "grammar too large".
-  delete out.additionalProperties;
-  delete out.minLength;
-  delete out.maxLength;
+  if (out.type === 'object') {
+    // Anthropic exige additionalProperties: false en todos los objetos.
+    out.additionalProperties = false;
+    // minLength/maxLength en strings disparan "grammar too large".
+    delete out.minLength;
+    delete out.maxLength;
+  }
+
+  if (out.type === 'string') {
+    delete out.minLength;
+    delete out.maxLength;
+  }
 
   if (out.properties && typeof out.properties === 'object') {
     const props: Record<string, unknown> = {};
@@ -51,20 +57,8 @@ export function sanitizeAnthropicJsonSchema(schema: unknown): unknown {
     out.properties = props;
   }
 
-  if (out.patternProperties && typeof out.patternProperties === 'object') {
-    const pp: Record<string, unknown> = {};
-    for (const [key, val] of Object.entries(out.patternProperties as Record<string, unknown>)) {
-      pp[key] = sanitizeAnthropicJsonSchema(val);
-    }
-    out.patternProperties = pp;
-  }
-
   if (out.items) {
     out.items = sanitizeAnthropicJsonSchema(out.items);
-  }
-
-  if (out.additionalProperties && typeof out.additionalProperties === 'object') {
-    out.additionalProperties = sanitizeAnthropicJsonSchema(out.additionalProperties);
   }
 
   for (const key of ['$defs', 'definitions'] as const) {
