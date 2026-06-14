@@ -40,6 +40,7 @@ export type RenderClientDraft = {
     intro: string;
     circuitos: Array<{
       seccion_code: string;
+      hoy?: string | null;
       funcionalidades: Array<{ nombre: string; que_resuelve: string }>;
     }>;
     callout_transversal: string | null;
@@ -176,6 +177,8 @@ export const STYLE = `
 .informe-a4 .circuitos { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:4mm 0; }
 .informe-a4 .circuito { background:var(--sys-offwhite); border-left:2.5mm solid var(--sys-azul-electrico); border-radius:1mm; padding:4mm 4.5mm; }
 .informe-a4 .circuito h3 { font-size:10.5pt; margin-bottom:2mm; }
+.informe-a4 .circuito .circuito-hoy { font-size:8.5pt; color:var(--sys-gris-neutro); margin:0 0 2.5mm; line-height:1.4; }
+.informe-a4 .circuito .circuito-hoy strong { color:#2a3a4a; }
 .informe-a4 .circuito ul { list-style:none; }
 .informe-a4 .circuito li { font-size:9pt; line-height:1.5; color:#2a3a4a; padding-left:3.5mm; position:relative; margin-bottom:1.5mm; }
 .informe-a4 .circuito li::before { content:''; position:absolute; left:0; top:2.2mm; width:1.8mm; height:1.8mm; background:var(--sys-azul-electrico); border-radius:0.3mm; }
@@ -428,15 +431,19 @@ export function renderCircuitoCards(
     .map((c) => {
       const sec = sectionByCode.get(c.seccion_code);
       const title = sec?.title ?? c.seccion_code;
-      const hoy = sec?.score !== null && sec?.score !== undefined ? sec.score : '—';
+      const score = sec?.score !== null && sec?.score !== undefined ? sec.score : '—';
       const idx = model.draft.dia_a_dia.circuitos.indexOf(c);
+      const hoyLine =
+        c.hoy !== null && c.hoy !== undefined && c.hoy !== ''
+          ? `<p class="circuito-hoy"><strong>Hoy:</strong> ${field(`dia_a_dia.circuitos.${idx}.hoy`, c.hoy, opts)}</p>`
+          : '';
       const items = c.funcionalidades
         .map(
           (f, j) =>
             `<li><strong>${field(`dia_a_dia.circuitos.${idx}.funcionalidades.${j}.nombre`, f.nombre, opts)}</strong>: ${field(`dia_a_dia.circuitos.${idx}.funcionalidades.${j}.que_resuelve`, f.que_resuelve, opts)}.</li>`
         )
         .join('\n');
-      return `<div class="circuito"><h3>${e(title)} — hoy <span data-canonical="score">${hoy}</span>/100</h3><ul>${items}</ul></div>`;
+      return `<div class="circuito"><h3>${e(title)} — hoy <span data-canonical="score">${score}</span>/100</h3>${hoyLine}<ul>${items}</ul></div>`;
     })
     .join('\n');
 }

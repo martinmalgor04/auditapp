@@ -34,7 +34,7 @@ const SYSTEM_PROMPT_CLIENTE_ERP = `
 - "hallazgos.lectura_transversal": 3 a 4 observaciones que crucen varios circuitos, con evidencia numérica del relevamiento.
 - Riesgos: 4 por defecto (grid 2×2 del template), 3 a 5 si la evidencia lo justifica. Cada riesgo con "evidencia" citando un dato concreto del relevamiento, nunca inventada. Insumo: top_risks.
 - Plan: timeline de 2 a 6 etapas con semana corta («Sem 1», «Sem 4–5»), más qué necesitamos del cliente y qué no incluye. Insumos: next_step y quick_wins.
-- "dia_a_dia": 2 a 4 circuitos débiles (score bajo) con exactamente 3 funcionalidades Tango existentes cada uno; usá seccion_code del canónico.
+- "dia_a_dia": 2 a 4 circuitos débiles (score bajo) con exactamente 3 funcionalidades Tango existentes cada uno; usá seccion_code del canónico. Cada circuito incluye "hoy": UNA línea (máx. 100 caracteres) que describe el estado actual problemático del circuito según el relevamiento (ej. «facturación manual, sin controles, precios fuera del sistema»); sin evidencia suficiente devolvé null.
 - "proximos_pasos": 3 a 5 ítems; usá la razón social del cliente donde el template la pide.`;
 
 const SYSTEM_PROMPT_CLIENTE_IT = `
@@ -47,7 +47,7 @@ const SYSTEM_PROMPT_CLIENTE_IT = `
 - "hallazgos.lectura_transversal": 3 a 4 observaciones transversales sobre infraestructura, seguridad, backups o redes.
 - Riesgos: 3 a 5 con evidencia concreta del relevamiento. Insumo: top_risks.
 - Plan: 2 a 6 etapas orientadas a infraestructura/seguridad.
-- "dia_a_dia": 2 a 4 áreas IT débiles con exactamente 3 mejoras concretas de infraestructura/seguridad/backups/redes cada una (campo funcionalidades con nombre + que_resuelve). PROHIBIDO proponer funcionalidades Tango.
+- "dia_a_dia": 2 a 4 áreas IT débiles con exactamente 3 mejoras concretas de infraestructura/seguridad/backups/redes cada una (campo funcionalidades con nombre + que_resuelve). PROHIBIDO proponer funcionalidades Tango. Cada área incluye "hoy": UNA línea (máx. 100 caracteres) con el estado actual problemático según el relevamiento; sin evidencia devolvé null.
 - "proximos_pasos": 3 a 5 ítems accionables.`;
 
 const SYSTEM_PROMPT_CLIENTE_MIXTA = `
@@ -59,7 +59,7 @@ const SYSTEM_PROMPT_CLIENTE_MIXTA = `
 - "hallazgos.lectura_transversal": 3 a 6 observaciones cross-dominio (IT y ERP).
 - Riesgos: 3 a 6 en un único ranking cross-dominio, con evidencia del relevamiento.
 - Plan: timeline unificado de 2 a 6 etapas cubriendo ambos dominios.
-- "dia_a_dia.circuitos": 2 a 6 entradas — áreas IT con 3 mejoras de infraestructura/seguridad (sin Tango) y circuitos ERP con 3 funcionalidades Tango existentes cada uno, según el dominio del seccion_code.
+- "dia_a_dia.circuitos": 2 a 6 entradas — áreas IT con 3 mejoras de infraestructura/seguridad (sin Tango) y circuitos ERP con 3 funcionalidades Tango existentes cada uno, según el dominio del seccion_code. Cada entrada incluye "hoy": UNA línea (máx. 100 caracteres) con el estado actual problemático según el relevamiento; sin evidencia devolvé null.
 - "proximos_pasos": 3 a 5 ítems.`;
 
 const SYSTEM_PROMPT_INTERNA = `
@@ -178,7 +178,7 @@ export function buildInformePrompt(
     },
     "dia_a_dia": {
       "intro": "string",
-      "circuitos": [{ "seccion_code": "string", "funcionalidades": [{ "nombre": "string", "que_resuelve": "string" }] }],
+      "circuitos": [{ "seccion_code": "string", "hoy": "string" | null, "funcionalidades": [{ "nombre": "string", "que_resuelve": "string" }] }],
       "callout_transversal": "string" | null
     },
     "proximos_pasos": ["string"]
