@@ -146,7 +146,8 @@ export function buildInformePrompt(
       : '') +
     catalogoRule +
     clienteBlockFor(tipo) +
-    JERGA_BLOCK;
+    JERGA_BLOCK +
+    `\n\n## Formato de salida\nRespondé ÚNICAMENTE con el objeto JSON sin ningún texto adicional, sin bloques de código markdown ni explicaciones. El JSON debe tener exactamente dos claves de primer nivel: "cliente" e "interna".`;
 
   return {
     system,

@@ -1,8 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { zodToJsonSchema } from 'zod-to-json-schema';
-import { sanitizeAnthropicJsonSchema } from './anthropic-json-schema';
 import { InformeGenerationError, InformeNotConfiguredError } from './errors';
-import { reportDraftEnvelopeSchema } from './schemas';
 
 /** Adapter de la API de Claude (R3, R8). Mockeable en tests; fake en e2e. */
 
@@ -23,19 +20,6 @@ export interface InformeClaudeAdapter {
     prompt: { system: string; user: string };
     model: string;
   }): Promise<unknown>;
-}
-
-/** JSON schema del envelope para output_config.format (derivado de Zod, R8). */
-export function buildOutputFormat(): { type: 'json_schema'; schema: Record<string, unknown> } {
-  const raw = zodToJsonSchema(reportDraftEnvelopeSchema, {
-    target: 'jsonSchema7',
-    // Anthropic exige $ref solo en $defs; zod emite refs bajo properties → inline total.
-    $refStrategy: 'none'
-  }) as Record<string, unknown>;
-  return {
-    type: 'json_schema',
-    schema: sanitizeAnthropicJsonSchema(raw) as Record<string, unknown>
-  };
 }
 
 type MessagesClient = {
@@ -64,8 +48,7 @@ export function createClaudeAdapter(deps?: { client?: MessagesClient }): Informe
         max_tokens: 16000,
         thinking: { type: 'adaptive' },
         system: prompt.system,
-        messages: [{ role: 'user', content: prompt.user }],
-        output_config: { format: buildOutputFormat() }
+        messages: [{ role: 'user', content: prompt.user }]
       });
 
       const blocks = response.content as Array<{ type: string; text?: string }>;
@@ -74,7 +57,9 @@ export function createClaudeAdapter(deps?: { client?: MessagesClient }): Informe
         .map((b) => b.text)
         .join('');
       try {
-        return JSON.parse(text) as unknown;
+        // Si Claude envuelve en markdown (```json ... ```) lo extraemos igual.
+        const clean = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+        return JSON.parse(clean) as unknown;
       } catch {
         throw new InformeGenerationError('La respuesta de la IA no es JSON válido');
       }
