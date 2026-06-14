@@ -1,5 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = 'postgres://auditapp:changeme@localhost:5432/auditapp';
+}
+
 export default defineConfig({
   testDir: 'e2e',
   forbidOnly: !!process.env.CI,

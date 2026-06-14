@@ -42,9 +42,11 @@ Sin migraciones. Capa `src/lib/server/mercado/` + `GET /api/mercado` + página `
 ## Verificación
 
 ```
-./init.sh → exit 0 (555 passed, 2 skipped)
-pnpm run check → (incluido en gate del implementer)
-e2e/mercado.spec.ts → cubierto en T11 del spec
+./init.sh → exit 0 (129 files, 572 passed, 2 skipped)
+pnpm exec vitest run tests/mercado-aggregations.test.ts tests/api/mercado.test.ts → 15/15
+pnpm run build → OK (incluido en init.sh)
+e2e/mercado.spec.ts → escrito (R1, R13, R15); login Playwright inestable en este entorno
+  (mismo fallo en e2e/crm.spec.ts; no bloquea init.sh)
 ```
 
 ## Notas
