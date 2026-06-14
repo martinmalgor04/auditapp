@@ -114,7 +114,7 @@ describe('informe context (R1, R7, R13, R14, R16)', () => {
         observations: 'o'.repeat(500),
         items: []
       }))
-    } as CanonicalAudit;
+    } as unknown as CanonicalAudit;
     const result = applyTotalPromptBudget(
       huge,
       { rag: null, catalogo: null, fewshot: null, meta: emptyContextMeta({ rag: false, catalogo: false, fewshot: false }) },

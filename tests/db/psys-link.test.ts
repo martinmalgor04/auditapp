@@ -49,6 +49,8 @@ describe('audit_proposal_link schema', () => {
         editedAt: null,
         approvedBy: null,
         approvedAt: new Date(),
+        ejemplar: false,
+        contextMeta: null,
         createdAt: new Date(),
         updatedAt: new Date()
       },

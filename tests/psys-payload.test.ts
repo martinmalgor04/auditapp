@@ -31,6 +31,8 @@ describe('psys payload contract', () => {
         editedAt: null,
         approvedBy: null,
         approvedAt: new Date(),
+        ejemplar: false,
+        contextMeta: null,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -61,6 +63,8 @@ describe('psys payload contract', () => {
         editedAt: null,
         approvedBy: null,
         approvedAt: new Date(),
+        ejemplar: false,
+        contextMeta: null,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -98,6 +102,8 @@ describe('psys payload contract', () => {
         editedAt: null,
         approvedBy: null,
         approvedAt: new Date(),
+        ejemplar: false,
+        contextMeta: null,
         createdAt: new Date(),
         updatedAt: new Date()
       },

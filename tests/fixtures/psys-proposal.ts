@@ -99,6 +99,8 @@ export async function seedActiveProposalLink(
       editedAt: null,
       approvedBy: fixture.admin.id,
       approvedAt: new Date(),
+      ejemplar: false,
+      contextMeta: null,
       createdAt: new Date(),
       updatedAt: new Date()
     },

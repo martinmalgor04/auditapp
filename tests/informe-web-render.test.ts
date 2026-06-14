@@ -42,6 +42,8 @@ function fakeReport(overrides: Partial<AuditReportRow> = {}): AuditReportRow {
     editedAt: null,
     approvedBy: 'u1',
     approvedAt: new Date(),
+    ejemplar: false,
+    contextMeta: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides

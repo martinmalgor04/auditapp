@@ -58,6 +58,8 @@ describe('psys HTTP client', () => {
         editedAt: null,
         approvedBy: null,
         approvedAt: new Date(),
+        ejemplar: false,
+        contextMeta: null,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -95,6 +97,8 @@ describe('psys HTTP client', () => {
         editedAt: null,
         approvedBy: null,
         approvedAt: new Date(),
+        ejemplar: false,
+        contextMeta: null,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -129,6 +133,8 @@ describe('psys HTTP client', () => {
         editedAt: null,
         approvedBy: null,
         approvedAt: new Date(),
+        ejemplar: false,
+        contextMeta: null,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -172,6 +178,8 @@ describe('psys HTTP client', () => {
         editedAt: null,
         approvedBy: null,
         approvedAt: new Date(),
+        ejemplar: false,
+        contextMeta: null,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -219,6 +227,8 @@ describe('psys HTTP client', () => {
         editedAt: null,
         approvedBy: null,
         approvedAt: new Date(),
+        ejemplar: false,
+        contextMeta: null,
         createdAt: new Date(),
         updatedAt: new Date()
       },
