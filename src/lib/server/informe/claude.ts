@@ -56,7 +56,6 @@ export function createClaudeAdapter(deps?: { client?: MessagesClient }): Informe
       const response = await client.messages.create({
         model,
         max_tokens: 16000,
-        thinking: { type: 'adaptive' },
         system: prompt.system,
         messages: [{ role: 'user', content: prompt.user }]
       });
@@ -69,7 +68,8 @@ export function createClaudeAdapter(deps?: { client?: MessagesClient }): Informe
       try {
         return extractJson(text);
       } catch {
-        throw new InformeGenerationError('La respuesta de la IA no es JSON válido');
+        const preview = text.slice(0, 300);
+        throw new InformeGenerationError(`La respuesta de la IA no es JSON válido. Preview: ${preview}`);
       }
     }
   };
