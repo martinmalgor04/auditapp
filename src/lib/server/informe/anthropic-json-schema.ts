@@ -1,6 +1,7 @@
 /**
  * Anthropic structured outputs:
  * - No acepta minimum/maximum en type integer (sanitizamos).
+ * - No acepta minItems > 1 ni maxItems en arrays (sanitizamos; Zod valida post-parse).
  * - No acepta $ref definidos bajo properties (buildOutputFormat usa $refStrategy: 'none').
  * La validación fuerte sigue en reportDraftEnvelopeSchema.parse() post-respuesta.
  */
@@ -25,6 +26,14 @@ export function sanitizeAnthropicJsonSchema(schema: unknown): unknown {
     delete out.maximum;
     delete out.exclusiveMinimum;
     delete out.exclusiveMaximum;
+  }
+
+  if (out.type === 'array') {
+    // Anthropic solo acepta minItems 0 o 1; la validación real la hace Zod post-parse.
+    if (typeof out.minItems === 'number' && out.minItems > 1) {
+      delete out.minItems;
+    }
+    delete out.maxItems;
   }
 
   if (out.properties && typeof out.properties === 'object') {
