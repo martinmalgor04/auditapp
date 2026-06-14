@@ -1,7 +1,6 @@
 import type postgres from 'postgres';
 import { seedClients } from './clients';
 import { seedClientesTango } from './tango';
-import { seedProspectos } from './prospectos';
 import { seedTemplates } from './templates';
 import { seedUsers } from './users';
 
@@ -10,7 +9,6 @@ export type SeedOptions = {
   templates?: boolean;
   clients?: boolean;
   tango?: boolean;
-  prospectos?: boolean;
 };
 
 type DbExecutor = postgres.Sql | postgres.TransactionSql;
@@ -33,9 +31,8 @@ export async function runSeed(
   if (opts.tango !== false) {
     await seedClientesTango(sql);
   }
-  if (opts.prospectos !== false) {
-    await seedProspectos(sql);
-  }
+  // Nota: los prospectos del relevamiento van a crm_lead (tabla volátil en
+  // tests), no acá. Se cargan con scripts/db-seed-crm-leads.ts (seedCrmLeads).
 }
 
 function isAutoSeedDisabled(): boolean {
@@ -71,4 +68,4 @@ export { seedTemplates, loadTemplateFixture } from './templates';
 export type { TemplateFixture, SectionFixture, TemplateItemFixture } from './templates';
 export { seedClients } from './clients';
 export { seedClientesTango } from './tango';
-export { seedProspectos } from './prospectos';
+export { seedCrmLeads } from './crm-leads';

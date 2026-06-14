@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parse } from 'csv-parse/sync';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { runSeed, seedTemplates } from '../src/lib/server/db/seed';
+import { runSeed, seedTemplates, seedCrmLeads } from '../src/lib/server/db/seed';
 import { setSqlForTests } from '../src/lib/server/db/client';
 import {
   flushTestDbSerial,
@@ -139,12 +139,12 @@ describe('database seed', () => {
   });
 
   it('imports clients from csv count', async () => {
-    // Los CSVs de tango y prospectos reusan ids de presupuestos cuando la
-    // razón social matchea, así que el total son los ids únicos de los tres.
+    // client = presupuestos + tango (los prospectos viven en crm_lead).
+    // Tango reusa ids de presupuestos cuando la razón social matchea, así que
+    // el total son los ids únicos de ambos CSVs.
     const presupuestosIds = await readCsvIds(CSV_PATH);
     const tangoIds = await readCsvIds(TANGO_CSV_PATH);
-    const prospectoIds = await readCsvIds(PROSPECTOS_CSV_PATH);
-    const expectedCount = new Set([...presupuestosIds, ...tangoIds, ...prospectoIds]).size;
+    const expectedCount = new Set([...presupuestosIds, ...tangoIds]).size;
 
     const [row] = await sql<{ count: string }[]>`
       SELECT COUNT(*)::text AS count FROM client
@@ -186,30 +186,45 @@ describe('database seed', () => {
     expect(client.cuit).toBe('27218623714');
   });
 
-  it('seeds prospectos with relevamiento data', async () => {
+  it('seedCrmLeads carga los prospectos del relevamiento en crm_lead', async () => {
+    // crm_lead es tabla volátil (manejada por test), no baseline de runSeed.
+    // Corremos seedCrmLeads explícito dentro del lock serial y verificamos ahí.
     const prospectoIds = await readCsvIds(PROSPECTOS_CSV_PATH);
-    const [count] = await sql<{ count: string }[]>`
-      SELECT COUNT(*)::text AS count FROM client WHERE origen = 'prospecto'
-    `;
-    expect(Number(count.count)).toBe(prospectoIds.length);
+    await withTestDbSerial(sql, async (s) => {
+      await s`DELETE FROM crm_lead_event`;
+      await s`DELETE FROM crm_lead`;
 
-    const [client] = await sql<
-      {
-        origen: string;
-        nivel_interes: string;
-        observaciones: string;
-        relevado_at: Date;
-      }[]
-    >`
-      SELECT origen, nivel_interes, observaciones, relevado_at
-      FROM client
-      WHERE razon_social ILIKE 'gualok%'
-      LIMIT 1
-    `;
-    expect(client.origen).toBe('prospecto');
-    expect(client.nivel_interes).toBe('Medio');
-    expect(client.observaciones).toContain('Tiene software de gestión: SI');
-    expect(client.relevado_at).toBeInstanceOf(Date);
+      const inserted = await seedCrmLeads(s);
+      expect(inserted).toBe(prospectoIds.length);
+
+      const [count] = await s<{ count: string }[]>`
+        SELECT COUNT(*)::text AS count FROM crm_lead WHERE source = 'manual'
+      `;
+      expect(Number(count.count)).toBe(prospectoIds.length);
+
+      const [lead] = await s<
+        { source: string; status: string; notas: string }[]
+      >`
+        SELECT source, status, notas FROM crm_lead WHERE empresa ILIKE 'gualok%' LIMIT 1
+      `;
+      expect(lead.source).toBe('manual');
+      expect(lead.status).toBe('contactado');
+      expect(lead.notas).toContain('Interés: Medio');
+      expect(lead.notas).toContain('Tiene software de gestión: SI');
+
+      // Prospecto sin mail entra igual (email nullable tras la migración 010).
+      const [sinMail] = await s<{ count: string }[]>`
+        SELECT COUNT(*)::text AS count FROM crm_lead WHERE source = 'manual' AND email IS NULL
+      `;
+      expect(Number(sinMail.count)).toBeGreaterThan(0);
+
+      // Idempotente: segunda corrida no duplica.
+      await seedCrmLeads(s);
+      const [count2] = await s<{ count: string }[]>`
+        SELECT COUNT(*)::text AS count FROM crm_lead WHERE source = 'manual'
+      `;
+      expect(Number(count2.count)).toBe(prospectoIds.length);
+    });
   });
 
   it('maps csv columns to client fields', async () => {

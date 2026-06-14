@@ -27,7 +27,8 @@ describe('migration runner', () => {
       '006_entrega_informe',
       '007_psys_link',
       '008_crm_leads',
-      '009_contexto_ia'
+      '009_contexto_ia',
+      '010_crm_lead_email_nullable'
     ]);
   });
 
@@ -43,6 +44,7 @@ describe('migration runner', () => {
     expect(first.skipped).toContain('007_psys_link');
     expect(first.skipped).toContain('008_crm_leads');
     expect(first.skipped).toContain('009_contexto_ia');
+    expect(first.skipped).toContain('010_crm_lead_email_nullable');
 
     const second = await runMigrations(sql);
     expect(second.applied).toEqual([]);
