@@ -6,6 +6,7 @@
   import CopyLinkButton from '$lib/components/backoffice/copy-link-button.svelte';
   import InformeSection from '$lib/components/informe/informe-section.svelte';
   import PsysCard from '$lib/components/auditoria/psys-card.svelte';
+  import AuditBundleActions from '$lib/components/backoffice/audit-bundle-actions.svelte';
 
   let { data, form }: { data: PageData; form?: { error?: string; url?: string } } = $props();
 
@@ -115,6 +116,10 @@
     </form>
   {:else}
     <CabSectionForm items={data.audit.cabItems} readonly />
+  {/if}
+
+  {#if data.isAdmin}
+    <AuditBundleActions auditId={data.audit.id} />
   {/if}
 
   {#if !data.audit.archivedAt}

@@ -28,7 +28,8 @@ describe('migration runner', () => {
       '007_psys_link',
       '008_crm_leads',
       '009_contexto_ia',
-      '010_crm_lead_email_nullable'
+      '010_crm_lead_email_nullable',
+      '011_audit_bundle_import'
     ]);
   });
 

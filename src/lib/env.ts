@@ -23,8 +23,15 @@ export const serverEnvSchema = z.object({
   R2_SECRET_ACCESS_KEY: optionalString,
   R2_BUCKET: optionalString,
   R2_ENDPOINT: optionalUrl,
-  PUBLIC_APP_URL: z.string().url()
+  PUBLIC_APP_URL: z.string().url(),
+  INSTANCE_ID: optionalString
 });
+
+/** Id estable de la instancia para dedupe de bundles (#20). Fallback 'unknown'. */
+export function getInstanceId(): string {
+  const raw = process.env.INSTANCE_ID?.trim();
+  return raw && !raw.includes('<') ? raw : 'unknown';
+}
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
 

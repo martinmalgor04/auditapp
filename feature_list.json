@@ -355,6 +355,26 @@
       ],
       "sdd": true,
       "status": "done"
+    },
+    {
+      "id": 20,
+      "name": "20_export_import_auditorias",
+      "title": "Export/import de auditorías por JSON (migración entre instancias)",
+      "description": "Bundle JSON portable de una auditoría completa (cabecera, respuestas, scores por sección, cierre, referencias de adjuntos y metadatos) que se exporta desde una instancia y se reimporta en otra recreando la auditoría. El desafío central es el remapeo de identidades en el destino: los UUID no coinciden entre instancias, así que el import resuelve templates, secciones, ítems, cliente y usuarios por clave natural (código/versión de template, código de sección, CUIT del cliente, email del usuario) en lugar de por id. Adjuntos: solo referencias r2_key (sin binarios; asume bucket R2 compartido o accesible). Estados: cualquiera (se preserva el status de la auditoría). Distinto del export canónico #9 (derivado/lossy para el pipeline IA, solo cerradas) y del backup de respuestas del form #7 (parcial, client-side): este es un round-trip fiel de la entidad auditoría.",
+      "source": "Solicitud operativa SyS (2026-06-13, Martín): migrar auditorías entre instancias dev/prod y respaldo portable. Modelo de datos #2/#9, attachments #6, máquina de estados src/lib/audit-status.ts.",
+      "acceptance": [
+        "Acción Exportar auditoría (solo admin) produce un bundle JSON versionado (bundle_schema_version) con cabecera de la auditoría, respuestas, scores por sección, cierre y referencias de adjuntos, válido contra un schema Zod",
+        "El export usa claves naturales para entidades referenciadas: cliente por CUIT/razón social, templates por code+version, secciones por code, ítems por clave estable de ítem dentro de la sección, y usuarios por email; nunca depende de UUID del origen",
+        "El export incluye auditorías en cualquier estado y registra el status original en el bundle",
+        "Los adjuntos se exportan como referencias (r2_key, filename, content_type, size, kind, item) sin binarios; el import los recrea relinkeando por r2_key",
+        "Acción Importar auditoría (solo admin) valida el bundle con Zod, resuelve las entidades por clave natural en el destino y crea la auditoría con sus respuestas, scores, cierre y adjuntos preservando el status",
+        "El import es resoluble en seco (dry-run): reporta qué entidades hacen match, cuáles faltan (template/sección/ítem/cliente/usuario no encontrados) y qué se crearía, sin escribir, antes de confirmar",
+        "El import es idempotente respecto del bundle: reimportar el mismo bundle no duplica la auditoría (dedupe por una clave de bundle), y un import fallido no deja datos parciales (transacción)",
+        "SI faltan entidades obligatorias en el destino (p.ej. template/ítem inexistente) ENTONCES el import falla con un error claro que las enumera y no escribe nada",
+        "Tests de round-trip (export→import→export idempotente), remapeo por clave natural, dry-run, idempotencia, preservación de status, atomicidad ante error y guards de permisos pasan"
+      ],
+      "sdd": true,
+      "status": "done"
     }
   ]
 }

@@ -151,6 +151,7 @@ export async function truncateSeedTablesUnsafe(sql: postgres.Sql): Promise<void>
   setSqlForTests(sql);
   await sql`
     TRUNCATE TABLE
+      audit_bundle_import,
       attachment,
       audit_closure,
       audit_section_score,
@@ -185,6 +186,7 @@ export async function resetVolatileTablesUnsafe(sql: postgres.Sql): Promise<void
   setSqlForTests(sql);
   await sql`
     TRUNCATE TABLE
+      audit_bundle_import,
       attachment,
       audit_closure,
       audit_section_score,
