@@ -147,7 +147,55 @@ export function buildInformePrompt(
     catalogoRule +
     clienteBlockFor(tipo) +
     JERGA_BLOCK +
-    `\n\n## Formato de salida\nRespondé ÚNICAMENTE con el objeto JSON sin ningún texto adicional, sin bloques de código markdown ni explicaciones. El JSON debe tener exactamente dos claves de primer nivel: "cliente" e "interna".`;
+    `\n\n## Formato de salida\nRespondé ÚNICAMENTE con el objeto JSON sin ningún texto adicional, sin bloques de código markdown ni explicaciones. Usá EXACTAMENTE esta estructura de claves (sin agregar ni renombrar):
+
+\`\`\`
+{
+  "cliente": {
+    "resumen": {
+      "diagnostico": "string",
+      "lead": "string",
+      "circuitos_con_controles": { "n": 0, "total": 0 } | null,
+      "interpretacion": "string",
+      "recomendacion_central": "string",
+      "fortalezas": "string" | null
+    },
+    "indices": { "erp": { "valor": 0, "semaforo": "green|amber|red" } | undefined, "it": { "valor": 0, "semaforo": "green|amber|red" } | undefined },
+    "hallazgos": {
+      "circuitos": [{ "seccion_code": "string", "doc": "string", "controles": "string", "madurez": "string" }],
+      "lectura_transversal": [{ "titulo": "string", "detalle": "string" }]
+    },
+    "riesgos": {
+      "intro": "string",
+      "items": [{ "titulo": "string", "descripcion": "string", "evidencia": "string", "severidad": "baja|media|alta|critica" }]
+    },
+    "plan": {
+      "titulo": "string",
+      "descripcion": "string",
+      "etapas": [{ "semana": "string", "titulo": "string", "descripcion": "string" }],
+      "necesitamos_cliente": ["string"],
+      "no_incluye": ["string"]
+    },
+    "dia_a_dia": {
+      "intro": "string",
+      "circuitos": [{ "seccion_code": "string", "funcionalidades": [{ "nombre": "string", "que_resuelve": "string" }] }],
+      "callout_transversal": "string" | null
+    },
+    "proximos_pasos": ["string"]
+  },
+  "interna": {
+    "recomendaciones_presupuesto": [{
+      "linea": "string",
+      "rango_estimado": "string",
+      "urgencia": "baja|media|alta",
+      "probabilidad_cierre": "baja|media|alta",
+      "candidato_financiacion": true|false,
+      "candidato_abono": true|false,
+      "justificacion": "string"
+    }]
+  }
+}
+\`\`\``;
 
   return {
     system,
