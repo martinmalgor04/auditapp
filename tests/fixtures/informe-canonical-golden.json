@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "audit_id": "44431575-e34f-44a6-adc4-008313958807",
   "generated_at": "2026-06-08T14:30:00-03:00",
   "client": {
@@ -67,7 +67,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "it"
     },
     {
       "code": "B1",
@@ -104,7 +105,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "erp-tango"
     },
     {
       "code": "A2",
@@ -136,7 +138,8 @@
             "audits/44431575-e34f-44a6-adc4-008313958807/A2/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
           ]
         }
-      ]
+      ],
+      "template_code": "it"
     },
     {
       "code": "B2",
@@ -173,7 +176,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "erp-tango"
     },
     {
       "code": "A3",
@@ -203,7 +207,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "it"
     },
     {
       "code": "B3",
@@ -240,7 +245,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "erp-tango"
     },
     {
       "code": "A4",
@@ -268,7 +274,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "it"
     },
     {
       "code": "B4",
@@ -305,7 +312,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "erp-tango"
     },
     {
       "code": "A5",
@@ -333,7 +341,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "it"
     },
     {
       "code": "B5",
@@ -370,7 +379,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "erp-tango"
     },
     {
       "code": "A6",
@@ -398,7 +408,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "it"
     },
     {
       "code": "A7",
@@ -426,7 +437,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "it"
     },
     {
       "code": "B6",
@@ -463,7 +475,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "erp-tango"
     },
     {
       "code": "A8",
@@ -491,7 +504,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "it"
     },
     {
       "code": "B7",
@@ -528,7 +542,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "erp-tango"
     },
     {
       "code": "A9",
@@ -547,7 +562,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "it"
     },
     {
       "code": "B8",
@@ -584,7 +600,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "erp-tango"
     },
     {
       "code": "A10",
@@ -621,7 +638,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "it"
     },
     {
       "code": "B9",
@@ -658,7 +676,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "erp-tango"
     },
     {
       "code": "A11",
@@ -686,7 +705,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "it"
     },
     {
       "code": "A12",
@@ -714,7 +734,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "it"
     },
     {
       "code": "A13",
@@ -733,7 +754,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "it"
     },
     {
       "code": "A14",
@@ -761,7 +783,8 @@
           "observations": null,
           "attachments": []
         }
-      ]
+      ],
+      "template_code": "it"
     }
   ],
   "indices": {

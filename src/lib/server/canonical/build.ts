@@ -113,13 +113,15 @@ export async function buildCanonicalAuditJson(
       weight: CanonicalSection['weight'];
       has_score: boolean;
       sort_order: number;
+      template_code: string;
     }[]
   >`
-    SELECT id, code, title, standard_ref, weight, has_score, sort_order
-    FROM section
-    WHERE template_id = ANY(${audit.template_ids}::uuid[])
-      AND code != 'CAB'
-    ORDER BY sort_order, code
+    SELECT s.id, s.code, s.title, s.standard_ref, s.weight, s.has_score, s.sort_order, t.code AS template_code
+    FROM section s
+    JOIN template t ON t.id = s.template_id
+    WHERE s.template_id = ANY(${audit.template_ids}::uuid[])
+      AND s.code != 'CAB'
+    ORDER BY s.sort_order, s.code
   `;
 
   const itemRows = await sql<
@@ -250,6 +252,7 @@ export async function buildCanonicalAuditJson(
       standard_ref: section.standard_ref,
       weight: section.weight,
       score: scoreRow?.score ?? null,
+      template_code: section.template_code,
       observations: scoreRow?.observations ?? null,
       items
     };

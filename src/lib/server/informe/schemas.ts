@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import type { TipoAuditoria } from './tipo';
+
 /** Schemas Zod estrictos del borrador IA (R10, R11, R16, R25). Fuente de verdad local. */
 
 const semaphoreSchema = z.enum(['green', 'amber', 'red']);
@@ -127,6 +129,36 @@ export const reportClientDraftSchema = z
   })
   .strict(); // strict() rechaza claves upsell/recomendaciones/etc. (R16)
 
+/** Variante mixta (#19 R7): límites ampliados para hallazgos cross-dominio. */
+const reportClientDraftMixtaSchema = reportClientDraftSchema
+  .extend({
+    hallazgos: z
+      .object({
+        circuitos: z.array(hallazgoCircuitoSchema).min(1),
+        lectura_transversal: z.array(lecturaTransversalSchema).min(3).max(6)
+      })
+      .strict(),
+    riesgos: z
+      .object({
+        intro: z.string().min(1),
+        items: z.array(riesgoSchema).min(3).max(6)
+      })
+      .strict(),
+    dia_a_dia: z
+      .object({
+        intro: z.string().min(1),
+        circuitos: z.array(circuitoDiaADiaSchema).min(2).max(6),
+        callout_transversal: z.string().min(1).nullable()
+      })
+      .strict()
+  })
+  .strict();
+
+export function reportClientDraftSchemaFor(tipo: TipoAuditoria) {
+  if (tipo !== 'mixta') return reportClientDraftSchema;
+  return reportClientDraftMixtaSchema;
+}
+
 export const reportInternalDraftSchema = z
   .object({
     recomendaciones_presupuesto: z
@@ -164,7 +196,7 @@ export const loomUrlSchema = z
 
 export const patchReportSchema = z
   .object({
-    client_draft: reportClientDraftSchema.optional(),
+    client_draft: z.record(z.string(), z.unknown()).optional(),
     loom_url: loomUrlSchema.nullable().optional(),
     origin: z.enum(['inline', 'form']).default('form')
   })

@@ -4,8 +4,8 @@ import { canonicalAuditSchema } from '../src/lib/server/canonical/schema';
 import golden from './fixtures/canonical-audit-golden.json';
 
 describe('canonical schema', () => {
-  it('CANONICAL_SCHEMA_VERSION is 1.0', () => {
-    expect(CANONICAL_SCHEMA_VERSION).toBe('1.0');
+  it('CANONICAL_SCHEMA_VERSION is 1.1', () => {
+    expect(CANONICAL_SCHEMA_VERSION).toBe('1.1');
   });
 
   it('schema version field is semver string', () => {
@@ -14,7 +14,7 @@ describe('canonical schema', () => {
 
   it('schema accepts golden fixture', () => {
     const parsed = canonicalAuditSchema.parse(golden);
-    expect(parsed.schema_version).toBe('1.0');
+    expect(parsed.schema_version).toBe('1.1');
   });
 
   it('schema rejects invalid payload', () => {

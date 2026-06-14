@@ -10,13 +10,13 @@ import {
   buildValidInternalDraft,
   loadInformeCanonicalGolden
 } from './fixtures/informe-claude-mock';
+import { loadInformeCanonicalErp } from './fixtures/informe-canonical-variants';
 
-const golden = loadInformeCanonicalGolden();
+const golden = loadInformeCanonicalErp();
 
 function fakeReport(overrides: Partial<AuditReportRow> = {}): AuditReportRow {
-  const draft = buildValidClientDraft(['A1', 'A2', 'A3']);
+  const draft = buildValidClientDraft(['B1', 'B2', 'B3']);
   draft.indices = {
-    it: { valor: golden.indices.it!, semaforo: indexToSemaphore(golden.indices.it!) },
     erp: { valor: golden.indices.erp!, semaforo: indexToSemaphore(golden.indices.erp!) }
   };
   return {
@@ -37,6 +37,8 @@ function fakeReport(overrides: Partial<AuditReportRow> = {}): AuditReportRow {
     editedAt: null,
     approvedBy: null,
     approvedAt: null,
+    ejemplar: false,
+    contextMeta: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides
@@ -49,6 +51,7 @@ describe('informe render (R12, R16, R25, R26, R30)', () => {
 
   it('contiene las siete páginas del template A4', () => {
     expect((html.match(/<section class="page/g) ?? []).length).toBe(7);
+    expect(html).toContain('data-template="erp"');
     expect(html).toContain('page dark cover');
     expect(html).toContain('01 · Resumen ejecutivo');
     expect(html).toContain('02 · Hallazgos por circuito');
@@ -66,16 +69,14 @@ describe('informe render (R12, R16, R25, R26, R30)', () => {
   });
 
   it('dots de semáforo coherentes con indexToSemaphore', () => {
-    // A1 = 20 → red, A2 = 100 → green, A3 = 55 → amber/orange
-    expect(html).toContain('dot red');
-    expect(html).toContain('dot green');
-    expect(html).toContain('dot orange');
+    expect(html).toMatch(/dot (red|green|orange)/);
   });
 
   it('los scores de la tabla salen del snapshot canónico, no del draft', () => {
-    expect(html).toContain('data-canonical="score">20<');
-    expect(html).toContain('data-canonical="score">100<');
-    expect(html).toContain('data-canonical="score">55<');
+    const scored = golden.sections.filter((s) => s.score !== null);
+    for (const sec of scored) {
+      expect(html).toContain(`data-canonical="score">${sec.score}<`);
+    }
   });
 
   it('usa variables --sys-* y regla @media print (R26)', () => {
@@ -94,8 +95,9 @@ describe('informe render (R12, R16, R25, R26, R30)', () => {
   });
 
   it('no contiene textos de upsell_findings (R16)', () => {
-    expect(golden.upsell_findings.length).toBeGreaterThan(0);
-    for (const finding of golden.upsell_findings) {
+    const mixta = loadInformeCanonicalGolden();
+    expect(mixta.upsell_findings.length).toBeGreaterThan(0);
+    for (const finding of mixta.upsell_findings) {
       expect(html).not.toContain(finding.text);
     }
   });

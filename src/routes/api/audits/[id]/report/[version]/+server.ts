@@ -14,7 +14,8 @@ import {
   assertSeccionCodesExist,
   overwriteIndicesFromCanonical
 } from '$lib/server/informe/pipeline';
-import { patchReportSchema } from '$lib/server/informe/schemas';
+import { patchReportSchema, reportClientDraftSchemaFor, type ReportClientDraft } from '$lib/server/informe/schemas';
+import { tipoAuditoria } from '$lib/server/informe/tipo';
 import { stripHtmlDeep } from '$lib/server/informe/sanitize';
 
 function toDetail(r: AuditReportRow, opts: { includeInternal: boolean }) {
@@ -117,10 +118,21 @@ export const PATCH: RequestHandler = async ({ params, locals, request }): Promis
           ? stripHtmlDeep(parsed.data.client_draft)
           : parsed.data.client_draft;
       // R12 también aplica a ediciones: índices del canónico + seccion_code válidos.
-      const draft = overwriteIndicesFromCanonical(incoming, report.canonicalJson);
+      const draft = overwriteIndicesFromCanonical(
+        incoming as ReportClientDraft,
+        report.canonicalJson
+      );
       assertSeccionCodesExist(draft, report.canonicalJson);
 
-      const saved = await saveClientDraftEdit(report.id, draft, userOrResponse.id);
+      const draftSchema = reportClientDraftSchemaFor(tipoAuditoria(report.canonicalJson.types));
+      const validated = draftSchema.safeParse(draft);
+      if (!validated.success) {
+        throw new InformeDraftValidationError(
+          `Borrador cliente inválido: ${validated.error.issues[0]?.message ?? 'schema'}`
+        );
+      }
+      const validDraft = validated.data;
+      const saved = await saveClientDraftEdit(report.id, validDraft, userOrResponse.id);
       if (!saved) {
         return apiError('El informe solo se puede editar en estado borrador', 409);
       }
@@ -129,7 +141,7 @@ export const PATCH: RequestHandler = async ({ params, locals, request }): Promis
       if (parsed.data.origin === 'inline') {
         const entry = await appendEditEntry({
           reportId: report.id,
-          clientDraft: draft,
+          clientDraft: validDraft,
           changeSummary: 'Edición inline',
           editedBy: userOrResponse.id
         });

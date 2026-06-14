@@ -3,6 +3,7 @@ import {
   loomUrlSchema,
   patchReportSchema,
   reportClientDraftSchema,
+  reportClientDraftSchemaFor,
   reportInternalDraftSchema
 } from '../src/lib/server/informe/schemas';
 import {
@@ -107,6 +108,36 @@ describe('loomUrlSchema (R25)', () => {
   it('rechaza URL no-Loom y http', () => {
     expect(loomUrlSchema.safeParse('https://youtube.com/watch?v=1').success).toBe(false);
     expect(loomUrlSchema.safeParse('http://www.loom.com/share/abc').success).toBe(false);
+  });
+});
+
+describe('reportClientDraftSchemaFor (#19 R7)', () => {
+  it('erp e it comparten el schema base', () => {
+    const draft = buildValidClientDraft(codes);
+    expect(reportClientDraftSchemaFor('erp').safeParse(draft).success).toBe(true);
+    expect(reportClientDraftSchemaFor('it').safeParse(draft).success).toBe(true);
+    expect(reportClientDraftSchemaFor('erp')).toBe(reportClientDraftSchema);
+    expect(reportClientDraftSchemaFor('it')).toBe(reportClientDraftSchema);
+  });
+
+  it('mixta acepta 5 circuitos dia_a_dia y erp rechaza', () => {
+    const draft = buildValidClientDraft(codes);
+    const base = draft.dia_a_dia.circuitos[0];
+    draft.dia_a_dia.circuitos = [base, base, base, base, base];
+    draft.hallazgos.lectura_transversal = [
+      ...draft.hallazgos.lectura_transversal,
+      { titulo: 'Extra 1', detalle: 'Detalle.' },
+      { titulo: 'Extra 2', detalle: 'Detalle.' }
+    ];
+    expect(reportClientDraftSchemaFor('mixta').safeParse(draft).success).toBe(true);
+    expect(reportClientDraftSchemaFor('erp').safeParse(draft).success).toBe(false);
+  });
+
+  it('strict(): claves extra rechazadas en las tres variantes', () => {
+    const extra = { ...buildValidClientDraft(codes), upsell: ['x'] };
+    expect(reportClientDraftSchemaFor('erp').safeParse(extra).success).toBe(false);
+    expect(reportClientDraftSchemaFor('it').safeParse(extra).success).toBe(false);
+    expect(reportClientDraftSchemaFor('mixta').safeParse(extra).success).toBe(false);
   });
 });
 

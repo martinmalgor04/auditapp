@@ -28,6 +28,7 @@ import { createRagRetriever } from './rag/retriever';
 import {
   InformeAuditNotClosedError,
   InformeDraftValidationError,
+  InformeDomainUnresolvedError,
   InformeGenerationError,
   InformeReportNotFoundError
 } from './errors';
@@ -36,10 +37,11 @@ import {
   resolvePromptVersion
 } from './prompts/generate-report';
 import {
-  reportClientDraftSchema,
+  reportClientDraftSchemaFor,
   reportInternalDraftSchema,
   type ReportClientDraft
 } from './schemas';
+import { assertSectionDomainsResolvable, tipoAuditoria } from './tipo';
 
 export type CreateReportDeps = {
   buildCanonical?: typeof buildCanonicalAuditJson;
@@ -179,6 +181,7 @@ export async function runInformePipeline(
 
   try {
     assertSchemaVersionMatchesConstant(report.canonicalJson);
+    assertSectionDomainsResolvable(report.canonicalJson);
 
     const context = await buildInformeContext(report.canonicalJson, config, contextDeps);
     contextMeta = context.meta;
@@ -193,7 +196,8 @@ export async function runInformePipeline(
     const raw = await adapter.generateDraft({ prompt, model });
 
     const envelope = raw as { cliente?: unknown; interna?: unknown };
-    const clientParsed = reportClientDraftSchema.safeParse(envelope?.cliente);
+    const draftSchema = reportClientDraftSchemaFor(tipoAuditoria(report.canonicalJson.types));
+    const clientParsed = draftSchema.safeParse(envelope?.cliente);
     if (!clientParsed.success) {
       throw new InformeDraftValidationError(
         `Borrador cliente inválido: ${clientParsed.error.issues[0]?.message ?? 'schema'}`
@@ -218,7 +222,12 @@ export async function runInformePipeline(
       contextMeta
     });
   } catch (err) {
-    const message = err instanceof Error && err.message ? err.message : 'Fallo de generación';
+    const message =
+      err instanceof InformeDomainUnresolvedError
+        ? err.message
+        : err instanceof Error && err.message
+          ? err.message
+          : 'Fallo de generación';
     logger.error('informe pipeline failed', { reportId, error: message });
     await markReportError(reportId, message, {
       promptVersion,

@@ -354,7 +354,7 @@
         "Tests de snapshot del render IT y mixto pasan; los snapshots ERP existentes no cambian"
       ],
       "sdd": true,
-      "status": "in_progress"
+      "status": "done"
     }
   ]
 }

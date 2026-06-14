@@ -96,21 +96,20 @@ exports[`informe render (R12, R16, R25, R26, R30) > snapshot estable del render 
   .informe-a4 .informe-loom { display:none; }
 }
 </style>
-<div class="informe-a4">
+<div class="informe-a4" data-template="erp">
 
 <section class="page dark cover">
   <div class="circle c1"></div><div class="circle c2"></div>
   <img class="logo-vert" src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_vertical_w.png" alt="Servicios y Sistemas">
   <div>
-    <div class="eyebrow-cover">Informe de auditoría IT + ERP · Junio 2026</div>
-    <h1>Auditoría<br>IT + ERP</h1>
+    <div class="eyebrow-cover">Informe de auditoría ERP · Junio 2026</div>
+    <h1>Auditoría<br>ERP</h1>
     <div style="height:8mm"></div>
     <div class="client">Fixture Form Técnico SA</div>
     <div class="cuit">CUIT 30-12345678-9</div>
     <div class="meta">Módulos relevados: ventas, stock<br>8 de junio de 2026 · Sistema: Tango Gestión</div>
   </div>
 </section>
-
 <section class="page">
   <div class="eyebrow">01 · Resumen ejecutivo</div>
   <h2><span data-field="resumen.diagnostico">El ERP funciona pero sin controles internos aplicados</span></h2>
@@ -141,15 +140,14 @@ exports[`informe render (R12, R16, R25, R26, R30) > snapshot estable del render 
   <div style="height:4mm"></div><div class="callout"><p><strong style="color:var(--sys-verde);">Lo que está bien y vamos a preservar:</strong> <span data-field="resumen.fortalezas">La infraestructura de servidores está al día.</span></p></div>
   <div class="footer"><img src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_horizontal_b.png" alt="SyS"><span class="pagenum">02</span></div>
 </section>
-
 <section class="page">
   <div class="eyebrow">02 · Hallazgos por circuito</div>
   <h2>Qué encontramos, sección por sección</h2>
   <table>
     <tr><th style="width:42%">Circuito</th><th class="num" style="width:14%">Score</th><th style="width:14%">Doc.</th><th style="width:16%">Controles</th><th style="width:14%">Madurez</th></tr>
-    <tr><td>Inventario de activos / hardware</td><td class="num"><span class="dot red"></span><span class="score-pill" data-canonical="score">20</span></td><td><span data-field="hallazgos.circuitos.0.doc">Parcial</span></td><td><span data-field="hallazgos.circuitos.0.controles">No</span></td><td><span data-field="hallazgos.circuitos.0.madurez">Manual</span></td></tr>
-<tr><td>Software / licencias</td><td class="num"><span class="dot green"></span><span class="score-pill" data-canonical="score">100</span></td><td><span data-field="hallazgos.circuitos.1.doc">Parcial</span></td><td><span data-field="hallazgos.circuitos.1.controles">No</span></td><td><span data-field="hallazgos.circuitos.1.madurez">Manual</span></td></tr>
-<tr><td>Gestión de datos</td><td class="num"><span class="dot orange"></span><span class="score-pill" data-canonical="score">55</span></td><td><span data-field="hallazgos.circuitos.2.doc">Parcial</span></td><td><span data-field="hallazgos.circuitos.2.controles">No</span></td><td><span data-field="hallazgos.circuitos.2.madurez">Manual</span></td></tr>
+    <tr><td>Administración y parametrización</td><td class="num"><span class="dot orange"></span><span class="score-pill" data-canonical="score">45</span></td><td><span data-field="hallazgos.circuitos.0.doc">Parcial</span></td><td><span data-field="hallazgos.circuitos.0.controles">No</span></td><td><span data-field="hallazgos.circuitos.0.madurez">Manual</span></td></tr>
+<tr><td>Ventas y facturación</td><td class="num"><span class="dot green"></span><span class="score-pill" data-canonical="score">72</span></td><td><span data-field="hallazgos.circuitos.1.doc">Parcial</span></td><td><span data-field="hallazgos.circuitos.1.controles">No</span></td><td><span data-field="hallazgos.circuitos.1.madurez">Manual</span></td></tr>
+<tr><td>Compras y proveedores</td><td class="num"><span class="dot red"></span><span class="score-pill" data-canonical="score">30</span></td><td><span data-field="hallazgos.circuitos.2.doc">Parcial</span></td><td><span data-field="hallazgos.circuitos.2.controles">No</span></td><td><span data-field="hallazgos.circuitos.2.madurez">Manual</span></td></tr>
   </table>
   <div style="height:14mm"></div>
   <h3>Lectura transversal</h3>
@@ -158,7 +156,6 @@ exports[`informe render (R12, R16, R25, R26, R30) > snapshot estable del render 
 <li><strong><span data-field="hallazgos.lectura_transversal.2.titulo">Datos dispersos</span>.</strong> <span data-field="hallazgos.lectura_transversal.2.detalle">La información operativa vive fuera del sistema.</span></li></ul>
   <div class="footer"><img src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_horizontal_b.png" alt="SyS"><span class="pagenum">03</span></div>
 </section>
-
 <section class="page">
   <div class="eyebrow">03 · Riesgos priorizados</div>
   <h2>Qué está en juego si esto sigue igual</h2>
@@ -194,7 +191,6 @@ exports[`informe render (R12, R16, R25, R26, R30) > snapshot estable del render 
     </div></div>
   <div class="footer"><img src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_horizontal_b.png" alt="SyS"><span class="pagenum">04</span></div>
 </section>
-
 <section class="page">
   <div class="eyebrow">04 · Recomendación y plan</div>
   <h2><span data-field="plan.titulo">Plan de ordenamiento de circuitos</span></h2>
@@ -212,22 +208,20 @@ exports[`informe render (R12, R16, R25, R26, R30) > snapshot estable del render 
   </div>
   <div class="footer"><img src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_horizontal_b.png" alt="SyS"><span class="pagenum">05</span></div>
 </section>
-
 <section class="page">
   <div class="eyebrow">05 · Qué cambia en el día a día</div>
   <h2>Lo que Tango ya sabe hacer<br>y hoy no se usa</h2>
   <p style="font-size:9.5pt; color:var(--sys-gris-neutro);"><span data-field="dia_a_dia.intro">No hace falta desarrollo a medida: la funcionalidad ya está en el producto.</span></p>
   <div style="height:4mm"></div>
-  <div class="circuitos"><div class="circuito"><h3>Inventario de activos / hardware — hoy <span data-canonical="score">20</span>/100</h3><ul><li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.0.nombre">Perfiles de usuario</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.0.que_resuelve">limita qué puede hacer cada puesto</span>.</li>
+  <div class="circuitos"><div class="circuito"><h3>Administración y parametrización — hoy <span data-canonical="score">45</span>/100</h3><ul><li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.0.nombre">Perfiles de usuario</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.0.que_resuelve">limita qué puede hacer cada puesto</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.1.nombre">Tango Live</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.1.que_resuelve">informes en línea sin planillas</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.2.nombre">Circuito de autorización</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.2.que_resuelve">controles antes de emitir comprobantes</span>.</li></ul></div>
-<div class="circuito"><h3>Software / licencias — hoy <span data-canonical="score">100</span>/100</h3><ul><li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.0.nombre">Perfiles de usuario</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.0.que_resuelve">limita qué puede hacer cada puesto</span>.</li>
+<div class="circuito"><h3>Ventas y facturación — hoy <span data-canonical="score">72</span>/100</h3><ul><li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.0.nombre">Perfiles de usuario</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.0.que_resuelve">limita qué puede hacer cada puesto</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.1.nombre">Tango Live</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.1.que_resuelve">informes en línea sin planillas</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.2.nombre">Circuito de autorización</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.2.que_resuelve">controles antes de emitir comprobantes</span>.</li></ul></div></div>
   <div style="height:4mm"></div><div class="callout"><p><span data-field="dia_a_dia.callout_transversal">Para la dirección — Tango Live: informes en línea.</span></p></div>
   <div class="footer"><img src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_horizontal_b.png" alt="SyS"><span class="pagenum">06</span></div>
 </section>
-
 <section class="page dark backcover">
   <div class="circle c1"></div><div class="circle c2"></div>
   <div style="text-align:left; width:100%; margin-bottom:16mm;">
@@ -257,6 +251,7 @@ exports[`informe render (R12, R16, R25, R26, R30) > snapshot estable del render 
     San Martín 1180, Corrientes · +54 3794 426022<br>
     info@serviciosysistemas.com.ar · www.serviciosysistemas.com.ar
   </div>
+  
 </section>
 
 </div>"

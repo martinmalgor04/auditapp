@@ -5,9 +5,10 @@ import {
   formatFewshotBlock,
   formatRagBlock
 } from '../context/build';
+import { tipoAuditoria, type TipoAuditoria } from '../tipo';
 
-/** Prompt versionado del informe IA (R9, R12). */
-export const INFORME_PROMPT_VERSION = '2.0';
+/** Prompt versionado del informe IA (R9, R12, #19 R8). */
+export const INFORME_PROMPT_VERSION = '2.1';
 
 export const JERGA_PROHIBIDA = [
   'solución 360°',
@@ -23,10 +24,7 @@ const SYSTEM_PROMPT_BASE = `Sos un consultor IT senior de Servicios y Sistemas S
 ## Insumo
 En el turno user recibís el JSON canónico completo de la auditoría cerrada: datos del cliente, secciones con scores, observaciones e items, índices, top_risks, quick_wins, upsell_findings, next_step y market_data.`;
 
-const SYSTEM_PROMPT_CLIENTE = `
-## Salida
-Respondé ÚNICAMENTE con un JSON válido conforme al envelope { "cliente": ..., "interna": ... }. Nada de texto fuera del JSON.
-
+const SYSTEM_PROMPT_CLIENTE_ERP = `
 ## Reglas para la salida "cliente" (informe que ve el cliente)
 - Tono: español rioplatense profesional, SIN voseo hacia el cliente final. Concreto, sin promesas absolutas.
 - "resumen.diagnostico": el diagnóstico central en UNA línea (máximo 90 caracteres, cabe en un h2).
@@ -39,6 +37,31 @@ Respondé ÚNICAMENTE con un JSON válido conforme al envelope { "cliente": ...,
 - "dia_a_dia": 2 a 4 circuitos débiles (score bajo) con exactamente 3 funcionalidades Tango existentes cada uno; usá seccion_code del canónico.
 - "proximos_pasos": 3 a 5 ítems; usá la razón social del cliente donde el template la pide.`;
 
+const SYSTEM_PROMPT_CLIENTE_IT = `
+## Reglas para la salida "cliente" (informe IT puro)
+- Tono: español rioplatense profesional, SIN voseo hacia el cliente final. Concreto, sin promesas absolutas.
+- "resumen.diagnostico": el diagnóstico central en UNA línea (máximo 90 caracteres).
+- "resumen.circuitos_con_controles": si no hay evidencia para estimar cuántas áreas tienen controles internos aplicados, devolvé null.
+- Los índices los sobrescribe el sistema; usá seccion_code de áreas IT (A1–A14).
+- Dimensiones Doc. / Controles / Madurez por área IT: inferilas SOLO del relevamiento. Sin evidencia → «—».
+- "hallazgos.lectura_transversal": 3 a 4 observaciones transversales sobre infraestructura, seguridad, backups o redes.
+- Riesgos: 3 a 5 con evidencia concreta del relevamiento. Insumo: top_risks.
+- Plan: 2 a 6 etapas orientadas a infraestructura/seguridad.
+- "dia_a_dia": 2 a 4 áreas IT débiles con exactamente 3 mejoras concretas de infraestructura/seguridad/backups/redes cada una (campo funcionalidades con nombre + que_resuelve). PROHIBIDO proponer funcionalidades Tango.
+- "proximos_pasos": 3 a 5 ítems accionables.`;
+
+const SYSTEM_PROMPT_CLIENTE_MIXTA = `
+## Reglas para la salida "cliente" (auditoría IT + ERP mixta)
+- Tono: español rioplatense profesional, SIN voseo hacia el cliente final.
+- "resumen.diagnostico": diagnóstico central en UNA línea (máximo 90 caracteres).
+- "resumen.circuitos_con_controles": null si no hay evidencia; el render muestra «a editar».
+- Usá seccion_code de AMBOS templates (áreas IT A1–A14 y circuitos ERP).
+- "hallazgos.lectura_transversal": 3 a 6 observaciones cross-dominio (IT y ERP).
+- Riesgos: 3 a 6 en un único ranking cross-dominio, con evidencia del relevamiento.
+- Plan: timeline unificado de 2 a 6 etapas cubriendo ambos dominios.
+- "dia_a_dia.circuitos": 2 a 6 entradas — áreas IT con 3 mejoras de infraestructura/seguridad (sin Tango) y circuitos ERP con 3 funcionalidades Tango existentes cada uno, según el dominio del seccion_code.
+- "proximos_pasos": 3 a 5 ítems.`;
+
 const SYSTEM_PROMPT_INTERNA = `
 ## Reglas para la salida "interna" (recomendaciones de presupuesto, solo uso interno SyS)
 - Las recomendaciones internas sugieren líneas de solución y rangos de precio estimados.
@@ -48,6 +71,12 @@ const SYSTEM_PROMPT_INTERNA = `
 const JERGA_BLOCK = `
 ## Jerga prohibida
 No uses NUNCA, en ningún texto del informe, los siguientes términos: «solución 360°», «disruptivo», «excelencia», «de la mano de», «transformación digital», «world class».`;
+
+function clienteBlockFor(tipo: TipoAuditoria): string {
+  if (tipo === 'it') return SYSTEM_PROMPT_CLIENTE_IT;
+  if (tipo === 'mixta') return SYSTEM_PROMPT_CLIENTE_MIXTA;
+  return SYSTEM_PROMPT_CLIENTE_ERP;
+}
 
 /** Sufijos deterministas por fuente inyectada (R12). */
 export function resolvePromptVersion(context: InformeContext | null): string {
@@ -102,6 +131,7 @@ export function buildInformePrompt(
   system: string;
   user: string;
 } {
+  const tipo = tipoAuditoria(canonical.types);
   const catalogoRule =
     context?.meta.injected.catalogo
       ? '\n- El bloque <catalogo_sys> es EXCLUSIVO de la salida interna; no lo menciones ni uses en el texto cliente.'
@@ -115,7 +145,7 @@ export function buildInformePrompt(
       ? '\n- Usá el catálogo SyS como insumo de rangos orientativos en recomendaciones internas, sin nombrar producto cerrado.'
       : '') +
     catalogoRule +
-    SYSTEM_PROMPT_CLIENTE +
+    clienteBlockFor(tipo) +
     JERGA_BLOCK;
 
   return {

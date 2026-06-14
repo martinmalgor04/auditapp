@@ -113,7 +113,7 @@ describe('informe create API', () => {
     const [snapshot] = await sql<{ canonical_json: { schema_version: string } }[]>`
       SELECT canonical_json FROM audit_report WHERE audit_id = ${auditId} AND version = 1
     `;
-    expect(snapshot.canonical_json.schema_version).toBe('1.0');
+    expect(snapshot.canonical_json.schema_version).toBe(CANONICAL_SCHEMA_VERSION);
   });
 
   it('GET listado devuelve versiones ordenadas (R27)', async () => {

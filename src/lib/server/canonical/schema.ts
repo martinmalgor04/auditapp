@@ -43,6 +43,7 @@ export const canonicalSectionSchema = z.object({
   weight: z.enum(['bajo', 'medio', 'alto', 'muy_alto']),
   score: z.number().int().min(0).max(100).nullable(),
   score_basis: z.literal('auto').optional(),
+  template_code: z.string().min(1).optional(),
   observations: z.string().nullable(),
   items: z.array(canonicalItemSchema)
 });

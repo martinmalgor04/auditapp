@@ -6,4 +6,4 @@
  * - Renombrar / quitar / cambiar tipo → MAJOR (1.0 → 2.0); coordinar pipeline n8n.
  * - Cambios solo en preview UI no afectan schema_version.
  */
-export const CANONICAL_SCHEMA_VERSION = '1.0' as const;
+export const CANONICAL_SCHEMA_VERSION = '1.1' as const;

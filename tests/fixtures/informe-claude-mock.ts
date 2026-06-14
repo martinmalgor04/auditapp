@@ -15,6 +15,47 @@ export function loadInformeCanonicalGolden(): CanonicalAudit {
   ) as CanonicalAudit;
 }
 
+const MEJORAS_IT = [
+  { nombre: 'Inventario centralizado', que_resuelve: 'visibilidad de activos en toda la red' },
+  { nombre: 'Política de backups 3-2-1', que_resuelve: 'recuperación ante ransomware' },
+  { nombre: 'Segmentación de red', que_resuelve: 'contención de incidentes' }
+];
+
+/** Draft IT sin referencias Tango/módulos/circuito en textos visibles (#19). */
+export function buildValidClientDraftIt(codes: string[]): ReportClientDraft {
+  const draft = buildValidClientDraft(codes);
+  draft.resumen.lead = 'El relevamiento muestra áreas IT sin controles formalizados.';
+  draft.resumen.diagnostico = 'La infraestructura opera sin controles de seguridad aplicados';
+  draft.resumen.interpretacion = 'El índice IT refleja madurez parcial en controles de infraestructura.';
+  draft.resumen.recomendacion_central = 'reforzar controles de seguridad y backups';
+  draft.plan.titulo = 'Plan de endurecimiento de infraestructura';
+  draft.plan.descripcion = 'Se priorizan áreas críticas de seguridad y continuidad operativa.';
+  draft.plan.etapas = [
+    { semana: 'Sem 1', titulo: 'Relevamiento', descripcion: 'Áreas objetivo de infraestructura.' },
+    { semana: 'Sem 2–3', titulo: 'Endurecimiento', descripcion: 'Controles de acceso y red.' },
+    { semana: 'Sem 4', titulo: 'Capacitación', descripcion: 'Usuarios clave en buenas prácticas.' }
+  ];
+  draft.hallazgos.lectura_transversal = [
+    { titulo: 'Controles manuales', detalle: 'El 80% de las áreas depende de procedimientos informales.' },
+    { titulo: 'Sin documentación', detalle: 'No hay políticas escritas de seguridad.' },
+    { titulo: 'Datos dispersos', detalle: 'La información crítica vive fuera de sistemas centralizados.' }
+  ];
+  draft.dia_a_dia = {
+    intro: 'Priorizamos mejoras concretas de infraestructura según el relevamiento.',
+    circuitos: codes.slice(0, 2).map((code) => ({
+      seccion_code: code,
+      funcionalidades: MEJORAS_IT
+    })),
+    callout_transversal: 'Para la dirección — visibilidad unificada de activos y riesgos.'
+  };
+  draft.proximos_pasos = [
+    'El cliente aprueba este informe y designa su referente.',
+    'Presentamos la propuesta de infraestructura.',
+    'Kickoff de la etapa 1 de seguridad.'
+  ];
+  return draft;
+}
+
 const FUNCIONALIDADES = [
   { nombre: 'Perfiles de usuario', que_resuelve: 'limita qué puede hacer cada puesto' },
   { nombre: 'Tango Live', que_resuelve: 'informes en línea sin planillas' },

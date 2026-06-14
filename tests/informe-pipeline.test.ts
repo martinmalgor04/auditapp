@@ -248,7 +248,7 @@ describe('informe pipeline', () => {
     expect(row!.status).toBe('borrador');
     expect(row!.contextMeta?.rag.error).toContain('red caída');
     expect(calls[0].prompt.system).not.toContain('<contexto_tango>');
-    expect(row!.promptVersion).toBe('2.0');
+    expect(row!.promptVersion).toBe('2.1');
   });
 
   it('RAG timeout → borrador sin bloque RAG (R6)', async () => {
@@ -309,6 +309,18 @@ describe('informe pipeline', () => {
     expect(row!.status).toBe('borrador');
     expect(contextMetaSchema.safeParse(row!.contextMeta).success).toBe(true);
     expect(row!.contextMeta?.flags).toEqual({ rag: true, catalogo: true, fewshot: true });
-    expect(row!.promptVersion).toContain('2.0');
+    expect(row!.promptVersion).toContain('2.1');
+  });
+
+  it('mixta sin template_code resoluble → error (#19 R6)', async () => {
+    const mixtaNoDomain = {
+      ...golden,
+      sections: golden.sections.map(({ template_code: _tc, ...s }) => s)
+    };
+    const { reportId } = await seedReport(mixtaNoDomain);
+    await runInformePipeline(reportId, { claude: mockAdapterValid() });
+    const row = await getReportById(reportId);
+    expect(row!.status).toBe('error');
+    expect(row!.errorMessage).toMatch(/template_code|dominio/i);
   });
 });

@@ -168,7 +168,10 @@ describe('informe share public routes (R1–R2, R5–R7, R9, R12–R14)', () => 
     expect(data.model.loomUrl).toBeNull();
 
     const html = renderInformeHtml(data.model);
-    expect((html.match(/<section class="page/g) ?? []).length).toBe(7);
+    const pageCount = (html.match(/<section class="page/g) ?? []).length;
+    const expected =
+      data.model.tipoAuditoria === 'mixta' ? 9 : data.model.tipoAuditoria === 'it' ? 7 : 7;
+    expect(pageCount).toBe(expected);
 
     const pageSource = readFileSync(
       join(process.cwd(), 'src/routes/informe/[token]/imprimir/+page.svelte'),

@@ -63,3 +63,11 @@ export class InformeGenerationError extends Error {
     this.name = 'InformeGenerationError';
   }
 }
+
+export class InformeDomainUnresolvedError extends Error {
+  readonly code = 'INFORME_DOMAIN_UNRESOLVED';
+  constructor(message: string) {
+    super(message);
+    this.name = 'InformeDomainUnresolvedError';
+  }
+}

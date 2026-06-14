@@ -2,6 +2,7 @@ import { stripInternalFindings } from '$lib/server/canonical/preview';
 import { indexToSemaphore } from '$lib/server/scoring/semaphore';
 import type { AuditReportRow } from '$lib/server/db/informe-reports';
 import type { InformeRenderModel, RenderClientDraft } from '$lib/informe/render';
+import { resolveSectionDomain, tipoAuditoria } from './tipo';
 
 const MESES = [
   'enero',
@@ -31,14 +32,6 @@ function fechaLarga(closedAt: string | null): string {
   return `${d.getUTCDate()} de ${MESES[d.getUTCMonth()]} de ${d.getUTCFullYear()}`;
 }
 
-function tipoAuditoria(types: string[]): 'erp' | 'it' | 'mixta' {
-  const hasErp = types.some((t) => t.startsWith('erp'));
-  const hasIt = types.includes('it');
-  if (hasErp && hasIt) return 'mixta';
-  if (hasIt) return 'it';
-  return 'erp';
-}
-
 /**
  * View-model del render imprimible (R26): datos públicos del snapshot canónico
  * (vía stripInternalFindings, R16) + client_draft. Nunca recibe internal_draft.
@@ -48,6 +41,7 @@ export function buildInformeRenderModel(report: AuditReportRow): InformeRenderMo
     throw new Error('El informe no tiene borrador para renderizar');
   }
   const canonical = stripInternalFindings(report.canonicalJson);
+  const auditTipo = tipoAuditoria(canonical.types);
 
   return {
     cliente: {
@@ -57,7 +51,7 @@ export function buildInformeRenderModel(report: AuditReportRow): InformeRenderMo
     },
     periodo: periodoFrom(canonical.closed_at),
     fechaInforme: fechaLarga(canonical.closed_at),
-    tipoAuditoria: tipoAuditoria(canonical.types),
+    tipoAuditoria: auditTipo,
     modulos: canonical.market_data.modulos_tango ?? [],
     sistema:
       canonical.market_data.erp_actual ??
@@ -66,7 +60,8 @@ export function buildInformeRenderModel(report: AuditReportRow): InformeRenderMo
       code: s.code,
       title: s.title,
       score: s.score,
-      semaforo: s.score !== null ? indexToSemaphore(s.score) : null
+      semaforo: s.score !== null ? indexToSemaphore(s.score) : null,
+      domain: resolveSectionDomain(s, auditTipo)
     })),
     draft: report.clientDraft as RenderClientDraft,
     loomUrl: report.loomUrl
