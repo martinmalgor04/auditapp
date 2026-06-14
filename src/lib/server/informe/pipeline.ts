@@ -195,12 +195,20 @@ export async function runInformePipeline(
     const adapter = deps.claude ?? createClaudeAdapter();
     const raw = await adapter.generateDraft({ prompt, model });
 
-    const envelope = raw as { cliente?: unknown; interna?: unknown };
+    // Claude puede devolver el envelope directamente o con wrapper { cliente, interna }.
+    // Si faltan ambas claves, asumimos que el raw ES el objeto cliente (sin wrapper).
+    const rawObj = raw as Record<string, unknown>;
+    const envelope: { cliente?: unknown; interna?: unknown } =
+      rawObj.cliente !== undefined || rawObj.interna !== undefined
+        ? { cliente: rawObj.cliente, interna: rawObj.interna }
+        : { cliente: raw, interna: undefined };
     const draftSchema = reportClientDraftSchemaFor(tipoAuditoria(report.canonicalJson.types));
     const clientParsed = draftSchema.safeParse(envelope?.cliente);
     if (!clientParsed.success) {
+      const issue = clientParsed.error.issues[0];
+      const path = issue?.path?.join('.') ?? '';
       throw new InformeDraftValidationError(
-        `Borrador cliente inválido: ${clientParsed.error.issues[0]?.message ?? 'schema'}`
+        `Borrador cliente inválido: ${path ? `[${path}] ` : ''}${issue?.message ?? 'schema'}`
       );
     }
     const internalParsed = reportInternalDraftSchema.safeParse(envelope?.interna);
