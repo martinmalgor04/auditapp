@@ -3,6 +3,8 @@
  * - No acepta minimum/maximum en type integer (sanitizamos).
  * - No acepta minItems > 1 ni maxItems en arrays (sanitizamos; Zod valida post-parse).
  * - No acepta $ref definidos bajo properties (buildOutputFormat usa $refStrategy: 'none').
+ * - additionalProperties: false (de .strict()) dispara "grammar too large" → lo eliminamos.
+ * - minLength/maxLength en strings también aumentan la gramática → los eliminamos.
  * La validación fuerte sigue en reportDraftEnvelopeSchema.parse() post-respuesta.
  */
 
@@ -35,6 +37,11 @@ export function sanitizeAnthropicJsonSchema(schema: unknown): unknown {
     }
     delete out.maxItems;
   }
+
+  // additionalProperties: false (de .strict()) y minLength/maxLength disparan "grammar too large".
+  delete out.additionalProperties;
+  delete out.minLength;
+  delete out.maxLength;
 
   if (out.properties && typeof out.properties === 'object') {
     const props: Record<string, unknown> = {};
