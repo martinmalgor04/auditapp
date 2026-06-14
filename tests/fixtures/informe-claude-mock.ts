@@ -44,6 +44,7 @@ export function buildValidClientDraftIt(codes: string[]): ReportClientDraft {
     intro: 'Priorizamos mejoras concretas de infraestructura según el relevamiento.',
     circuitos: codes.slice(0, 2).map((code) => ({
       seccion_code: code,
+      hoy: 'área operada sin controles ni monitoreo formal',
       funcionalidades: MEJORAS_IT
     })),
     callout_transversal: 'Para la dirección — visibilidad unificada de activos y riesgos.'
@@ -113,8 +114,16 @@ export function buildValidClientDraft(codes: string[]): ReportClientDraft {
     dia_a_dia: {
       intro: 'No hace falta desarrollo a medida: la funcionalidad ya está en el producto.',
       circuitos: [
-        { seccion_code: c1, funcionalidades: FUNCIONALIDADES },
-        { seccion_code: c2, funcionalidades: FUNCIONALIDADES }
+        {
+          seccion_code: c1,
+          hoy: 'facturación manual, sin controles, precios fuera del sistema',
+          funcionalidades: FUNCIONALIDADES
+        },
+        {
+          seccion_code: c2,
+          hoy: 'el stock del sistema no refleja el físico',
+          funcionalidades: FUNCIONALIDADES
+        }
       ],
       callout_transversal: 'Para la dirección — Tango Live: informes en línea.'
     },

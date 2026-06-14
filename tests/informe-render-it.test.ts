@@ -61,8 +61,8 @@ function fakeMixtaReport(): AuditReportRow {
     { titulo: 'Datos dispersos', detalle: 'Información fuera de los sistemas.' }
   ];
   draft.dia_a_dia.circuitos = [
-    { seccion_code: 'A1', funcionalidades: buildValidClientDraftIt(['A1']).dia_a_dia.circuitos[0].funcionalidades },
-    { seccion_code: 'B1', funcionalidades: buildValidClientDraft(['B1']).dia_a_dia.circuitos[0].funcionalidades }
+    { seccion_code: 'A1', hoy: 'área IT sin monitoreo formal', funcionalidades: buildValidClientDraftIt(['A1']).dia_a_dia.circuitos[0].funcionalidades },
+    { seccion_code: 'B1', hoy: 'circuito ERP operado a mano', funcionalidades: buildValidClientDraft(['B1']).dia_a_dia.circuitos[0].funcionalidades }
   ];
   return {
     id: 'r-mix',

@@ -64,6 +64,8 @@ exports[`informe render IT (#19 R3, R4, R9, R11) > snapshot estable variante IT 
 .informe-a4 .circuitos { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:4mm 0; }
 .informe-a4 .circuito { background:var(--sys-offwhite); border-left:2.5mm solid var(--sys-azul-electrico); border-radius:1mm; padding:4mm 4.5mm; }
 .informe-a4 .circuito h3 { font-size:10.5pt; margin-bottom:2mm; }
+.informe-a4 .circuito .circuito-hoy { font-size:8.5pt; color:var(--sys-gris-neutro); margin:0 0 2.5mm; line-height:1.4; }
+.informe-a4 .circuito .circuito-hoy strong { color:#2a3a4a; }
 .informe-a4 .circuito ul { list-style:none; }
 .informe-a4 .circuito li { font-size:9pt; line-height:1.5; color:#2a3a4a; padding-left:3.5mm; position:relative; margin-bottom:1.5mm; }
 .informe-a4 .circuito li::before { content:''; position:absolute; left:0; top:2.2mm; width:1.8mm; height:1.8mm; background:var(--sys-azul-electrico); border-radius:0.3mm; }
@@ -213,10 +215,10 @@ exports[`informe render IT (#19 R3, R4, R9, R11) > snapshot estable variante IT 
   <h2>Lo que tu infraestructura necesita<br>y hoy no tiene</h2>
   <p style="font-size:9.5pt; color:var(--sys-gris-neutro);"><span data-field="dia_a_dia.intro">Priorizamos mejoras concretas de infraestructura según el relevamiento.</span></p>
   <div style="height:4mm"></div>
-  <div class="circuitos"><div class="circuito"><h3>Inventario de activos — hoy <span data-canonical="score">20</span>/100</h3><ul><li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.0.nombre">Inventario centralizado</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.0.que_resuelve">visibilidad de activos en toda la red</span>.</li>
+  <div class="circuitos"><div class="circuito"><h3>Inventario de activos — hoy <span data-canonical="score">20</span>/100</h3><p class="circuito-hoy"><strong>Hoy:</strong> <span data-field="dia_a_dia.circuitos.0.hoy">área operada sin controles ni monitoreo formal</span></p><ul><li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.0.nombre">Inventario centralizado</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.0.que_resuelve">visibilidad de activos en toda la red</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.1.nombre">Política de backups 3-2-1</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.1.que_resuelve">recuperación ante ransomware</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.2.nombre">Segmentación de red</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.2.que_resuelve">contención de incidentes</span>.</li></ul></div>
-<div class="circuito"><h3>Software / licencias — hoy <span data-canonical="score">100</span>/100</h3><ul><li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.0.nombre">Inventario centralizado</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.0.que_resuelve">visibilidad de activos en toda la red</span>.</li>
+<div class="circuito"><h3>Software / licencias — hoy <span data-canonical="score">100</span>/100</h3><p class="circuito-hoy"><strong>Hoy:</strong> <span data-field="dia_a_dia.circuitos.1.hoy">área operada sin controles ni monitoreo formal</span></p><ul><li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.0.nombre">Inventario centralizado</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.0.que_resuelve">visibilidad de activos en toda la red</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.1.nombre">Política de backups 3-2-1</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.1.que_resuelve">recuperación ante ransomware</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.2.nombre">Segmentación de red</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.2.que_resuelve">contención de incidentes</span>.</li></ul></div></div>
   <div style="height:4mm"></div><div class="callout"><p><span data-field="dia_a_dia.callout_transversal">Para la dirección — visibilidad unificada de activos y riesgos.</span></p></div>
@@ -321,6 +323,8 @@ exports[`informe render mixto (#19 R5, R11) > snapshot estable variante mixta 1`
 .informe-a4 .circuitos { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:4mm 0; }
 .informe-a4 .circuito { background:var(--sys-offwhite); border-left:2.5mm solid var(--sys-azul-electrico); border-radius:1mm; padding:4mm 4.5mm; }
 .informe-a4 .circuito h3 { font-size:10.5pt; margin-bottom:2mm; }
+.informe-a4 .circuito .circuito-hoy { font-size:8.5pt; color:var(--sys-gris-neutro); margin:0 0 2.5mm; line-height:1.4; }
+.informe-a4 .circuito .circuito-hoy strong { color:#2a3a4a; }
 .informe-a4 .circuito ul { list-style:none; }
 .informe-a4 .circuito li { font-size:9pt; line-height:1.5; color:#2a3a4a; padding-left:3.5mm; position:relative; margin-bottom:1.5mm; }
 .informe-a4 .circuito li::before { content:''; position:absolute; left:0; top:2.2mm; width:1.8mm; height:1.8mm; background:var(--sys-azul-electrico); border-radius:0.3mm; }
@@ -438,7 +442,7 @@ exports[`informe render mixto (#19 R5, R11) > snapshot estable variante mixta 1`
   <h2>Lo que tu infraestructura necesita<br>y hoy no tiene</h2>
   <p style="font-size:9.5pt; color:var(--sys-gris-neutro);"><span data-field="dia_a_dia.intro">No hace falta desarrollo a medida: la funcionalidad ya está en el producto.</span></p>
   <div style="height:4mm"></div>
-  <div class="circuitos"><div class="circuito"><h3>Inventario de activos / hardware — hoy <span data-canonical="score">20</span>/100</h3><ul><li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.0.nombre">Inventario centralizado</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.0.que_resuelve">visibilidad de activos en toda la red</span>.</li>
+  <div class="circuitos"><div class="circuito"><h3>Inventario de activos / hardware — hoy <span data-canonical="score">20</span>/100</h3><p class="circuito-hoy"><strong>Hoy:</strong> <span data-field="dia_a_dia.circuitos.0.hoy">área IT sin monitoreo formal</span></p><ul><li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.0.nombre">Inventario centralizado</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.0.que_resuelve">visibilidad de activos en toda la red</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.1.nombre">Política de backups 3-2-1</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.1.que_resuelve">recuperación ante ransomware</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.2.nombre">Segmentación de red</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.2.que_resuelve">contención de incidentes</span>.</li></ul></div></div>
   <div style="height:4mm"></div><div class="callout"><p><span data-field="dia_a_dia.callout_transversal">Para la dirección — Tango Live: informes en línea.</span></p></div>
@@ -501,7 +505,7 @@ exports[`informe render mixto (#19 R5, R11) > snapshot estable variante mixta 1`
   <h2>Lo que Tango ya sabe hacer<br>y hoy no se usa</h2>
   <p style="font-size:9.5pt; color:var(--sys-gris-neutro);"><span data-field="dia_a_dia.intro">No hace falta desarrollo a medida: la funcionalidad ya está en el producto.</span></p>
   <div style="height:4mm"></div>
-  <div class="circuitos"><div class="circuito"><h3>Administración y parametrización — hoy <span data-canonical="score">—</span>/100</h3><ul><li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.0.nombre">Perfiles de usuario</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.0.que_resuelve">limita qué puede hacer cada puesto</span>.</li>
+  <div class="circuitos"><div class="circuito"><h3>Administración y parametrización — hoy <span data-canonical="score">—</span>/100</h3><p class="circuito-hoy"><strong>Hoy:</strong> <span data-field="dia_a_dia.circuitos.1.hoy">circuito ERP operado a mano</span></p><ul><li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.0.nombre">Perfiles de usuario</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.0.que_resuelve">limita qué puede hacer cada puesto</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.1.nombre">Tango Live</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.1.que_resuelve">informes en línea sin planillas</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.2.nombre">Circuito de autorización</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.2.que_resuelve">controles antes de emitir comprobantes</span>.</li></ul></div></div>
   <div style="height:4mm"></div><div class="callout"><p><span data-field="dia_a_dia.callout_transversal">Para la dirección — Tango Live: informes en línea.</span></p></div>

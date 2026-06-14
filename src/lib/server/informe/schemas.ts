@@ -83,6 +83,8 @@ const planSchema = z
 const circuitoDiaADiaSchema = z
   .object({
     seccion_code: z.string().min(1),
+    // Estado actual del circuito en UNA línea ("Hoy: …"). null si no hay evidencia.
+    hoy: z.string().min(1).nullable(),
     funcionalidades: z
       .array(
         z

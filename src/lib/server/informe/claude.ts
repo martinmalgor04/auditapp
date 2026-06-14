@@ -155,8 +155,16 @@ export function createFakeAdapter(): InformeClaudeAdapter {
           dia_a_dia: {
             intro: 'No hace falta desarrollo a medida: la funcionalidad ya está en el producto.',
             circuitos: [
-              { seccion_code: first, funcionalidades: tresFn },
-              { seccion_code: second, funcionalidades: tresFn }
+              {
+                seccion_code: first,
+                hoy: 'circuito operado a mano, sin controles internos aplicados',
+                funcionalidades: tresFn
+              },
+              {
+                seccion_code: second,
+                hoy: 'controles fuera del sistema, datos en planillas externas',
+                funcionalidades: tresFn
+              }
             ],
             callout_transversal: null
           },
