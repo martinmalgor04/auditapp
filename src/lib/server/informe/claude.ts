@@ -22,6 +22,16 @@ export interface InformeClaudeAdapter {
   }): Promise<unknown>;
 }
 
+/** Extrae el primer objeto JSON completo del texto, ignorando preambles/markdown. */
+function extractJson(text: string): unknown {
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start === -1 || end === -1 || end <= start) {
+    throw new Error('no json object found');
+  }
+  return JSON.parse(text.slice(start, end + 1));
+}
+
 type MessagesClient = {
   messages: {
     create(params: Record<string, unknown>): Promise<{ content: unknown }>;
@@ -57,9 +67,7 @@ export function createClaudeAdapter(deps?: { client?: MessagesClient }): Informe
         .map((b) => b.text)
         .join('');
       try {
-        // Si Claude envuelve en markdown (```json ... ```) lo extraemos igual.
-        const clean = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
-        return JSON.parse(clean) as unknown;
+        return extractJson(text);
       } catch {
         throw new InformeGenerationError('La respuesta de la IA no es JSON válido');
       }
