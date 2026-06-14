@@ -338,7 +338,7 @@
         "Tests de agregaciones SQL y de la ruta pasan"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 19,
@@ -354,7 +354,7 @@
         "Tests de snapshot del render IT y mixto pasan; los snapshots ERP existentes no cambian"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "in_progress"
     }
   ]
 }

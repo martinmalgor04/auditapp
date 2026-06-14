@@ -31,6 +31,12 @@
       </a>
       {#if isAdmin}
         <a
+          href="/mercado"
+          class="rounded-sys px-3 py-2 text-sys-medio transition-colors hover:bg-sys-offwhite hover:text-sys-electrico"
+        >
+          Mercado
+        </a>
+        <a
           href="/usuarios"
           class="rounded-sys px-3 py-2 text-sys-medio transition-colors hover:bg-sys-offwhite hover:text-sys-electrico"
         >
