@@ -47,7 +47,7 @@ async function upsertReunionResponse(
     VALUES (
       ${auditId},
       ${itemId},
-      ${sql.json(value as object)},
+      ${sql.json(value as never)},
       false,
       'reunion_ia',
       ${userId}

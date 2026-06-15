@@ -33,7 +33,7 @@ export async function upsertReunionTranscript(input: {
       ${input.reunionSessionId},
       ${input.status},
       ${input.fullText ?? null},
-      ${input.segments ? sql.json(input.segments as object) : null},
+      ${input.segments ? sql.json(input.segments as never) : null},
       ${input.sttProvider ?? null},
       ${input.language ?? 'es'},
       ${input.errorMessage ?? null}

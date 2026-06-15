@@ -42,7 +42,7 @@ export async function insertReunionProposals(
       VALUES (
         ${p.reunionSessionId},
         ${p.itemId},
-        ${sql.json(p.proposedValue as object)},
+        ${sql.json(p.proposedValue as never)},
         ${p.quote},
         ${p.confidence}
       )
@@ -114,7 +114,7 @@ export async function updateReunionProposalReview(input: {
     UPDATE reunion_proposal
     SET
       review_status = ${input.reviewStatus},
-      final_value   = ${input.finalValue != null ? sql.json(input.finalValue as object) : null},
+      final_value   = ${input.finalValue != null ? sql.json(input.finalValue as never) : null},
       reviewed_by   = ${input.reviewedBy},
       reviewed_at   = now()
     WHERE id = ${input.proposalId}
