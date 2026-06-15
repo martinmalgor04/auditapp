@@ -108,7 +108,7 @@ export async function removeAttachmentFromResponse(input: {
 
     await sql`
       UPDATE audit_response
-      SET value = ${sql.json({ rows })},
+      SET value = ${sql.json({ rows } as never)},
           source = 'tecnico',
           updated_by = ${input.userId},
           updated_at = now()

@@ -29,8 +29,9 @@ const SKIP_DB_RESET =
 
 const FULL_DB_RESET = /(?:users-admin|templates-admin|audit-create-flow)\.test\.ts$/;
 
-function testFilePath(ctx?: { task?: { file?: { name?: string } } }): string {
-  return ctx?.task?.file?.name ?? expect.getState().testPath ?? '';
+function testFilePath(ctx?: unknown): string {
+  const c = ctx as { task?: { file?: { name?: string } } } | undefined;
+  return c?.task?.file?.name ?? expect.getState().testPath ?? '';
 }
 
 function shouldSkipDbReset(file: string): boolean {
