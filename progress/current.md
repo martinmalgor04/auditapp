@@ -1,38 +1,29 @@
 # Sesión actual
 
-## Feature en curso: #20 20_export_import_auditorias
+## Feature en curso: #12 12_reunion_asistente
 
-**Estado:** implementación COMPLETA — pendiente reviewer (sigue `in_progress`).
+**Estado:** implementando T1–T44.
 
-### Entregables
-- Dominio `src/lib/server/bundle/`: version, schema (Zod), errors, item-key, build, resolve, import.
-- DB `src/lib/server/db/audit-bundle.ts`: lecturas del build + resolvers destino por clave natural.
-- API: `GET /api/audits/[id]/bundle/export` y `POST /api/audits/bundle/import` (default dry-run).
-- UI: `<AuditBundleActions>` (solo admin) en la vista de auditoría — export + import con dry-run.
-- Migración `011_audit_bundle_import.sql` (dedupe).
-- Env `INSTANCE_ID` (opcional, fallback 'unknown') en `env.ts` y `.env.example`.
-
-### Decisiones humanas respetadas
-- OQ-1: clave ítem 4 campos; drift (sort_order igual, field_type distinto) ⇒ faltante.
-- OQ-2: endpoint default dry-run; escritura exige strict|permissive explícito.
-- OQ-3: public_token regenerado solo si status ∈ {briefing_enviado, briefing_completo}; NULL resto.
-
-### Tasks
-- T1..T23 todas `[x]` en `specs/20_export_import_auditorias/tasks.md`.
-
-### Verificación (gate)
-- `./init.sh` → exit 0 (136 archivos, 612 passed, 2 skipped). `[OK] Entorno listo`.
-- `pnpm test` → verde. 40 tests nuevos de #20 verdes.
-- `pnpm exec playwright test e2e/audit-bundle.spec.ts` → 2 passed.
-- `pnpm run check` / `tsc --noEmit`: SIN errores nuevos en archivos de #20. Errores reportados son
-  PRE-EXISTENTES y ajenos (`tests/setup.ts`, `tests/api/attachments-delete.test.ts`,
-  `tests/form-save-indicator.test.ts`, `src/lib/server/db/audit-responses.ts`). El gate del arnés
-  (`init.sh`) corre `pnpm test`, no `tsc`.
-
-### Trazabilidad
-- `progress/impl_20_export_import_auditorias.md` (R1..R18 ↔ tests).
-
-### Notas para el reviewer
-- `tests/migrate.test.ts` actualizado con la nueva migración `011`.
-- `tests/helpers/db.ts` agrega `audit_bundle_import` a los TRUNCATE.
-- No marcar `done` sin re-validar el gate; la feature queda `in_progress` a propósito.
+### Plan de tasks
+- T1: migración SQL 012_reunion_asistente.sql
+- T2: db/reunion-sessions.ts
+- T3: db/reunion-transcripts.ts + reunion-proposals.ts
+- T4: actualizar tipos TS (attachment.kind, audit_response.source)
+- T5: reunion/errors.ts + schemas.ts
+- T6: reunion/guards.ts
+- T7: reunion/session.ts
+- T8: storage/r2-keys.ts (buildReunionR2Key)
+- T9: reunion/upload.ts
+- T10: storage/attachments.ts extender kind recording
+- T11: reunion/pipeline/context.ts
+- T12: reunion/pipeline/stt.ts
+- T13: reunion/pipeline/extract.ts
+- T14: reunion/pipeline/direct.ts + worker.ts
+- T15: reunion/pipeline/webhook.ts + callback route
+- T16: reunion/retention.ts
+- T17: reunion/review.ts
+- T18: extraer parseFormValue compartido
+- T19-T23: API routes
+- T24-T27: UI
+- T28: .env.example
+- T29-T44: tests + e2e + gate

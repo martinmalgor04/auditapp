@@ -62,6 +62,18 @@
     {/if}
     {#if data.audit.status === 'briefing_completo' || data.audit.status === 'en_relevamiento' || data.audit.status === 'en_cierre'}
       <a href="/auditorias/{data.audit.id}/form" class="sys-btn-accent">Abrir relevamiento técnico</a>
+      <a href="/auditorias/{data.audit.id}/reunion" class="sys-btn-secondary mt-2">Asistente de reunión</a>
+      {#if data.reunionSessions && data.reunionSessions.length > 0}
+        <div class="mt-3 space-y-1">
+          <p class="text-xs text-sys-medio font-medium">Sesiones de reunión</p>
+          {#each data.reunionSessions as s}
+            <a href="/auditorias/{data.audit.id}/reunion/{s.id}" class="flex items-center justify-between rounded bg-sys-fondo px-3 py-1.5 text-xs hover:bg-sys-borde">
+              <span class="text-sys-oscuro capitalize">{s.session_type}</span>
+              <span class="text-sys-medio">{new Date(s.created_at).toLocaleDateString('es-AR')} · {s.status}</span>
+            </a>
+          {/each}
+        </div>
+      {/if}
     {/if}
     {#if data.audit.status === 'en_cierre' || data.audit.status === 'cerrada'}
       <a href="/auditorias/{data.audit.id}/cierre" class="sys-btn-secondary mt-2">Pantalla de cierre</a>
