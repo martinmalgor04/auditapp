@@ -48,7 +48,7 @@ export type FormResponseRow = {
   value: unknown;
   na: boolean;
   observations: string | null;
-  source: 'admin' | 'cliente' | 'tecnico';
+  source: 'admin' | 'cliente' | 'tecnico' | 'reunion_ia';
   updated_by: string | null;
   updated_at: Date;
 };

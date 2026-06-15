@@ -15,6 +15,7 @@ import {
 import { parseCabResponses } from '$lib/server/backoffice/form-parsers';
 import { failFromError } from '$lib/server/backoffice/route-helpers';
 import { listReportsByAudit } from '$lib/server/db/informe-reports';
+import { listReunionSessionsByAudit } from '$lib/server/db/reunion-sessions';
 import {
   findLatestActiveLinkByAudit,
   toProposalLinkView
@@ -31,6 +32,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
   const technicians = await listTechnicians();
   const readonly = audit.status === 'cerrada';
   const isAdmin = locals.user?.role === 'admin';
+
+  // Sesiones de reunión (listado simple para mostrar en detalle)
+  const reunionSessions = await listReunionSessionsByAudit(audit.id).catch(() => []);
 
   // Informe IA (R27): listado de versiones; técnico asignado solo ve aprobadas (R1).
   let reports: Awaited<ReturnType<typeof listReportsByAudit>> = [];
@@ -64,7 +68,13 @@ export const load: PageServerLoad = async ({ locals, params }) => {
       error_message: r.errorMessage
     })),
     hasApprovedReport,
-    proposalLink
+    proposalLink,
+    reunionSessions: reunionSessions.map((s) => ({
+      id: s.id,
+      session_type: s.session_type,
+      status: s.status,
+      created_at: s.created_at.toISOString()
+    }))
   };
 };
 

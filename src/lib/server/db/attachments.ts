@@ -8,7 +8,7 @@ export type AttachmentRow = {
   filename: string;
   content_type: string;
   size_bytes: number;
-  kind: 'photo' | 'export';
+  kind: 'photo' | 'export' | 'recording';
   uploaded_by: string | null;
   created_at: Date;
 };
@@ -20,7 +20,7 @@ export async function insertAttachment(input: {
   filename: string;
   contentType: string;
   sizeBytes: number;
-  kind: 'photo' | 'export';
+  kind: 'photo' | 'export' | 'recording';
   uploadedBy: string;
 }): Promise<string> {
   const sql = getSql();

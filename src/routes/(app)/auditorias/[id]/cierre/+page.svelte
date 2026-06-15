@@ -47,7 +47,7 @@
   </div>
 
   {#if data.readonly}
-    <p class="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+    <div class="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
       Auditoría cerrada. Solo lectura.
       {#if data.isAdmin}
         <form method="POST" action="?/reopenAudit" class="mt-2">
@@ -56,7 +56,7 @@
           </button>
         </form>
       {/if}
-    </p>
+    </div>
   {/if}
 
   {#if form?.error}

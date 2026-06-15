@@ -231,7 +231,7 @@
         "Tests de flujo feliz, permisos y validación Zod de propuestas pasan"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "in_progress"
     },
     {
       "id": 13,

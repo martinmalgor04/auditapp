@@ -7,13 +7,17 @@ import {
 } from '$lib/server/form/errors';
 import { completeRelevamiento } from '$lib/server/form/complete';
 import { loadAuditForm } from '$lib/server/form/load-form';
+import { countPendingProposalsByAudit } from '$lib/server/db/reunion-proposals';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
   const user = requireStaff(locals);
 
   try {
-    const form = await loadAuditForm(params.id, user);
-    return { ...form, auditId: params.id };
+    const [form, pendingProposalCount] = await Promise.all([
+      loadAuditForm(params.id, user),
+      countPendingProposalsByAudit(params.id).catch(() => 0)
+    ]);
+    return { ...form, auditId: params.id, pendingProposalCount };
   } catch (err) {
     if (err instanceof AuditFormNotAllowedError) {
       error(403, err.message);

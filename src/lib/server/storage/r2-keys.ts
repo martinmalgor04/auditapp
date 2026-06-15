@@ -33,3 +33,13 @@ export function buildR2Key(input: R2KeyInput): string {
 export function isR2KeyForAudit(r2Key: string, auditId: string): boolean {
   return r2Key.startsWith(`audits/${auditId}/`);
 }
+
+/** Genera key R2 para grabación de reunión: audits/{auditId}/_reunion/{uuid}.{ext} */
+export function buildReunionR2Key(
+  auditId: string,
+  ext: 'webm' | 'm4a' | 'mp3',
+  uuid?: string
+): string {
+  const id = uuid ?? crypto.randomUUID();
+  return `audits/${auditId}/_reunion/${id}.${ext}`;
+}

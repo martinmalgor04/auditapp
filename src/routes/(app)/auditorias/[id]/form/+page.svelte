@@ -266,6 +266,16 @@
     {#if form?.error}
       <p class="text-sm text-red-600" role="alert">{form.error}</p>
     {/if}
+    {#if data.pendingProposalCount > 0}
+      <div class="rounded-sys-app border border-sys-naranja/30 bg-sys-naranja/10 p-3 text-sm text-sys-naranja flex items-center justify-between gap-3">
+        <span>
+          <strong>{data.pendingProposalCount}</strong> sugerencia{data.pendingProposalCount !== 1 ? 's' : ''} de reunión pendiente{data.pendingProposalCount !== 1 ? 's' : ''} de revisión
+        </span>
+        <a href="/auditorias/{data.auditId}/reunion" class="shrink-0 font-medium underline hover:no-underline">
+          Revisar →
+        </a>
+      </div>
+    {/if}
     {#if form?.warnings?.length}
       <div class="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
         <p class="font-medium">Ítems requeridos pendientes:</p>
