@@ -22,14 +22,48 @@ export interface InformeClaudeAdapter {
   }): Promise<unknown>;
 }
 
-/** Extrae el primer objeto JSON completo del texto, ignorando preambles/markdown. */
-function extractJson(text: string): unknown {
+/**
+ * Extrae el primer objeto JSON balanceado del texto, ignorando preambles/markdown.
+ * Recorre desde la primera `{` contando llaves y respetando strings/escapes, así
+ * un texto con prosa y llaves DESPUÉS del JSON (p.ej. "… :}") no rompe el parseo.
+ */
+export function extractJson(text: string): unknown {
   const start = text.indexOf('{');
-  const end = text.lastIndexOf('}');
-  if (start === -1 || end === -1 || end <= start) {
+  if (start === -1) {
     throw new Error('no json object found');
   }
-  return JSON.parse(text.slice(start, end + 1));
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (ch === '\\') {
+        escaped = true;
+      } else if (ch === '"') {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (ch === '"') {
+      inString = true;
+    } else if (ch === '{') {
+      depth++;
+    } else if (ch === '}') {
+      depth--;
+      if (depth === 0) {
+        return JSON.parse(text.slice(start, i + 1));
+      }
+    }
+  }
+
+  throw new Error('no json object found');
 }
 
 type MessagesClient = {
