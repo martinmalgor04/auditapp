@@ -82,4 +82,42 @@ Estado: ✅ aplicado (bajo riesgo) · ⏸️ pendiente (cuestionario).
 3. `test(attachments)` — I1: import sin extensión `.ts`.
 4. `fix(cierre)` — B3: `<div>` en vez de `<p>` envolviendo el `<form>` de reapertura (mismatch SSR).
 
-Todo lo demás (S1–S4, I2–I4, D1–D5) quedó **pendiente** y se resume en el cuestionario de cierre.
+Todo lo demás (S1–S4, I2–I4, D1–D5) quedó **pendiente** y se resumió en el cuestionario de cierre.
+
+---
+
+## Resolución del cuestionario (2da pasada)
+
+Respuestas del cliente: **Q1 a · Q2 a · Q3 b · Q4 a · Q5 a · Q6 = D2/D3/D4 · Q7 a**.
+Durante esta pasada, el feature `reunion` se commiteó y mergeó a `master` (commits
+`4fabd29` + `3b0ec05`); el resto del trabajo se hizo sobre `master`.
+
+| Ítem | Decisión | Estado | Commit |
+|---|---|---|---|
+| **Q1** spec R8 | actualizar spec | ✅ | `docs(spec): R8 refleja JSON-por-prompt` |
+| **Q2 / I2,I3** tipos | aplicar | ✅ `svelte-check` 7→4 errores | `refactor(types): … audit-responses y setup` |
+| **I4** tipos reunion | (parte de Q3b) | ✅ `svelte-check` 4→**0** errores | `refactor(types): cast sql.json … reunion` |
+| **Q4 / S1** webhook | fail-closed | ✅ + test (503/401/400) | `fix(reunion): webhook callback fail-closed` |
+| **Q5 / S2,S3,S4** rate-limit | purga + doc + deploy | ✅ + test | `fix(auth): purgar mapa de rate-limit + proxy` |
+| **Q3b** auditar reunion | cubrir en esta rama | ✅ ver nota | (S1/I4 + test de auth) |
+| **Q6 / D2** sesión 1 query | aplicar | ✅ refactor, 54 tests auth verdes | `refactor(auth): una sola lectura de session` |
+| **Q6 / D3** extractJson | aplicar | ✅ + test | `fix(informe): extractJson balancea llaves` |
+| **Q6 / D4** warnings Svelte | aplicar | ⚠️ ver nota | `fix(informe): derivar data.preview` |
+| **Q6 / D5** pretest db:up | NO elegido | ⏭️ descartado | — |
+| **Q7** merge | sí, a master | ✅ ya en `master` | — |
+
+**Nota Q3b (reunion):** se auditó todo el subsistema. Hallazgos: S1 (webhook,
+corregido) e I4 (4 errores de tipo, corregidos). **Todos los endpoints API de
+reunion tienen guard de auth** (`requireSessionApi` + `assertReunionAccess`),
+incluido presign-put/confirm. El `webhook.ts` usa comparación HMAC de tiempo
+constante y valida propuestas con Zod. El feature ya traía 7 archivos de test;
+se agregó `reunion-callback-auth.test.ts`. Sin otros hallazgos críticos.
+
+**Nota Q6/D4:** de los ~26 warnings `state_referenced_locally`, **~25 son
+inicializadores `$state(data.x)`** — patrón intencional de copia local editable
+sembrada del server. Convertirlos a `$derived` **rompería** los forms editables,
+así que se dejan a propósito. El único genuino read-only (`cierre/preview` →
+`const p = data.preview`) se derivó. `svelte-check`: **0 errores, ~25 warnings
+benignos**.
+
+**Estado final:** `pnpm test` verde · `pnpm check` 0 errores. Todo en `master`.
