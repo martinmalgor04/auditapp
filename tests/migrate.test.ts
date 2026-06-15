@@ -18,7 +18,12 @@ describe('migration runner', () => {
     const rows = await sql<{ version: string }[]>`
       SELECT version FROM schema_migration ORDER BY version
     `;
-    expect(rows.map((r) => r.version)).toEqual([
+    const versions = rows.map((r) => r.version);
+
+    // Las migraciones base committeadas deben estar aplicadas y en orden, como
+    // prefijo. No se hace igualdad exacta para no quedar frágil ante migraciones
+    // nuevas (012+) que se agreguen después: esta suite solo garantiza el core.
+    const coreInOrder = [
       '001_schema',
       '002_backoffice',
       '003_user_audit_types',
@@ -30,7 +35,11 @@ describe('migration runner', () => {
       '009_contexto_ia',
       '010_crm_lead_email_nullable',
       '011_audit_bundle_import'
-    ]);
+    ];
+    expect(versions.slice(0, coreInOrder.length)).toEqual(coreInOrder);
+
+    // El runner aplica en orden ascendente de versión (los nombres van zero-padded).
+    expect([...versions].sort()).toEqual(versions);
   });
 
   it('skips already applied migrations', async () => {
