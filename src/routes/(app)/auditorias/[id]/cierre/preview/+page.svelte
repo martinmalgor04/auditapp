@@ -3,7 +3,7 @@
 
   let { data }: { data: PageData } = $props();
 
-  const p = data.preview;
+  const p = $derived(data.preview);
   const sem = (band: string | null | undefined) =>
     band === 'green' ? '🟢' : band === 'amber' ? '🟠' : band === 'red' ? '🔴' : '—';
 </script>
