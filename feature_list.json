@@ -375,6 +375,43 @@
       ],
       "sdd": true,
       "status": "done"
+    },
+    {
+      "id": 21,
+      "name": "21_import_clientes",
+      "title": "Importar clientes por CSV/Excel desde CRM",
+      "description": "Acción en la vista CRM (backoffice) para que un admin cargue clientes a la tabla `client` desde un archivo CSV o Excel (.xlsx), sin depender del seed de arranque. Hoy los clientes solo entran por seed/clientes-presupuestossys.csv (feature #2); falta carga en vivo. El importador parsea el archivo, mapea columnas al modelo (razon_social, cuit/numero_doc, categoria_iva, direccion, cp, provincia, telefono, email), valida con Zod, hace match por CUIT y upsert (actualiza el existente, crea el nuevo), todo en una transacción con reporte de resultado (creados/actualizados/inválidos por fila). CSV ya cuenta con csv-parse; Excel requiere sumar un parser de .xlsx en el server. Distinto del import de auditorías #20 (bundle JSON) y del seed inicial.",
+      "source": "Solicitud operativa SyS (2026-06-15, Martín): cargar clientes por CSV/Excel desde la app sin re-seedear. Decisiones de puerta: formato CSV+xlsx, política upsert por CUIT, ubicación dentro de CRM. Modelo #2 (tabla client), parser de referencia src/lib/server/db/seed/clients.ts.",
+      "acceptance": [
+        "Acción Importar clientes (solo admin) en la vista CRM acepta archivos CSV y Excel (.xlsx)",
+        "Parseo robusto: detecta encabezados, mapea a columnas del modelo client (razon_social, cuit, categoria_iva si aplica, direccion, cp, provincia, telefono, email), normaliza vacíos a null y CUIT a dígitos",
+        "Validación por fila con Zod: razon_social obligatoria y CUIT con formato válido; filas inválidas se reportan con número de fila y motivo sin abortar el lote",
+        "Match por CUIT (numero_doc) y upsert: cliente existente se actualiza, nuevo se crea con origen apropiado; la importación corre en transacción",
+        "Reporte de resultado visible en UI: total leído, creados, actualizados, omitidos e inválidos con detalle de errores por fila",
+        "Idempotencia: reimportar el mismo archivo no duplica clientes (dedupe por CUIT)",
+        "Guards de permisos: solo admin; técnico y cliente no acceden a la acción",
+        "Tests de parseo CSV y xlsx, validación Zod por fila, upsert por CUIT, atomicidad ante error y guard de permisos pasan"
+      ],
+      "sdd": true,
+      "status": "done"
+    },
+    {
+      "id": 22,
+      "name": "22_cab_contacto_cliente",
+      "title": "CAB: Dirección, Teléfono y Email desde cliente",
+      "description": "Agregar 3 ítems nuevos (Dirección, Teléfono, Email) a la sección CAB de los 3 templates activos (erp-tango-v3, erp-estandar-v1, it-v2) y mapearlos a los campos client.direccion, client.telefono, client.email para que se pre-rellenen automáticamente al seleccionar un cliente que ya los tenga (datos llegados vía import #21 o carga manual). Requiere: migración SQL de template_items en DB (INSERT de los 3 ítems por template, antes de Fecha programada), actualización de los JSON seed para que futuros re-seeds sean coherentes, y extensión del tipo ClientCabFields + LABEL_TO_FIELD en cab-client-map.ts. El searchClientsForPicker ya devuelve cabFields; solo hay que incluir los nuevos campos. No toca la lógica de auditorías existentes (las respuestas CAB ya guardadas no se afectan).",
+      "source": "Solicitud operativa SyS (2026-06-15, Martín): que al crear auditoría con cliente existente se pre-carguen dirección/teléfono/email si el cliente los tiene. Feature #21 ahora importa esos campos desde CSV/xlsx.",
+      "acceptance": [
+        "Los 3 templates activos tienen ítems 'Dirección', 'Teléfono', 'Email' en la sección CAB, posicionados antes de 'Fecha programada de visita'",
+        "Al seleccionar un cliente existente con dirección/teléfono/email, esos campos aparecen pre-cargados en el CAB del formulario de nueva auditoría",
+        "Clientes sin esos datos: los campos quedan vacíos (sin error)",
+        "Los JSONs seed (erp-tango-v3.json, erp-estandar-v1.json, it-v2.json) reflejan los nuevos ítems para coherencia en re-seed",
+        "Migración SQL es idempotente (no falla si los ítems ya existen)",
+        "ClientCabFields incluye direccion, telefono, email; LABEL_TO_FIELD los mapea correctamente",
+        "Tests de mapeo, pre-relleno con/sin datos y migración idempotente pasan"
+      ],
+      "sdd": true,
+      "status": "done"
     }
   ]
 }

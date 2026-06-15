@@ -26,7 +26,10 @@ describe('cab-client-map', () => {
       referenteContacto: null,
       erpActual: null,
       proveedorCorreo: null,
-      soporteItActual: null
+      soporteItActual: null,
+      direccion: null,
+      telefono: null,
+      email: null
     };
 
     const defaults = clientToCabValues(client, cabItems, '2026-07-15');

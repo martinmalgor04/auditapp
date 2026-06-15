@@ -111,6 +111,9 @@ type ClientCabRow = {
   erp_actual: string | null;
   proveedor_correo: string | null;
   soporte_it_actual: string | null;
+  direccion: string | null;
+  telefono: string | null;
+  email: string | null;
 };
 
 function mapClientRow(row: ClientCabRow): ClientCabFields {
@@ -123,7 +126,10 @@ function mapClientRow(row: ClientCabRow): ClientCabFields {
     referenteContacto: row.referente_contacto,
     erpActual: row.erp_actual,
     proveedorCorreo: row.proveedor_correo,
-    soporteItActual: row.soporte_it_actual
+    soporteItActual: row.soporte_it_actual,
+    direccion: row.direccion,
+    telefono: row.telefono,
+    email: row.email
   };
 }
 
@@ -133,7 +139,8 @@ export async function getClientCabFields(clientId: string): Promise<ClientCabFie
     SELECT
       razon_social, cuit, rubro, empleados,
       referente_nombre, referente_contacto,
-      erp_actual, proveedor_correo, soporte_it_actual
+      erp_actual, proveedor_correo, soporte_it_actual,
+      direccion, telefono, email
     FROM client
     WHERE id = ${clientId}
     LIMIT 1
@@ -165,6 +172,9 @@ async function syncClientFromCab(
       erp_actual = COALESCE(${patch.erpActual ?? null}, erp_actual),
       proveedor_correo = COALESCE(${patch.proveedorCorreo ?? null}, proveedor_correo),
       soporte_it_actual = COALESCE(${patch.soporteItActual ?? null}, soporte_it_actual),
+      direccion = COALESCE(${patch.direccion ?? null}, direccion),
+      telefono = COALESCE(${patch.telefono ?? null}, telefono),
+      email = COALESCE(${patch.email ?? null}, email),
       updated_at = now()
     WHERE id = ${clientId}
   `;
@@ -258,7 +268,8 @@ export async function createAudit(
         SELECT
           razon_social, cuit, rubro, empleados,
           referente_nombre, referente_contacto,
-          erp_actual, proveedor_correo, soporte_it_actual
+          erp_actual, proveedor_correo, soporte_it_actual,
+          direccion, telefono, email
         FROM client
         WHERE id = ${clientId}
       `;
@@ -368,7 +379,8 @@ export async function getAuditById(auditId: string, viewer?: AppUser): Promise<A
     SELECT
       razon_social, cuit, rubro, empleados,
       referente_nombre, referente_contacto,
-      erp_actual, proveedor_correo, soporte_it_actual
+      erp_actual, proveedor_correo, soporte_it_actual,
+      direccion, telefono, email
     FROM client
     WHERE id = ${row.client_id}
   `;
@@ -527,7 +539,8 @@ export async function searchClientsForPicker(query: string): Promise<ClientPicke
     SELECT
       id, razon_social, cuit, rubro, empleados,
       referente_nombre, referente_contacto,
-      erp_actual, proveedor_correo, soporte_it_actual
+      erp_actual, proveedor_correo, soporte_it_actual,
+      direccion, telefono, email
     FROM client
     WHERE razon_social ILIKE ${pattern} OR COALESCE(cuit, '') ILIKE ${pattern}
     ORDER BY razon_social ASC

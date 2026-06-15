@@ -8,6 +8,9 @@ export type ClientCabFields = {
   erpActual: string | null;
   proveedorCorreo: string | null;
   soporteItActual: string | null;
+  direccion: string | null;
+  telefono: string | null;
+  email: string | null;
 };
 
 export type CabItemRef = {
@@ -26,6 +29,9 @@ const LABEL_TO_FIELD: Record<string, keyof ClientCabFields | 'scheduledAt'> = {
   'erp actual': 'erpActual',
   'proveedor de correo': 'proveedorCorreo',
   'soporte it actual': 'soporteItActual',
+  'dirección': 'direccion',
+  'teléfono': 'telefono',
+  'email': 'email',
   'fecha programada de visita': 'scheduledAt'
 };
 
@@ -136,7 +142,10 @@ export function newClientToCabFields(newClient: {
     referenteContacto: null,
     erpActual: null,
     proveedorCorreo: null,
-    soporteItActual: null
+    soporteItActual: null,
+    direccion: null,
+    telefono: null,
+    email: null
   };
 }
 

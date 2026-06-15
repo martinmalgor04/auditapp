@@ -43,6 +43,12 @@ export async function insertMercadoAudit(
   const types = ['it', 'erp-tango'];
   const templateIds = await Promise.all(types.map((t) => getTemplateIdByCode(sql, t)));
 
+  // client.cuit es UNIQUE parcial desde migración 013; limpiar cualquier fila previa
+  // con el mismo CUIT para que re-seedeos del fixture sean idempotentes.
+  if (audit.cuit) {
+    await sql`DELETE FROM client WHERE cuit = ${audit.cuit}`;
+  }
+
   const [client] = await sql<{ id: string }[]>`
     INSERT INTO client (
       razon_social, cuit, rubro, erp_actual, referente_nombre

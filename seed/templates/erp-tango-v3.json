@@ -143,6 +143,42 @@
         },
         {
           "sort_order": 10,
+          "label": "Dirección",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 11,
+          "label": "Teléfono",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 12,
+          "label": "Email",
+          "field_type": "text",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "required": false,
+          "scores": false,
+          "options": {}
+        },
+        {
+          "sort_order": 13,
           "label": "Fecha programada de visita",
           "field_type": "date",
           "method": [

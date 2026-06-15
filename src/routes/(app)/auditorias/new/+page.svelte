@@ -52,7 +52,10 @@
         referenteContacto: null,
         erpActual: null,
         proveedorCorreo: null,
-        soporteItActual: null
+        soporteItActual: null,
+        direccion: null,
+        telefono: null,
+        email: null
       },
       cabItems,
       scheduledAt

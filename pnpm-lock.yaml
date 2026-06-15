@@ -23,6 +23,9 @@ importers:
       heic2any:
         specifier: ^0.0.4
         version: 0.0.4
+      node-xlsx:
+        specifier: ^0.24.0
+        version: 0.24.0
       postgres:
         specifier: ^3.4.5
         version: 3.4.9
@@ -1131,6 +1134,11 @@ packages:
     resolution: {integrity: sha512-Uzmd6LXpouKo8EUK68IjH4+E01w/hXyV3R3g/geCJo+rXLNfh1xucB+LOzYEOQPSiUK3h/xZf0cQGcSsmyL2Og==}
     engines: {node: '>=18'}
 
+  node-xlsx@0.24.0:
+    resolution: {integrity: sha512-1olwK48XK9nXZsyH/FCltvGrQYvXXZuxVitxXXv2GIuRm51aBi1+5KwR4rWM4KeO61sFU+00913WLZTD+AcXEg==}
+    engines: {node: '>=10.0.0'}
+    hasBin: true
+
   normalize-path@3.0.0:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
@@ -1472,6 +1480,12 @@ packages:
   why-is-node-running@2.3.0:
     resolution: {integrity: sha512-hUrmaWBdVDcxvYqnyh09zunKzROWjbZTiNy8dBEjkS7ehEDQibXJ7XvlmtbwuTclUiIyN+CyXQD4Vmko8fNm8w==}
     engines: {node: '>=8'}
+    hasBin: true
+
+  xlsx@https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz:
+    resolution: {tarball: https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz}
+    version: 0.20.2
+    engines: {node: '>=0.8'}
     hasBin: true
 
   zimmerframe@1.1.4:
@@ -2312,6 +2326,10 @@ snapshots:
 
   node-releases@2.0.47: {}
 
+  node-xlsx@0.24.0:
+    dependencies:
+      xlsx: https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz
+
   normalize-path@3.0.0: {}
 
   object-assign@4.1.1: {}
@@ -2679,6 +2697,8 @@ snapshots:
     dependencies:
       siginfo: 2.0.0
       stackback: 0.0.2
+
+  xlsx@https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz: {}
 
   zimmerframe@1.1.4: {}
 

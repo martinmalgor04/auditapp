@@ -44,6 +44,17 @@ export async function seedBundleAuditFixture(
   const techId = await findUserIdByEmail(sql, 'facu@serviciosysistemas.com.ar');
   const adminId = await findUserIdByEmail(sql, 'admin@serviciosysistemas.com.ar');
 
+  // client.cuit es UNIQUE parcial desde migración 013; limpiar fila previa SIN auditoría
+  // dependiente con el mismo CUIT para que re-seedeos del fixture sean idempotentes sin
+  // romper FKs de auditorías ya creadas en el mismo test.
+  if (cuit) {
+    await sql`
+      DELETE FROM client c
+      WHERE c.cuit = ${cuit}
+        AND NOT EXISTS (SELECT 1 FROM audit a WHERE a.client_id = c.id)
+    `;
+  }
+
   const [client] = await sql<{ id: string }[]>`
     INSERT INTO client (razon_social, cuit, rubro, provincia)
     VALUES (${razonSocial}, ${cuit}, 'agro', 'Chaco')

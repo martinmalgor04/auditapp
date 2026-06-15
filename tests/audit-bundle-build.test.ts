@@ -49,9 +49,19 @@ describe('buildAuditBundle (export)', () => {
   });
 
   it('preserva el status original (borrador, en_relevamiento, cerrada)', async () => {
-    const borrador = await seedBundleAuditFixture(sql, { status: 'borrador' });
-    const rel = await seedBundleAuditFixture(sql, { status: 'en_relevamiento' });
-    const cerrada = await seedBundleAuditFixture(sql, { status: 'cerrada' });
+    // CUITs distintos: client.cuit es UNIQUE parcial desde migración 013.
+    const borrador = await seedBundleAuditFixture(sql, {
+      status: 'borrador',
+      cuit: '30-99887766-1'
+    });
+    const rel = await seedBundleAuditFixture(sql, {
+      status: 'en_relevamiento',
+      cuit: '30-99887766-2'
+    });
+    const cerrada = await seedBundleAuditFixture(sql, {
+      status: 'cerrada',
+      cuit: '30-99887766-3'
+    });
 
     expect((await buildAuditBundle(borrador.auditId)).header.status).toBe('borrador');
     expect((await buildAuditBundle(rel.auditId)).header.status).toBe('en_relevamiento');
