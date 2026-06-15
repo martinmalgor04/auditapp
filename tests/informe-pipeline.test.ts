@@ -105,21 +105,27 @@ describe('informe pipeline', () => {
     expect(calls[0].model).toBe('claude-test-model');
   });
 
-  it('el adapter real envía output_config.format derivado de Zod (R8)', async () => {
+  it('el adapter real arma model + system + messages y parsea el JSON (R8)', async () => {
+    // R8: el adapter dejó de usar output_config (salida estructurada) — ver
+    // commits eb02144 / 63c8d40 — y ahora pide JSON por prompt y lo extrae del
+    // texto. El test refleja el contrato vigente de la llamada a la API.
     const create = vi.fn().mockResolvedValue({
       content: [{ type: 'text', text: JSON.stringify(buildValidEnvelope(['A1'])) }]
     });
     const adapter = createClaudeAdapter({ client: { messages: { create } } });
 
-    await adapter.generateDraft({
+    const result = await adapter.generateDraft({
       prompt: { system: 's', user: JSON.stringify(golden) },
       model: 'claude-x'
     });
 
     const params = create.mock.calls[0][0];
     expect(params.model).toBe('claude-x');
-    expect(params.output_config.format.type).toBe('json_schema');
-    expect(params.output_config.format.schema).toBeTruthy();
+    expect(params.system).toBe('s');
+    expect(params.messages[0].content).toBe(JSON.stringify(golden));
+    // Ya no se envía salida estructurada: es JSON libre extraído del texto.
+    expect(params.output_config).toBeUndefined();
+    expect(result).toBeTruthy();
   });
 
   it('sobrescribe índices inventados con los del canónico + semáforo (R12)', async () => {
