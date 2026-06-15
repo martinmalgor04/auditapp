@@ -6,7 +6,8 @@ import {
   deleteSession,
   findSessionById,
   insertSession,
-  touchSessionExpiry
+  touchSessionExpiry,
+  type SessionRow
 } from '../db/sessions';
 import type { AppUser } from './types';
 
@@ -34,9 +35,8 @@ export async function createSession(userId: string): Promise<{ id: string; expir
   return { id, expiresAt };
 }
 
-/** Busca session + app_user activo; null si expirada o inexistente. */
-export async function resolveSession(sessionId: string): Promise<AppUser | null> {
-  const session = await findSessionById(sessionId);
+/** Resuelve el AppUser a partir de una fila session ya leída (evita re-query). */
+export async function resolveSessionFromRow(session: SessionRow | null): Promise<AppUser | null> {
   if (!session) {
     return null;
   }
@@ -53,9 +53,21 @@ export async function resolveSession(sessionId: string): Promise<AppUser | null>
   return user;
 }
 
-/** Extiende expires_at si quedan <15 días. Retorna nueva fecha o null si no aplica. */
-export async function renewSessionIfNeeded(sessionId: string): Promise<Date | null> {
-  const session = await findSessionById(sessionId);
+/** Busca session + app_user activo; null si expirada o inexistente. */
+export async function resolveSession(sessionId: string): Promise<AppUser | null> {
+  return resolveSessionFromRow(await findSessionById(sessionId));
+}
+
+/**
+ * Extiende expires_at si quedan <15 días. Retorna nueva fecha o null si no aplica.
+ * `preloaded` permite reusar la fila ya leída por `resolveSession` (un SELECT menos
+ * por request en el hot path de `hooks.server.ts`).
+ */
+export async function renewSessionIfNeeded(
+  sessionId: string,
+  preloaded?: SessionRow | null
+): Promise<Date | null> {
+  const session = preloaded !== undefined ? preloaded : await findSessionById(sessionId);
   if (!session) {
     return null;
   }

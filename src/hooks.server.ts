@@ -2,8 +2,9 @@ import type { Handle, HandleServerError, RequestEvent } from '@sveltejs/kit';
 import {
   getSessionIdFromCookies,
   renewSessionIfNeeded,
-  resolveSession
+  resolveSessionFromRow
 } from '$lib/server/auth/session';
+import { findSessionById } from '$lib/server/db/sessions';
 import { logger } from '$lib/server/logger';
 
 function requestContext(event: RequestEvent): Record<string, unknown> {
@@ -20,9 +21,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   if (sessionId) {
     try {
-      event.locals.user = await resolveSession(sessionId);
+      // Una sola lectura de la fila session, reusada para resolver y renovar.
+      const session = await findSessionById(sessionId);
+      event.locals.user = await resolveSessionFromRow(session);
       if (event.locals.user) {
-        await renewSessionIfNeeded(sessionId);
+        await renewSessionIfNeeded(sessionId, session);
       }
     } catch (err) {
       logger.warn('session_resolve_failed', requestContext(event), err);
