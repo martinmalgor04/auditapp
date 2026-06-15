@@ -47,7 +47,7 @@ runInformePipeline(reportId)
         │  pendiente → generando                                              (R7)
         │  1. valida snapshot: schema_version == CANONICAL_SCHEMA_VERSION     (R5)
         │  2. prompt = buildInformePrompt(canonical)  [versionado]            (R9)
-        │  3. Claude API: model env, output_config.format (JSON schema Zod)   (R8)
+        │  3. Claude API: model env, JSON por prompt + extractJson            (R8)
         │  4. valida reportClientDraftSchema + reportInternalDraftSchema      (R10, R11)
         │  5. sobrescribe índices/semáforos con canónico (indexToSemaphore)   (R12)
         │  6. persiste drafts → generando → borrador                          (R24)
@@ -190,7 +190,7 @@ muta una fila: crea `version + 1` (R21).
 | `errors.ts` | Errores tipados de dominio (tabla abajo) |
 | `schemas.ts` | `reportClientDraftSchema` (strict), `reportInternalDraftSchema` (strict), `loomUrlSchema`, `patchReportSchema` (R10, R11, R16, R25) |
 | `prompts/generate-report.ts` | `INFORME_PROMPT_VERSION`, `buildInformePrompt(canonical)` — jerga prohibida (R19), regla líneas/rangos sin producto cerrado (R18) |
-| `claude.ts` | Adapter `@anthropic-ai/sdk`: cliente, modelo de env, `output_config.format`, errores tipados (R3, R8) |
+| `claude.ts` | Adapter `@anthropic-ai/sdk`: cliente, modelo de env, JSON por prompt + `extractJson`, errores tipados (R3, R8) |
 | `pipeline.ts` | `runInformePipeline(reportId)` + `createReport(auditId, userId)` — orquestación completa (R5, R6, R12, R13, R24) |
 | `guard.ts` | `expireStaleGenerating(reportRow)` — timeout `generando` (R14) |
 
@@ -303,11 +303,10 @@ export function createClaudeAdapter(): InformeClaudeAdapter;
 // client.messages.create({
 //   model,
 //   max_tokens: 16000,
-//   thinking: { type: 'adaptive' },
 //   system: prompt.system,
-//   messages: [{ role: 'user', content: prompt.user }],
-//   output_config: { format: zodOutputFormat(reportDraftEnvelopeSchema) }   (R8)
+//   messages: [{ role: 'user', content: prompt.user }]   // JSON por prompt + extractJson (R8)
 // })
+// Nota: output_config (salida estructurada) se quitó en eb02144/63c8d40.
 ```
 
 Una sola llamada genera ambas salidas bajo un envelope
@@ -463,8 +462,8 @@ Contenido del system prompt (testeable por texto, R18/R19):
 - Rol: consultor IT senior de Servicios y Sistemas (NEA) redactando informe de auditoría.
 - Insumo: el JSON canónico completo va en el turno user (datos, secciones, scores, riesgos,
   `upsell_findings`, `market_data`).
-- Salida: solo JSON conforme al envelope `{ cliente, interna }` (reforzado por
-  `output_config.format`).
+- Salida: solo JSON conforme al envelope `{ cliente, interna }` (pedido por prompt y
+  extraído con `extractJson`; validado luego con los schemas Zod del pipeline).
 - Regla líneas/rangos: «las recomendaciones internas sugieren líneas de solución y rangos de
   precio; NUNCA fijar marca, modelo ni producto específico cerrado» (R18).
 - Bloque de jerga prohibida con los seis términos exactos: «solución 360°», «disruptivo»,

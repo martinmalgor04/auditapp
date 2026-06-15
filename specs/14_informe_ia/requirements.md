@@ -52,11 +52,13 @@ CUANDO se transiciona `audit_report.status`, el sistema DEBE permitir únicament
 
 **Verificación:** `tests/informe-state-machine.test.ts` — tabla de transiciones válidas pasa; `aprobado→borrador`, `pendiente→aprobado`, etc. lanzan error tipado.
 
-## R8 — Modelo Claude configurable con salida estructurada
+## R8 — Modelo Claude configurable, salida JSON por prompt
 
-CUANDO el pipeline llama a la API de Claude, el sistema DEBE usar el modelo de `INFORME_CLAUDE_MODEL` (default `claude-opus-4-8`) vía `@anthropic-ai/sdk` con salida estructurada (`output_config.format` JSON schema derivado de los schemas Zod del borrador).
+CUANDO el pipeline llama a la API de Claude, el sistema DEBE usar el modelo de `INFORME_CLAUDE_MODEL` (default `claude-opus-4-8`) vía `@anthropic-ai/sdk`, pidiendo el JSON del envelope por instrucción de prompt y extrayéndolo del texto de la respuesta (`extractJson`).
 
-**Verificación:** `tests/informe-pipeline.test.ts` — el adapter recibe el modelo de env (override en test) y un `output_config.format`; default aplicado si la var falta.
+> **Nota (actualizado):** la implementación original usaba salida estructurada (`output_config.format` derivado de Zod). Se abandonó en los commits `eb02144` y `63c8d40` porque interfería con la salida JSON del modelo; hoy se pide JSON por prompt y se extrae del texto. El envelope se valida igual con los schemas Zod (`reportClientDraftSchema` + `reportInternalDraftSchema`) ya en el pipeline (R10/R11).
+
+**Verificación:** `tests/informe-pipeline.test.ts` — el adapter recibe el modelo de env (override en test) y arma `model`/`system`/`messages` (sin `output_config`); default aplicado si la var falta.
 
 ## R9 — Prompt versionado en el repo
 
