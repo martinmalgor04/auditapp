@@ -25,7 +25,7 @@ vi.mock('aws4fetch', () => {
 });
 
 import { setSqlForTests } from '../../src/lib/server/db/client';
-import { DELETE as deleteAttachmentHandler } from '../../src/routes/api/audits/[auditId]/attachments/[attachmentId]/+server.ts';
+import { DELETE as deleteAttachmentHandler } from '../../src/routes/api/audits/[auditId]/attachments/[attachmentId]/+server';
 import type { AppUser } from '../../src/lib/server/auth/types';
 import { applyTestR2Env } from '../fixtures/r2-mock';
 import { findUserIdByEmail } from '../helpers/auth';
