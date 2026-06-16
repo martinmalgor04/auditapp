@@ -2,24 +2,28 @@ import { logger } from '$lib/server/logger';
 import { processReunionJobDirect } from './direct';
 import { dispatchReunionWebhook } from './webhook';
 
+export type EnqueueOptions = {
+  /** Si true, el STT ya fue hecho (upload directo) — solo ejecutar extracción LLM. */
+  skipStt?: boolean;
+};
+
 /** Encola procesamiento de una sesión de reunión según el modo configurado. */
-export async function enqueueReunionProcessing(sessionId: string): Promise<void> {
+export async function enqueueReunionProcessing(sessionId: string, opts: EnqueueOptions = {}): Promise<void> {
   const mode = process.env.REUNION_PIPELINE_MODE ?? 'direct';
 
   if (mode === 'webhook') {
     await dispatchReunionWebhook(sessionId);
   } else {
-    // Modo direct: procesar en background (fire-and-forget con error log)
-    processReunionJob(sessionId).catch((err) => {
+    processReunionJob(sessionId, opts).catch((err) => {
       logger.error('reunion_worker_error', { sessionId, error: String(err) });
     });
   }
 }
 
 /** Procesa el job de reunión (STT + LLM) según modo configurado. */
-export async function processReunionJob(sessionId: string): Promise<void> {
-  logger.info('reunion_job_start', { sessionId });
-  await processReunionJobDirect(sessionId);
+export async function processReunionJob(sessionId: string, opts: EnqueueOptions = {}): Promise<void> {
+  logger.info('reunion_job_start', { sessionId, skipStt: opts.skipStt });
+  await processReunionJobDirect(sessionId, opts.skipStt);
   logger.info('reunion_job_end', { sessionId });
 }
 

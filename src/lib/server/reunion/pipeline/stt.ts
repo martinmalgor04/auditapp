@@ -9,26 +9,15 @@ export type SttResult = {
 
 export type SttAdapter = {
   transcribe(audioUrl: string, contentType: string): Promise<SttResult>;
+  transcribeBuffer(buffer: ArrayBuffer, contentType: string, filename: string): Promise<SttResult>;
 };
 
-/** Descarga audio desde R2 presigned URL y lo envía a Whisper API. */
-async function transcribeWithOpenAIWhisper(
-  audioUrl: string,
-  contentType: string
-): Promise<SttResult> {
+async function callWhisperApi(blob: Blob, filename: string): Promise<SttResult> {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY no configurado');
-  }
-
-  const audioRes = await fetch(audioUrl);
-  if (!audioRes.ok) {
-    throw new Error(`No se pudo descargar audio: HTTP ${audioRes.status}`);
-  }
-  const audioBlob = await audioRes.blob();
+  if (!apiKey) throw new Error('OPENAI_API_KEY no configurado');
 
   const formData = new FormData();
-  formData.append('file', audioBlob, `audio.${contentType.split('/')[1] ?? 'webm'}`);
+  formData.append('file', blob, filename);
   formData.append('model', 'whisper-1');
   formData.append('language', 'es');
   formData.append('response_format', 'verbose_json');
@@ -62,10 +51,36 @@ async function transcribeWithOpenAIWhisper(
   };
 }
 
+/** Descarga audio desde R2 presigned URL y lo envía a Whisper API. */
+async function transcribeWithOpenAIWhisper(audioUrl: string, contentType: string): Promise<SttResult> {
+  const audioRes = await fetch(audioUrl);
+  if (!audioRes.ok) throw new Error(`No se pudo descargar audio: HTTP ${audioRes.status}`);
+  const blob = await audioRes.blob();
+  const ext = contentType.split('/')[1] ?? 'webm';
+  return callWhisperApi(blob, `audio.${ext}`);
+}
+
+/** Envía un ArrayBuffer directamente a Whisper sin pasar por R2. */
+async function transcribeBufferWithOpenAIWhisper(
+  buffer: ArrayBuffer,
+  contentType: string,
+  filename: string
+): Promise<SttResult> {
+  const blob = new Blob([buffer], { type: contentType });
+  return callWhisperApi(blob, filename);
+}
+
 /** Mock adapter: solo para tests — retorna transcript fijo. */
 export function createMockSttAdapter(overrideText?: string): SttAdapter {
   return {
     async transcribe(_audioUrl, _contentType) {
+      return {
+        full_text: overrideText ?? 'Mock transcript: el cliente usa Tango hace 5 años.',
+        provider: 'mock',
+        language: 'es'
+      };
+    },
+    async transcribeBuffer(_buffer, _contentType, _filename) {
       return {
         full_text: overrideText ?? 'Mock transcript: el cliente usa Tango hace 5 años.',
         provider: 'mock',
@@ -87,6 +102,12 @@ export function getSttAdapter(): SttAdapter {
     async transcribe(audioUrl: string, contentType: string): Promise<SttResult> {
       logger.info('stt_start', { provider: 'openai-whisper', contentType });
       const result = await transcribeWithOpenAIWhisper(audioUrl, contentType);
+      logger.info('stt_done', { provider: 'openai-whisper', chars: result.full_text.length });
+      return result;
+    },
+    async transcribeBuffer(buffer: ArrayBuffer, contentType: string, filename: string): Promise<SttResult> {
+      logger.info('stt_start', { provider: 'openai-whisper', contentType, mode: 'buffer' });
+      const result = await transcribeBufferWithOpenAIWhisper(buffer, contentType, filename);
       logger.info('stt_done', { provider: 'openai-whisper', chars: result.full_text.length });
       return result;
     }
