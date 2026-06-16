@@ -11,7 +11,7 @@ export type AuditByTokenRow = {
 export async function findAuditByPublicToken(token: string): Promise<AuditByTokenRow | null> {
   const sql = getSql();
   const [row] = await sql<AuditByTokenRow[]>`
-    SELECT id, client_id, status, public_token
+    SELECT id, empresa_id AS client_id, status, public_token
     FROM audit
     WHERE public_token = ${token}
     LIMIT 1

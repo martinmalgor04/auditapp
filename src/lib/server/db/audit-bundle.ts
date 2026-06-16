@@ -96,7 +96,7 @@ export async function loadAuditForBundle(auditId: string): Promise<AuditBundleRo
       tech.email AS assigned_tech_email,
       creator.email AS created_by_email
     FROM audit a
-    JOIN client c ON c.id = a.client_id
+    JOIN client c ON c.id = a.empresa_id
     LEFT JOIN app_user tech ON tech.id = a.assigned_tech_id
     LEFT JOIN app_user creator ON creator.id = a.created_by
     WHERE a.id = ${auditId}

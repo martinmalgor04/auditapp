@@ -149,6 +149,8 @@ export async function withTestDbSerial<T>(
  */
 export async function truncateSeedTablesUnsafe(sql: postgres.Sql): Promise<void> {
   setSqlForTests(sql);
+  // #23: `client` es ahora una vista sobre `empresa`; se trunca la tabla base `empresa`
+  // (CASCADE arrastra audit, crm_lead, empresa_evento). empresa_evento explícito por claridad.
   await sql`
     TRUNCATE TABLE
       audit_bundle_import,
@@ -161,12 +163,13 @@ export async function truncateSeedTablesUnsafe(sql: postgres.Sql): Promise<void>
       audit_report,
       audit_proposal_link,
       audit,
+      empresa_evento,
       crm_lead_event,
       crm_lead,
       template_item,
       section,
       template,
-      client,
+      empresa,
       session,
       app_user
     RESTART IDENTITY CASCADE
@@ -196,6 +199,7 @@ export async function resetVolatileTablesUnsafe(sql: postgres.Sql): Promise<void
       audit_report,
       audit_proposal_link,
       audit,
+      empresa_evento,
       crm_lead_event,
       crm_lead,
       session

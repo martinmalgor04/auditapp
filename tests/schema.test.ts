@@ -322,7 +322,7 @@ describe('database schema', () => {
   it('creates required performance indexes', async () => {
     const auditIndexes = await indexNames(sql, 'audit');
     expect(auditIndexes).toContain('audit_status_idx');
-    expect(auditIndexes).toContain('audit_client_id_idx');
+    expect(auditIndexes).toContain('audit_empresa_id_idx');
 
     const responseIndexes = await indexNames(sql, 'audit_response');
     expect(responseIndexes).toContain('audit_response_audit_id_idx');

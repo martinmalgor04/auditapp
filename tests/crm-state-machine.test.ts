@@ -82,7 +82,7 @@ describe('crm state machine — DB', () => {
       INSERT INTO client (razon_social) VALUES ('Cliente CRM') RETURNING id
     `;
     const [audit] = await sql<{ id: string }[]>`
-      INSERT INTO audit (client_id, name, types, template_ids, segment, status, public_token)
+      INSERT INTO audit (empresa_id, name, types, template_ids, segment, status, public_token)
       VALUES (${client.id}, 'Audit CRM', ARRAY['it']::text[], ARRAY[]::uuid[], 'A', 'borrador', ${randomUUID()})
       RETURNING id
     `;

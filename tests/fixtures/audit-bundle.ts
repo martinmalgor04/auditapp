@@ -51,7 +51,7 @@ export async function seedBundleAuditFixture(
     await sql`
       DELETE FROM client c
       WHERE c.cuit = ${cuit}
-        AND NOT EXISTS (SELECT 1 FROM audit a WHERE a.client_id = c.id)
+        AND NOT EXISTS (SELECT 1 FROM audit a WHERE a.empresa_id = c.id)
     `;
   }
 
@@ -66,7 +66,7 @@ export async function seedBundleAuditFixture(
 
   const [audit] = await sql<{ id: string }[]>`
     INSERT INTO audit (
-      client_id, name, types, template_ids, segment, status,
+      empresa_id, name, types, template_ids, segment, status,
       assigned_tech_id, created_by, scheduled_at, public_token, closed_at
     )
     VALUES (

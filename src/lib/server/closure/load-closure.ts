@@ -68,7 +68,7 @@ export async function loadClosurePage(auditId: string, user: AppUser): Promise<C
   >`
     SELECT a.id, c.razon_social, a.status, a.types, a.assigned_tech_id
     FROM audit a
-    JOIN client c ON c.id = a.client_id
+    JOIN client c ON c.id = a.empresa_id
     WHERE a.id = ${auditId}
       AND a.archived_at IS NULL
     LIMIT 1

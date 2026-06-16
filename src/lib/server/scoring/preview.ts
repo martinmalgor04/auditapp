@@ -24,7 +24,7 @@ export async function buildClosurePreview(auditId: string): Promise<ClosurePrevi
   >`
     SELECT c.razon_social, c.cuit
     FROM audit a
-    JOIN client c ON c.id = a.client_id
+    JOIN client c ON c.id = a.empresa_id
     WHERE a.id = ${auditId}
     LIMIT 1
   `;

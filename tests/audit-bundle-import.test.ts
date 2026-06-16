@@ -54,7 +54,7 @@ describe('importAuditBundle', () => {
     if (res.mode === 'dry-run') throw new Error('unexpected');
 
     const [audit] = await sql<{ status: string; client_id: string; assigned_tech_id: string | null }[]>`
-      SELECT status, client_id, assigned_tech_id FROM audit WHERE id = ${res.auditId}
+      SELECT status, empresa_id AS client_id, assigned_tech_id FROM audit WHERE id = ${res.auditId}
     `;
     expect(audit.status).toBe('en_relevamiento');
     expect(audit.client_id).toBe(fx.clientId); // cliente existente reusado por CUIT
@@ -285,7 +285,7 @@ describe('importAuditBundle', () => {
     if (res.mode === 'dry-run') throw new Error('unexpected');
 
     const [audit] = await sql<{ assigned_tech_id: string | null; client_id: string }[]>`
-      SELECT assigned_tech_id, client_id FROM audit WHERE id = ${res.auditId}
+      SELECT assigned_tech_id, empresa_id AS client_id FROM audit WHERE id = ${res.auditId}
     `;
     expect(audit.assigned_tech_id).toBeNull();
     const [client] = await sql<{ cuit: string }[]>`

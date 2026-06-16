@@ -54,7 +54,7 @@ export async function insertTestAudit(
 
   const [audit] = await sql<{ id: string }[]>`
     INSERT INTO audit (
-      client_id, name, types, template_ids, segment, status, public_token
+      empresa_id, name, types, template_ids, segment, status, public_token
     )
     VALUES (
       ${client.id},

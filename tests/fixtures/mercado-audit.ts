@@ -65,7 +65,7 @@ export async function insertMercadoAudit(
 
   const [row] = await sql<{ id: string }[]>`
     INSERT INTO audit (
-      client_id, name, types, template_ids, segment, status,
+      empresa_id, name, types, template_ids, segment, status,
       assigned_tech_id, closed_at
     )
     VALUES (

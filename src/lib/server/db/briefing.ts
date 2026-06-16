@@ -31,9 +31,9 @@ export type ResponseRow = {
 export async function findAuditByToken(token: string): Promise<AuditByTokenRow | null> {
   const sql = getSql();
   const [row] = await sql<AuditByTokenRow[]>`
-    SELECT a.id, a.client_id, a.status, a.public_token, c.razon_social
+    SELECT a.id, a.empresa_id AS client_id, a.status, a.public_token, c.razon_social
     FROM audit a
-    JOIN client c ON c.id = a.client_id
+    JOIN client c ON c.id = a.empresa_id
     WHERE a.public_token = ${token}
       AND a.archived_at IS NULL
     LIMIT 1

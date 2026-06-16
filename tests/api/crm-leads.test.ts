@@ -244,7 +244,7 @@ describe('crm leads API', () => {
       INSERT INTO client (razon_social) VALUES ('Tmp') RETURNING id
     `;
     const [audit] = await sql<{ id: string }[]>`
-      INSERT INTO audit (client_id, name, types, template_ids, segment, status, public_token)
+      INSERT INTO audit (empresa_id, name, types, template_ids, segment, status, public_token)
       VALUES (${client.id}, 'A', ARRAY['it']::text[], ARRAY[]::uuid[], 'A', 'borrador', ${randomUUID()})
       RETURNING id
     `;

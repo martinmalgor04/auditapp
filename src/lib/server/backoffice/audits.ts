@@ -289,7 +289,7 @@ export async function createAudit(
 
     const [audit] = await tx<{ id: string }[]>`
       INSERT INTO audit (
-        client_id, name, types, template_ids, segment, status,
+        empresa_id, name, types, template_ids, segment, status,
         assigned_tech_id, created_by, scheduled_at
       )
       VALUES (
@@ -318,11 +318,11 @@ export async function getAuditById(auditId: string, viewer?: AppUser): Promise<A
 
   const [row] = await sql<AuditRow[]>`
     SELECT
-      a.id, a.name, a.client_id, c.razon_social, a.types, a.segment, a.status,
+      a.id, a.name, a.empresa_id AS client_id, c.razon_social, a.types, a.segment, a.status,
       a.assigned_tech_id, u.name AS tech_name, a.scheduled_at, a.public_token,
       a.template_ids, a.archived_at
     FROM audit a
-    JOIN client c ON c.id = a.client_id
+    JOIN client c ON c.id = a.empresa_id
     LEFT JOIN app_user u ON u.id = a.assigned_tech_id
     WHERE a.id = ${auditId}
     LIMIT 1
@@ -458,7 +458,7 @@ export async function updateAudit(
     await tx`
       UPDATE audit
       SET
-        client_id = COALESCE(${data.clientId ?? null}::uuid, client_id),
+        empresa_id = COALESCE(${data.clientId ?? null}::uuid, empresa_id),
         types = COALESCE(${data.types ?? null}, types),
         template_ids = ${templateIds}::uuid[],
         segment = COALESCE(${data.segment ?? null}, segment),

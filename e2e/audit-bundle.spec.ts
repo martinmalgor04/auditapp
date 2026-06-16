@@ -53,7 +53,7 @@ test.describe('export/import de auditoría (backoffice admin)', () => {
     await withDbSuiteLock(sql, async (s) => {
       const rows = await s<{ status: string }[]>`
         SELECT a.status
-        FROM audit a JOIN client c ON c.id = a.client_id
+        FROM audit a JOIN client c ON c.id = a.empresa_id
         WHERE c.cuit = '30-44455566-7' AND a.archived_at IS NULL
       `;
       // Origen + importada comparten el cliente; al menos una en en_relevamiento.

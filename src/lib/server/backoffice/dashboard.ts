@@ -120,12 +120,12 @@ export async function listDashboardAudits(
   const [countRow] = await sql<{ count: string }[]>`
     SELECT COUNT(*)::text AS count
     FROM audit a
-    JOIN client c ON c.id = a.client_id
+    JOIN empresa c ON c.id = a.empresa_id
     WHERE a.archived_at IS NULL
       AND (${scopeTypes}::text[] IS NULL OR a.types && ${scopeTypes}::text[])
       AND (${typeFilter}::text IS NULL OR ${typeFilter} = ANY(a.types))
       AND (${statusFilter}::text IS NULL OR a.status = ${statusFilter})
-      AND (${clientFilter}::uuid IS NULL OR a.client_id = ${clientFilter})
+      AND (${clientFilter}::uuid IS NULL OR a.empresa_id = ${clientFilter})
       AND (${qFilter}::text IS NULL OR c.razon_social ILIKE ${qFilter})
   `;
 
@@ -145,15 +145,18 @@ export async function listDashboardAudits(
       GREATEST(a.created_at, COALESCE(MAX(ar.updated_at), a.created_at)) AS last_activity,
       a.public_token,
       a.template_ids
+    -- #23 Fase 1: JOIN sobre la tabla base empresa (no la vista client). La vista no expone la PK,
+    -- asi que Postgres no puede inferir la dependencia funcional de c.razon_social respecto al
+    -- GROUP BY c.id (error must appear in the GROUP BY clause). Sobre empresa (PK real) si.
     FROM audit a
-    JOIN client c ON c.id = a.client_id
+    JOIN empresa c ON c.id = a.empresa_id
     JOIN app_user u ON u.id = a.assigned_tech_id
     LEFT JOIN audit_response ar ON ar.audit_id = a.id
     WHERE a.archived_at IS NULL
       AND (${scopeTypes}::text[] IS NULL OR a.types && ${scopeTypes}::text[])
       AND (${typeFilter}::text IS NULL OR ${typeFilter} = ANY(a.types))
       AND (${statusFilter}::text IS NULL OR a.status = ${statusFilter})
-      AND (${clientFilter}::uuid IS NULL OR a.client_id = ${clientFilter})
+      AND (${clientFilter}::uuid IS NULL OR a.empresa_id = ${clientFilter})
       AND (${qFilter}::text IS NULL OR c.razon_social ILIKE ${qFilter})
     GROUP BY a.id, c.id, u.id
     ORDER BY ${sql.unsafe(order)}

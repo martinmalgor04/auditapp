@@ -82,7 +82,7 @@ export async function buildCanonicalAuditJson(
       c.erp_actual, c.empleados, c.puestos, c.sedes,
       c.proveedor_correo, c.soporte_it_actual
     FROM audit a
-    JOIN client c ON c.id = a.client_id
+    JOIN client c ON c.id = a.empresa_id
     WHERE a.id = ${auditId}
       AND a.archived_at IS NULL
     LIMIT 1

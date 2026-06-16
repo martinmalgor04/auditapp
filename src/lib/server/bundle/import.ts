@@ -190,7 +190,7 @@ export async function importAuditBundle(
     // 1. audit (id nuevo local)
     const [audit] = await tx<{ id: string }[]>`
       INSERT INTO audit (
-        client_id, name, types, template_ids, segment, status,
+        empresa_id, name, types, template_ids, segment, status,
         assigned_tech_id, created_by, scheduled_at, public_token, closed_at
       )
       VALUES (

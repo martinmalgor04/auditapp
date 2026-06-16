@@ -21,8 +21,12 @@ export async function applyClientImport(plan: ImportPlan): Promise<ImportResult>
 
   await sql.begin(async (tx) => {
     for (const row of plan.valid) {
+      // #23 Fase 1: INSERT sobre la tabla base `empresa` (no la vista `client`). La vista no soporta
+      // la columna de sistema `xmax` (RETURNING (xmax = 0)) ni el ON CONFLICT contra el índice único
+      // de la tabla base; ambos rompen al escribir por la vista. `relacion` toma el DEFAULT
+      // ('prospecto') igual que antes vía la vista. Fase 2 (T6) reconecta este import con el selector.
       const result = await tx<{ inserted: boolean }[]>`
-        INSERT INTO client (
+        INSERT INTO empresa (
           razon_social, cuit, direccion, cp, provincia, telefono, email, origen
         )
         VALUES (

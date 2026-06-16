@@ -58,7 +58,7 @@ export async function getAuditFormHeader(auditId: string): Promise<AuditFormHead
   const [row] = await sql<AuditFormHeaderRow[]>`
     SELECT
       a.id,
-      a.client_id,
+      a.empresa_id AS client_id,
       a.name,
       a.status,
       a.assigned_tech_id,
@@ -67,7 +67,7 @@ export async function getAuditFormHeader(auditId: string): Promise<AuditFormHead
       a.segment,
       a.archived_at
     FROM audit a
-    JOIN client c ON c.id = a.client_id
+    JOIN client c ON c.id = a.empresa_id
     WHERE a.id = ${auditId}
       AND a.archived_at IS NULL
     LIMIT 1
