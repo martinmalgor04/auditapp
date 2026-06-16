@@ -71,19 +71,21 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
     try {
       const result = await stt.transcribeBuffer(body, contentType, filename);
       transcriptText = result.full_text;
-      await upsertReunionTranscript(sessionId, {
+      await upsertReunionTranscript({
+        reunionSessionId: sessionId,
         status: 'ready',
-        full_text: result.full_text,
-        stt_provider: result.provider,
+        fullText: result.full_text,
+        sttProvider: result.provider,
         language: result.language,
         segments: result.segments
       });
     } catch (err) {
-      await upsertReunionTranscript(sessionId, {
+      await upsertReunionTranscript({
+        reunionSessionId: sessionId,
         status: 'error',
-        error_message: err instanceof Error ? err.message : 'Error STT'
+        errorMessage: err instanceof Error ? err.message : 'Error STT'
       });
-      await updateReunionSessionStatus(sessionId, 'error');
+      await updateReunionSessionStatus(sessionId, 'error', err instanceof Error ? err.message : undefined);
       return apiError('Error al transcribir el audio', 500);
     }
 
