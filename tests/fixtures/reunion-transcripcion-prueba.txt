@@ -1,0 +1,27 @@
+Técnico: Buenos días, gracias por recibirnos. Vamos a repasar la situación actual de la infraestructura. ¿Me puede contar qué servidores tienen en uso hoy?
+Cliente: Sí, tenemos dos servidores físicos. Uno es un HPE ProLiant del 2019, ese es el principal donde corre el Tango. El otro es un Dell del 2016 que usamos de backup, pero la verdad que está medio olvidado.
+Técnico: ¿Y el servidor principal, cuánta RAM tiene y qué sistema operativo?
+Cliente: Tiene 32 gigas de RAM y corre Windows Server 2019. El Dell creo que tiene 16 gigas y tiene Windows Server 2012, ese ya no lo actualizamos más.
+Técnico: ¿Tienen política de backups? ¿Cada cuánto se hacen y dónde se guardan?
+Cliente: Hacemos backup todos los días a las once de la noche. Se guarda en un disco externo que está conectado al servidor principal. Una vez por semana llevamos una copia a casa del dueño en un pendrive.
+Técnico: ¿Probaron alguna vez restaurar ese backup?
+Cliente: La verdad que no, nunca lo probamos. Asumimos que funciona.
+Técnico: ¿Cuántos usuarios tienen en total accediendo al sistema?
+Cliente: Somos 45 personas en total. De esas, unas 30 usan Tango todos los días. Los otros son depósito y no tocan la computadora.
+Técnico: ¿Tienen antivirus instalado?
+Cliente: Sí, usamos el Windows Defender en todas las máquinas. Nada pago.
+Técnico: ¿Y firewall? ¿Tienen algún appliance o solo el del router?
+Cliente: Solo el router de Claro, nada más. No tenemos firewall dedicado.
+Técnico: ¿Las contraseñas tienen alguna política? ¿Vencimiento, complejidad mínima?
+Cliente: No, cada uno pone la que quiere. Hay gente que tiene la misma contraseña desde que arrancó la empresa hace ocho años.
+Técnico: ¿Tienen conexión a internet por fibra óptica?
+Cliente: Sí, tenemos 300 megas simétricos de Claro. Generalmente anda bien, pero a veces se corta.
+Técnico: ¿Y si se corta internet, pueden seguir trabajando con Tango?
+Cliente: Sí, Tango está en el servidor local así que sí, podemos seguir.
+Técnico: Perfecto. ¿Tienen algún UPS o protección eléctrica en los servidores?
+Cliente: El servidor principal tiene un UPS APC, creo que del 2020. El Dell no tiene nada.
+Técnico: ¿Cuándo fue la última vez que actualizaron Windows en los equipos de los usuarios?
+Cliente: Uy, hace rato. Creo que el año pasado actualizamos algunos pero no todos. Tenemos equipos que están en Windows 10 y otros todavía en Windows 7.
+Técnico: ¿Tienen algún sistema de monitoreo de la red o de los servidores?
+Cliente: No, nos enteramos que algo falla cuando alguien llama diciendo que no puede entrar al sistema.
+Técnico: Muchas gracias, con esto tenemos suficiente para armar el informe.

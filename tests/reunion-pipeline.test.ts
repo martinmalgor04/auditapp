@@ -2,17 +2,25 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { setSqlForTests } from '../src/lib/server/db/client';
 import { setupTestDb, teardownTestDb } from './helpers/db';
 import { findUserIdByEmail } from './helpers/auth';
-import { insertTestAuditRow } from './helpers/backoffice';
+import { insertTestAuditRow, getFirstTemplateItemId } from './helpers/backoffice';
 import {
   insertReunionSession,
   getReunionSessionById
 } from '../src/lib/server/db/reunion-sessions';
+import { listReunionProposalsBySession } from '../src/lib/server/db/reunion-proposals';
 import type postgres from 'postgres';
 
-// Mock de STT y LLM para que el pipeline directo use datos fijos
+// Mock de STT y análisis para que el pipeline directo use datos fijos
 vi.mock('../src/lib/server/reunion/pipeline/stt', () => ({
   getSttAdapter: vi.fn(() => ({
     async transcribe() {
+      return {
+        full_text: 'El cliente usa Tango hace 5 años.',
+        provider: 'mock',
+        language: 'es'
+      };
+    },
+    async transcribeBuffer() {
       return {
         full_text: 'El cliente usa Tango hace 5 años.',
         provider: 'mock',
@@ -27,15 +35,23 @@ vi.mock('../src/lib/server/reunion/pipeline/stt', () => ({
         provider: 'mock',
         language: 'es'
       };
+    },
+    async transcribeBuffer() {
+      return {
+        full_text: text ?? 'Mock transcript.',
+        provider: 'mock',
+        language: 'es'
+      };
     }
   })
 }));
 
-vi.mock('../src/lib/server/reunion/pipeline/extract', async (importOriginal) => {
-  const original = await importOriginal<typeof import('../src/lib/server/reunion/pipeline/extract')>();
+vi.mock('../src/lib/server/reunion/pipeline/analyze', async (importOriginal) => {
+  const original =
+    await importOriginal<typeof import('../src/lib/server/reunion/pipeline/analyze')>();
   return {
     ...original,
-    extractProposals: vi.fn().mockResolvedValue([])
+    analyzeProposals: vi.fn().mockResolvedValue([])
   };
 });
 
@@ -114,6 +130,9 @@ describe('reunion pipeline (direct mode)', () => {
     vi.mocked(getSttAdapter).mockReturnValueOnce({
       async transcribe() {
         throw new Error('Whisper timeout');
+      },
+      async transcribeBuffer() {
+        throw new Error('Whisper timeout');
       }
     });
 
@@ -181,5 +200,90 @@ describe('reunion pipeline (direct mode)', () => {
       WHERE audit_id = ${auditId} AND source = 'reunion_ia'
     `;
     expect(parseInt(row?.count ?? '0', 10)).toBe(0);
+  });
+
+  it('persiste propuestas con los 4 campos del contrato (R15)', async () => {
+    const { analyzeProposals } = await import('../src/lib/server/reunion/pipeline/analyze');
+    const itemId = await getFirstTemplateItemId(sql, 'it');
+    vi.mocked(analyzeProposals).mockResolvedValueOnce([
+      {
+        item_id: itemId,
+        proposed_value: 'Usa Tango hace 5 años',
+        quote: 'el cliente usa tango hace 5 años',
+        confidence: 0.9
+      }
+    ]);
+
+    const sessionId = await insertReunionSession({
+      auditId,
+      startedBy: adminId,
+      sessionType: 'visita',
+      consentRecordedAt: new Date()
+    });
+    const mockAttachmentId = crypto.randomUUID();
+    await sql`
+      INSERT INTO attachment (id, audit_id, item_id, r2_key, filename, content_type, size_bytes, kind, uploaded_by)
+      VALUES (
+        ${mockAttachmentId}, ${auditId}, NULL,
+        ${'audits/' + auditId + '/_reunion/' + mockAttachmentId + '.webm'},
+        'grabacion.webm', 'audio/webm', 1024, 'recording', ${adminId}
+      )
+    `;
+    await sql`
+      UPDATE reunion_session
+      SET attachment_id = ${mockAttachmentId}, status = 'processing', updated_at = now()
+      WHERE id = ${sessionId}
+    `;
+
+    const { processReunionJobDirect } = await import('../src/lib/server/reunion/pipeline/direct');
+    await processReunionJobDirect(sessionId);
+
+    const proposals = await listReunionProposalsBySession(sessionId);
+    expect(proposals).toHaveLength(1);
+    const p = proposals[0];
+    expect(p.item_id).toBe(itemId);
+    expect(p.proposed_value).toBe('Usa Tango hace 5 años');
+    expect(p.quote).toBe('el cliente usa tango hace 5 años');
+    expect(Number(p.confidence)).toBeCloseTo(0.9);
+    // Verificador off por default → marcador nulo (no altera comportamiento de #12).
+    expect(p.verification_status).toBeNull();
+  });
+
+  it('fallo de análisis (ANTHROPIC_API_KEY ausente) deja la sesión en error sin propuestas (R5)', async () => {
+    const { analyzeProposals } = await import('../src/lib/server/reunion/pipeline/analyze');
+    vi.mocked(analyzeProposals).mockRejectedValueOnce(
+      new Error('ANTHROPIC_API_KEY no configurado')
+    );
+
+    const sessionId = await insertReunionSession({
+      auditId,
+      startedBy: adminId,
+      sessionType: 'visita',
+      consentRecordedAt: new Date()
+    });
+    const mockAttachmentId = crypto.randomUUID();
+    await sql`
+      INSERT INTO attachment (id, audit_id, item_id, r2_key, filename, content_type, size_bytes, kind, uploaded_by)
+      VALUES (
+        ${mockAttachmentId}, ${auditId}, NULL,
+        ${'audits/' + auditId + '/_reunion/' + mockAttachmentId + '.webm'},
+        'grabacion.webm', 'audio/webm', 1024, 'recording', ${adminId}
+      )
+    `;
+    await sql`
+      UPDATE reunion_session
+      SET attachment_id = ${mockAttachmentId}, status = 'processing', updated_at = now()
+      WHERE id = ${sessionId}
+    `;
+
+    const { processReunionJobDirect } = await import('../src/lib/server/reunion/pipeline/direct');
+    await processReunionJobDirect(sessionId);
+
+    const session = await getReunionSessionById(sessionId);
+    expect(session?.status).toBe('error');
+    expect(session?.error_message).toContain('ANTHROPIC_API_KEY');
+
+    const proposals = await listReunionProposalsBySession(sessionId);
+    expect(proposals).toHaveLength(0);
   });
 });

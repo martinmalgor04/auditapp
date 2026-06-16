@@ -2,6 +2,9 @@ import { getSql } from './client';
 
 export type ProposalReviewStatus = 'pending' | 'accepted' | 'rejected' | 'edited';
 
+/** R19 — marcador de verificación Tier 2. NULL = sin verificar (comportamiento #12). */
+export type ProposalVerificationStatus = 'verified' | 'unverified' | null;
+
 export type ReunionProposalRow = {
   id: string;
   reunion_session_id: string;
@@ -13,6 +16,7 @@ export type ReunionProposalRow = {
   final_value: unknown | null;
   reviewed_by: string | null;
   reviewed_at: Date | null;
+  verification_status: ProposalVerificationStatus;
   created_at: Date;
 };
 
@@ -30,6 +34,7 @@ export async function insertReunionProposals(
     proposedValue: unknown;
     quote: string;
     confidence: number;
+    verificationStatus?: ProposalVerificationStatus; // R19; omitido → NULL
   }>
 ): Promise<void> {
   if (proposals.length === 0) return;
@@ -37,23 +42,25 @@ export async function insertReunionProposals(
   for (const p of proposals) {
     await sql`
       INSERT INTO reunion_proposal (
-        reunion_session_id, item_id, proposed_value, quote, confidence
+        reunion_session_id, item_id, proposed_value, quote, confidence, verification_status
       )
       VALUES (
         ${p.reunionSessionId},
         ${p.itemId},
         ${sql.json(p.proposedValue as never)},
         ${p.quote},
-        ${p.confidence}
+        ${p.confidence},
+        ${p.verificationStatus ?? null}
       )
       ON CONFLICT (reunion_session_id, item_id) DO UPDATE SET
-        proposed_value = EXCLUDED.proposed_value,
-        quote          = EXCLUDED.quote,
-        confidence     = EXCLUDED.confidence,
-        review_status  = 'pending',
-        final_value    = NULL,
-        reviewed_by    = NULL,
-        reviewed_at    = NULL
+        proposed_value      = EXCLUDED.proposed_value,
+        quote               = EXCLUDED.quote,
+        confidence          = EXCLUDED.confidence,
+        verification_status = EXCLUDED.verification_status,
+        review_status       = 'pending',
+        final_value         = NULL,
+        reviewed_by         = NULL,
+        reviewed_at         = NULL
     `;
   }
 }
@@ -67,7 +74,7 @@ export async function listReunionProposalsBySession(
       rp.id, rp.reunion_session_id, rp.item_id,
       rp.proposed_value, rp.quote, rp.confidence,
       rp.review_status, rp.final_value,
-      rp.reviewed_by, rp.reviewed_at, rp.created_at,
+      rp.reviewed_by, rp.reviewed_at, rp.verification_status, rp.created_at,
       ti.label    AS item_label,
       ti.field_type AS item_field_type,
       ti.options  AS item_options,
@@ -89,7 +96,7 @@ export async function getReunionProposalById(
       rp.id, rp.reunion_session_id, rp.item_id,
       rp.proposed_value, rp.quote, rp.confidence,
       rp.review_status, rp.final_value,
-      rp.reviewed_by, rp.reviewed_at, rp.created_at,
+      rp.reviewed_by, rp.reviewed_at, rp.verification_status, rp.created_at,
       ti.label    AS item_label,
       ti.field_type AS item_field_type,
       ti.options  AS item_options,

@@ -6,7 +6,7 @@ import { insertReunionProposals } from '$lib/server/db/reunion-proposals';
 import { presignGet } from '$lib/server/storage/presign';
 import { buildTemplateContextForExtraction } from './context';
 import { getSttAdapter } from './stt';
-import { extractProposals } from './extract';
+import { analyzeProposals } from './analyze';
 
 /**
  * Pipeline directo: STT + LLM in-process.
@@ -67,9 +67,9 @@ export async function processReunionJobDirect(sessionId: string, skipStt = false
   }
 
   try {
-    // 3. Extracción IA
+    // 3. Análisis con Claude (R2): tool use forzado + guards (grounding/umbral/dedup/verificador)
     const context = await buildTemplateContextForExtraction(session.audit_id);
-    const proposals = await extractProposals(transcriptText, context);
+    const proposals = await analyzeProposals(transcriptText, context);
 
     // 4. Persistir propuestas (R15: NUNCA tocar audit_response aquí)
     if (proposals.length > 0) {
@@ -79,7 +79,8 @@ export async function processReunionJobDirect(sessionId: string, skipStt = false
           itemId: p.item_id,
           proposedValue: p.proposed_value,
           quote: p.quote,
-          confidence: p.confidence
+          confidence: p.confidence,
+          verificationStatus: p.verification_status ?? null
         }))
       );
     }
@@ -89,7 +90,7 @@ export async function processReunionJobDirect(sessionId: string, skipStt = false
     logger.info('reunion_pipeline_done', { sessionId, proposals: proposals.length });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logger.error('reunion_extract_error', { sessionId, error: msg });
+    logger.error('reunion_analysis_error', { sessionId, error: msg });
     await updateReunionSessionStatus(sessionId, 'error', msg);
   }
 }

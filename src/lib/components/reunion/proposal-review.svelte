@@ -72,9 +72,19 @@
           <p class="text-xs text-sys-medio">{proposal.section_title}</p>
           <p class="text-sm font-semibold text-sys-oscuro truncate">{proposal.item_label}</p>
         </div>
-        <span class="shrink-0 rounded border px-2 py-0.5 text-xs font-medium {badge.cls}">
-          {badge.label}
-        </span>
+        <div class="flex shrink-0 flex-col items-end gap-1">
+          <span class="rounded border px-2 py-0.5 text-xs font-medium {badge.cls}">
+            {badge.label}
+          </span>
+          {#if proposal.verification_status === 'unverified'}
+            <span
+              class="rounded border border-sys-naranja/40 bg-sys-naranja/10 px-2 py-0.5 text-xs font-medium text-sys-naranja"
+              data-testid="verification-badge"
+            >
+              No verificada — revisar
+            </span>
+          {/if}
+        </div>
       </div>
 
       <!-- Valor propuesto -->

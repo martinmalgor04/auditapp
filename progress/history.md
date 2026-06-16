@@ -86,3 +86,13 @@
 - **Veredicto:** APPROVED (`progress/review_10_deploy_dokploy.md`)
 - **Próximo paso:** Backlog completo — commit + push cuando el humano lo pida
 
+
+## 2026-06-16 — 24_reunion_extraccion_precisa (#24) done
+
+- **Agente:** leader → spec_author → (puerta humana, 4 decisiones) → implementer → reviewer → implementer (swap fixture)
+- **Resultado:** Mejora de precisión del asistente de reunión + migración del análisis OpenAI→Claude. STT sigue en Whisper (intacto); el análisis usa Anthropic Messages API (`fetch` crudo, tool use forzado `propose_values`, sin parseo de texto libre). Tier 1: prompt endurecido (prohíbe inferir de controles vecinos/postura general → omite), contexto enriquecido (`help_text`+`section_title`), guards de grounding (cita=substring real), dedup (mayor confidence) y umbral de confidence. Tier 2: verificador activable por env (default off); error del juez → conserva + marca `verification_status='unverified'` (R19: migración 016 nullable idempotente + badge "No verificada — revisar"). Fixture de regresión con la transcripción real de prueba: ya no se proponen ítems alucinados (capacitación/endurecimiento/reglas firewall/rubro), la cita de contraseñas no se reusa, y backups no queda en "No". Adapter OpenAI `extract.ts` eliminado.
+- **Envs nuevas:** `ANTHROPIC_API_KEY`, `REUNION_ANALYSIS_MODEL` (def `claude-sonnet-4-6`), `REUNION_VERIFIER_ENABLED` (def false), `REUNION_VERIFIER_MODEL` (def `claude-haiku-4-5`), `REUNION_CONFIDENCE_MIN` (def 0.5). `OPENAI_API_KEY` se mantiene para Whisper.
+- **Verificación:** `pnpm run check` 0 errores en archivos de #24; `pnpm run build` ✓; suite de reunión 94/94 (incl. flujo de revisión #12). `./init.sh` global queda en EXIT 1 por causas ajenas a #24 (3 features in_progress + 17 tests rojos de #23, Fase 1 bloqueada).
+- **Veredicto:** APPROVED (`progress/review_24_reunion_extraccion_precisa.md`)
+- **Commit:** solo archivos de #24 (el árbol mantiene cambios sin commitear de #23). Decisión humana: commitear #24 pese al rojo global de #23.
+- **Próximo paso:** desbloquear #23 Fase 1 (bug SQL real en `dashboard.ts` GROUP BY + replay de migración 013 en `clients-cuit-cleanup.test.ts`); Docker ya está operativo.

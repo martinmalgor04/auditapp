@@ -16,6 +16,7 @@ Backlog activo: [`feature_list.json`](../feature_list.json). Mapa de trazabilida
 | 10 | [`11_ui_branding_sys/`](11_ui_branding_sys/requirements.md) | Branding SyS global (UI) | spec_ready |
 | 11 | [`10_deploy_dokploy/`](10_deploy_dokploy/requirements.md) | Deploy Docker + Dokploy | spec_ready |
 | 16 | [`16_presupuesto_psys/`](16_presupuesto_psys/requirements.md) | Presupuesto vía presupuestossys | ✅ done |
+| 24 | [`24_reunion_extraccion_precisa/`](24_reunion_extraccion_precisa/requirements.md) | Reunión: extracción precisa + análisis con Claude | spec_ready |
 
 Cada carpeta contiene:
 

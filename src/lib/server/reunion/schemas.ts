@@ -56,6 +56,11 @@ export const reunionProposalSchema = z.object({
   confidence: z.number().min(0).max(1)
 });
 
+/** Envoltura del `tool_use.input` de la tool `propose_values` (R3). */
+export const analysisProposalsSchema = z.object({
+  proposals: z.array(reunionProposalSchema)
+});
+
 export const reunionEditProposalSchema = z.object({
   final_value: z.unknown()
 });
@@ -64,3 +69,4 @@ export type ReunionConsentInput = z.infer<typeof reunionConsentSchema>;
 export type ReunionAudioPresignInput = z.infer<typeof reunionAudioPresignSchema>;
 export type ReunionConfirmInput = z.infer<typeof reunionConfirmSchema>;
 export type ReunionProposalInput = z.infer<typeof reunionProposalSchema>;
+export type AnalysisProposalsInput = z.infer<typeof analysisProposalsSchema>;

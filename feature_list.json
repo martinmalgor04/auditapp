@@ -412,6 +412,49 @@
       ],
       "sdd": true,
       "status": "done"
+    },
+    {
+      "id": 23,
+      "name": "23_crm_empresa_unificada",
+      "title": "CRM unificado: entidad empresa (clientes + prospectos)",
+      "description": "Rediseño del CRM como registro único de todas las empresas que SyS conoce (clientes, ex-clientes y prospectos), no dos silos. Fusionar las tablas client y crm_lead en una entidad empresa con: datos maestros (razon_social, cuit, direccion, cp, provincia, telefono, email, rubro, empleados, referente, erp_actual, etc.), campo relacion (cliente | prospecto | ex_cliente) que las diferencia en la DB, y estado de seguimiento HÍBRIDO orientado a auditorías: auto-derivado de las auditorías/presupuestos de la empresa (sin_contactar → contactada → auditoria_en_curso → auditada → presupuestada → activa/inactiva) con override manual opcional que gana cuando está seteado. El CRM NO es un embudo de ventas genérico: gira alrededor de la auditoría, y la base de empresas es el activo estratégico a hacer crecer (se conecta con el estudio de mercado NEA #18). Preservar los campos propios de prospecto de crm_lead (referente, nivel_interes, tiene_software, observaciones, fuente) y su historial de eventos (crm_lead_event → eventos de empresa). Reconectar a empresa: el endpoint de import #21 (hoy escribe client), el ClientPicker y createAudit del form de nueva auditoría (hoy leen client, FK audit.client_id), cab-client-map, y las referencias de mercado/market_data. La vista /crm pasa a ser el cockpit: listado con filtro por relacion/estado y búsqueda, ficha ver/editar, botón crear auditoría (precarga encabezado CAB), timeline de eventos/notas, e importar/exportar. Migración con dedup por CUIT entre las 3 fuentes; preservar FKs existentes de audit. Considerar fasear el rollout en tasks.md.",
+      "source": "Decisión humana 2026-06-15/16 (Martín): el CRM debe ser un registro único de empresas (clientes + no-clientes) orientado a auditorías, no un pipeline de ventas. Modelo: entidad empresa unificada, relacion cliente/prospecto/ex_cliente, estado híbrido (auto-derivado de auditorías + override manual). Acciones must-have: ver/editar ficha, crear auditoría desde ficha, registrar evento/nota, importar/exportar. Tablas origen: client (#2), crm_lead. Gatillado porque el import #21 cayó en client y no aparecía en el CRM que lee crm_lead.",
+      "acceptance": [
+        "Existe entidad empresa que unifica client + crm_lead con datos maestros, campo relacion (cliente|prospecto|ex_cliente) y campos de prospecto preservados (referente, nivel_interes, tiene_software, observaciones, fuente)",
+        "Migración idempotente fusiona client + crm_lead → empresa con dedup por CUIT entre las 3 fuentes (presupuestossys, tango, prospectos), sin perder filas ni romper FKs de audit",
+        "audit sigue vinculada a la empresa correcta tras la migración (FK preservada o remapeada); las auditorías existentes no se rompen",
+        "estado de empresa es híbrido: se auto-deriva de auditorías/presupuestos (sin_contactar → contactada → auditoria_en_curso → auditada → presupuestada → activa/inactiva) y un override manual opcional gana cuando está seteado",
+        "Vista /crm cockpit: listado de empresas con filtro por relacion y estado, búsqueda por razón social/CUIT, badges, paginación o virtualización para ~2000 filas",
+        "Ficha de empresa: ver y editar datos maestros y relacion; mostrar estado (auto + override) y timeline de eventos/notas",
+        "Acción crear auditoría desde la ficha de empresa, precargando el encabezado CAB con los datos de la empresa (reusa cab-client-map)",
+        "Registrar evento/nota sobre una empresa (llamada, reunión, nota, cambio de estado) con fecha y autor",
+        "Importar empresas por CSV/Excel (reconecta el importador #21 a empresa, conservando upsert por CUIT) y exportar el listado filtrado",
+        "El ClientPicker y createAudit del form de nueva auditoría leen de empresa sin regresión; el flujo de creación de auditorías sigue verde",
+        "Tests de migración (dedup, preservación de FKs, idempotencia), auto-derivación de estado, override, guards de permisos, import reconectado y e2e del cockpit pasan"
+      ],
+      "sdd": true,
+      "status": "in_progress"
+    },
+    {
+      "id": 24,
+      "name": "24_reunion_extraccion_precisa",
+      "title": "Asistente de reunión — extracción precisa + análisis con Claude",
+      "_gate_decisions": "Puerta humana 2026-06-16: (1) solo modo direct, webhook fuera de alcance; (2) modelos claude-sonnet-4-6 extracción + claude-haiku-4-5 verificador; (3) REUNION_CONFIDENCE_MIN=0.5; (4) error del verificador → conservar + marcar unverified (R19), no descartar.",
+      "description": "Mejora de precisión del asistente de reunión (#12) para eliminar propuestas alucinadas y citas mal asociadas, y migrar el análisis de OpenAI a Claude. Hoy el pipeline transcribe Y analiza con OpenAI (Whisper + gpt-4o-mini en src/lib/server/reunion/pipeline/extract.ts) y produce errores observados en una reunión de prueba: (A) valores alucinados para ítems que el cliente nunca mencionó (capacitación en ciberseguridad, endurecimiento de servidores, reglas de firewall documentadas, rubro), inferidos de la postura general de seguridad; (B) citas que no corresponden a la pregunta (rubro citando el saludo; '¿backups automatizados?' citando 'nunca lo probamos', que en realidad responde a restauración probada); (C) la misma cita de contraseñas ('cada uno pone la que quiere... misma contraseña hace 8 años') reusada en 3 ítems distintos; (D) valores incorrectos aun cuando el tema se habló (backups marcados 'No' cuando existen y son automáticos, solo falta probar restore). Cambio de arquitectura: STT sigue en OpenAI Whisper; el ANÁLISIS/extracción pasa a Claude (Anthropic Messages API) con salida estructurada por tool use en vez de parsear texto libre. Tier 1 (precisión): prompt endurecido, contexto enriquecido (help_text + section_title), guard de grounding (cita = substring real del transcript), guard de dedup de citas, umbral de confidence. Tier 2 (robustez): segundo pase verificador (juez LLM por propuesta), activable por env. Es una mejora sobre #12, no toca el modelo de datos de reunion_proposal.",
+      "source": "Solicitud operativa SyS (2026-06-16, Martín): probó el asistente de reunión con una transcripción simulada y detectó propuestas alucinadas, citas mal asociadas y reuso de citas. Decisión humana: transcribir con OpenAI (Whisper) pero analizar con Claude; alcance Tier 1 + Tier 2 por SDD. Base: feature #12 (specs/.../12_reunion_asistente), pipeline src/lib/server/reunion/.",
+      "acceptance": [
+        "El STT sigue usando OpenAI Whisper; la extracción/análisis usa Claude vía Anthropic Messages API (ANTHROPIC_API_KEY) con modelo configurable (REUNION_ANALYSIS_MODEL) y salida estructurada por tool use, sin parseo frágil de texto libre",
+        "El prompt de extracción prohíbe inferir valores de controles vecinos o de la postura general: si el cliente no habló del control puntual, el ítem se omite (no se propone un valor)",
+        "Cada propuesta incluye una cita textual verbatim que responde esa pregunta puntual; el contexto enviado al modelo incluye help_text y section_title por ítem para desambiguar etiquetas",
+        "Guard de grounding en código: la cita debe existir como substring (normalizado por espacios/caso) del transcript; si no aparece, la propuesta se descarta y se loguea",
+        "Guard de dedup: si una misma cita mapea a más de un ítem, solo sobrevive la propuesta de mayor confidence; las demás se descartan y se loguean",
+        "Umbral de confidence configurable por env: las propuestas por debajo del umbral se descartan",
+        "Segundo pase verificador (Tier 2) activable por env: un juez evalúa por propuesta si la cita sustenta ese valor para esa pregunta exacta; las que no pasan se descartan. Con el verificador desactivado el pipeline sigue funcionando",
+        "Regresión con la transcripción de prueba: no se proponen los ítems alucinados (capacitación, endurecimiento de servidores, reglas de firewall documentadas, rubro), la cita de contraseñas no se reusa fuera de su ítem, y backups no se marca 'No' siendo automático",
+        "Tests pasan: grounding, dedup, umbral, verificador con Anthropic mockeado, fixture de la transcripción de prueba, y que el flujo de revisión (aceptar/editar/rechazar) y la persistencia de reunion_proposal no cambian"
+      ],
+      "sdd": true,
+      "status": "done"
     }
   ]
 }

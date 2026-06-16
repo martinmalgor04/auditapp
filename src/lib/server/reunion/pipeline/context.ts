@@ -8,6 +8,8 @@ export const REUNION_EXTRACTABLE_FIELD_TYPES = new Set([
 export type TemplateContextItem = {
   item_id: string;
   label: string;
+  section_title: string;
+  help_text: string | null;
   field_type: string;
   options: unknown;
   filled_by: string;
@@ -30,6 +32,8 @@ export async function buildTemplateContextForExtraction(
   const rows = await sql<{
     item_id: string;
     label: string;
+    section_title: string;
+    help_text: string | null;
     field_type: string;
     options: unknown;
     filled_by: string;
@@ -38,14 +42,15 @@ export async function buildTemplateContextForExtraction(
     SELECT
       ti.id         AS item_id,
       ti.label,
+      s.title       AS section_title,
+      ti.help_text,
       ti.field_type,
       ti.options,
       ti.filled_by,
       ar.value      AS current_value
     FROM audit a
-    JOIN template_item ti ON ti.section_id IN (
-      SELECT s.id FROM section s WHERE s.template_id = ANY(a.template_ids)
-    )
+    JOIN section s ON s.template_id = ANY(a.template_ids)
+    JOIN template_item ti ON ti.section_id = s.id
     LEFT JOIN audit_response ar ON ar.audit_id = a.id AND ar.item_id = ti.id
     WHERE a.id = ${auditId}
       AND ti.filled_by IN ('cliente', 'tecnico')
