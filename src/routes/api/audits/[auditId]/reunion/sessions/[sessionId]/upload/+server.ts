@@ -80,13 +80,15 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
         segments: result.segments
       });
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Error STT';
+      console.error('[reunion/upload] STT error', msg);
       await upsertReunionTranscript({
         reunionSessionId: sessionId,
         status: 'error',
-        errorMessage: err instanceof Error ? err.message : 'Error STT'
+        errorMessage: msg
       });
-      await updateReunionSessionStatus(sessionId, 'error', err instanceof Error ? err.message : undefined);
-      return apiError('Error al transcribir el audio', 500);
+      await updateReunionSessionStatus(sessionId, 'error', msg);
+      return apiError(`Error al transcribir: ${msg}`, 500);
     }
 
     // Encolar extracción IA de propuestas
