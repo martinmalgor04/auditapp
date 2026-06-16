@@ -11,8 +11,8 @@ export const clientImportRowSchema = z.object({
   razon_social: z.string().trim().min(1, 'razon_social obligatoria'),
   cuit: z
     .string()
-    .regex(/^\d{11}$/, 'CUIT debe tener 11 dígitos')
-    .nullable(),
+    .nullable()
+    .transform((v) => (v !== null && /^\d{11}$/.test(v) ? v : null)),
   direccion: z.string().nullable(),
   cp: z.string().nullable(),
   provincia: z.string().nullable(),

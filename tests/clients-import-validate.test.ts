@@ -22,15 +22,16 @@ describe('clients import validate (R8, R9, R9.bis, R13)', () => {
     expect(p.valid[0].razon_social).toBe('ACME SA');
   });
 
-  it('CUIT no-11-dígitos -> inválida, el resto sigue (R9)', () => {
+  it('CUIT no-11-dígitos (ej: DNI) -> skipped como sin CUIT, no inválida (R9)', () => {
     const p = plan(
       'razon_social,cuit\n' +
-        'Beta SRL,123\n' + // fila 1: cuit corto -> inválida
+        'Beta SRL,123\n' + // fila 1: cuit corto (DNI) -> skipped, no inválida
         'Gamma SA,30-12345678-9\n' // fila 2: válida
     );
-    expect(p.invalid).toHaveLength(1);
-    expect(p.invalid[0].row).toBe(1);
-    expect(p.invalid[0].reason).toContain('11 dígitos');
+    expect(p.invalid).toHaveLength(0);
+    expect(p.skipped).toHaveLength(1);
+    expect(p.skipped[0].row).toBe(1);
+    expect(p.skipped[0].reason).toBe('sin CUIT, no deduplicable');
     expect(p.valid).toHaveLength(1);
     expect(p.valid[0].cuit).toBe('30123456789');
   });
@@ -52,13 +53,14 @@ describe('clients import validate (R8, R9, R9.bis, R13)', () => {
   it('reporta total, categorías separadas skipped/invalid (R13)', () => {
     const p = plan(
       'razon_social,cuit\n' +
-        ',30-12345678-9\n' + // inválida (1)
-        'Sin Cuit,\n' + // skipped (2)
-        'Buena SA,30-87654321-0\n' // válida (3)
+        ',30-12345678-9\n' + // inválida: sin razon_social (1)
+        'Sin Cuit,\n' + // skipped: sin CUIT (2)
+        'DNI SA,20123456\n' + // skipped: DNI, no-11-dígitos (3)
+        'Buena SA,30-87654321-0\n' // válida (4)
     );
-    expect(p.total).toBe(3);
+    expect(p.total).toBe(4);
     expect(p.invalid).toHaveLength(1);
-    expect(p.skipped).toHaveLength(1);
+    expect(p.skipped).toHaveLength(2);
     expect(p.valid).toHaveLength(1);
   });
 
