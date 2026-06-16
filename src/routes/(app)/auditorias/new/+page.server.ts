@@ -10,8 +10,9 @@ import {
 } from '$lib/server/backoffice/audits';
 import { parseCreateAuditFromForm } from '$lib/server/backoffice/form-parsers';
 import { failFromError } from '$lib/server/backoffice/route-helpers';
+import { getEmpresaCabFields } from '$lib/server/db/empresa';
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
   const user = requireStaff(locals);
 
   const [technicians] = await Promise.all([listTechnicians()]);
@@ -21,7 +22,26 @@ export const load: PageServerLoad = async ({ locals }) => {
     allowedTypes && allowedTypes.length > 0 ? [allowedTypes[0]] : (['it'] as const);
   const cabItems = await getCabItemsForTypes([...defaultTypes]);
 
-  return { technicians, cabItems, defaultTypes: [...defaultTypes], allowedTypes };
+  // #23 Fase 5 (R21): "crear auditoría desde la ficha". Con `?empresaId=<id>` se precarga la empresa
+  // seleccionada y sus datos maestros (CAB) reutilizando `cab-client-map`; la auditoría creada queda
+  // vinculada a esa empresa (FK `audit.empresa_id`). Sin el parámetro, el flujo clásico es idéntico.
+  const empresaId = url.searchParams.get('empresaId');
+  type PreselectedEmpresa = { id: string; cabFields: NonNullable<Awaited<ReturnType<typeof getEmpresaCabFields>>> };
+  let preselectedEmpresa: PreselectedEmpresa | null = null;
+  if (empresaId) {
+    const cabFields = await getEmpresaCabFields(empresaId);
+    if (cabFields) {
+      preselectedEmpresa = { id: empresaId, cabFields };
+    }
+  }
+
+  return {
+    technicians,
+    cabItems,
+    defaultTypes: [...defaultTypes],
+    allowedTypes,
+    preselectedEmpresa
+  };
 };
 
 export const actions: Actions = {

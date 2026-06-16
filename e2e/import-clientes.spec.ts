@@ -23,7 +23,9 @@ test.describe('importar clientes (CRM)', () => {
 
   test('subir un CSV muestra el reporte con contadores (R14)', async ({ page }) => {
     await page.getByTestId('crm-import-clients-toggle').click();
-    const cuit = `30-72${Date.now().toString().slice(-7)}-1`;
+    // CUIT de 11 dígitos: '30' + 72 + 6 dígitos + 1 = 11. (Antes usaba slice(-7) → 12 dígitos,
+    // siempre inválido por el CHECK /^\d{11}$/ → la fila válida caía en "omitidos".)
+    const cuit = `30-72${Date.now().toString().slice(-6)}-1`;
     const csv =
       'razon_social,cuit\n' +
       `E2E Import SA,${cuit}\n` +

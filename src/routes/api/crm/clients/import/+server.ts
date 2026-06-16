@@ -5,6 +5,7 @@ import { detectFormat, parseCsv, parseXlsx } from '$lib/server/clients/parse';
 import { planClientImport } from '$lib/server/clients/import';
 import { UnsupportedFormatError } from '$lib/server/clients/errors';
 import { applyClientImport } from '$lib/server/db/clients-import';
+import { empresaImportSchema } from '$lib/server/crm/schemas';
 
 export const POST: RequestHandler = async ({ locals, request }) => {
   const user = requireAdminApi(locals);
@@ -16,6 +17,13 @@ export const POST: RequestHandler = async ({ locals, request }) => {
   const file = form.get('file');
   if (!(file instanceof File)) {
     return apiError('Falta el archivo', 400);
+  }
+
+  // #23 Fase 2 (R25/R31): la `relacion` la define el SELECTOR de la UI, no el origen del archivo.
+  // El endpoint la recibe como parámetro validado con Zod (cliente | prospecto) y la aplica al lote.
+  const relacionParsed = empresaImportSchema.safeParse({ relacion: form.get('relacion') });
+  if (!relacionParsed.success) {
+    return apiError('Elegí una relación válida para el lote (cliente o prospecto)', 400);
   }
 
   let format: 'csv' | 'xlsx';
@@ -35,6 +43,6 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 
   const headers = rows.length > 0 ? Object.keys(rows[0]) : [];
   const plan = planClientImport(rows, headers); // R5–R9.bis, R16, R5.ter
-  const result = await applyClientImport(plan); // R10–R12, R15
+  const result = await applyClientImport(plan, relacionParsed.data.relacion); // R10–R12, R15, R24, R25
   return apiSuccess(result, 200); // R13
 };

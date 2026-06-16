@@ -24,3 +24,13 @@ export class CrmLeadDiscardedError extends Error {
     this.name = 'CrmLeadDiscardedError';
   }
 }
+
+/** #23 Fase 4 (R19): empresa inexistente en la ficha o en el endpoint de update. */
+export class EmpresaNotFoundError extends Error {
+  readonly code = 'EMPRESA_NOT_FOUND';
+
+  constructor(id?: string) {
+    super(id ? `Empresa no encontrada: ${id}` : 'Empresa no encontrada');
+    this.name = 'EmpresaNotFoundError';
+  }
+}

@@ -65,6 +65,7 @@ describe('clients import API (R2, R4, R13)', () => {
     const before = await countClients();
     const form = new FormData();
     form.append('file', csvFile('{"a":1}', 'datos.json', 'application/json'));
+    form.append('relacion', 'cliente');
     const res = await requestWithForm(form, admin);
     expect(res.status).toBe(415);
     const body = await res.json();
@@ -76,6 +77,27 @@ describe('clients import API (R2, R4, R13)', () => {
     const admin = await findUserByEmail(sql, 'admin@serviciosysistemas.com.ar');
     const res = await requestWithForm(new FormData(), admin);
     expect(res.status).toBe(400);
+  });
+
+  it('relacion ausente o inválida responde 400 sin escribir (R31)', async () => {
+    const admin = await findUserByEmail(sql, 'admin@serviciosysistemas.com.ar');
+    const before = await countClients();
+
+    // Sin relacion en el form.
+    const sinRelacion = new FormData();
+    sinRelacion.append('file', csvFile('razon_social,cuit\nX SA,30-71000000-1\n'));
+    const r1 = await requestWithForm(sinRelacion, admin);
+    expect(r1.status).toBe(400);
+    expect((await r1.json()).success).toBe(false);
+
+    // relacion no permitida por el selector (ex_cliente es solo manual desde la ficha).
+    const relacionInvalida = new FormData();
+    relacionInvalida.append('file', csvFile('razon_social,cuit\nX SA,30-71000000-1\n'));
+    relacionInvalida.append('relacion', 'ex_cliente');
+    const r2 = await requestWithForm(relacionInvalida, admin);
+    expect(r2.status).toBe(400);
+
+    expect(await countClients()).toBe(before);
   });
 
   it('admin con CSV válido responde 200 y reporte completo (R13)', async () => {
@@ -91,6 +113,7 @@ describe('clients import API (R2, R4, R13)', () => {
           'uuid-w,Sin Cuit SA,,RI\n' // skipped (sin cuit)
       )
     );
+    form.append('relacion', 'cliente');
     const res = await requestWithForm(form, admin);
     expect(res.status).toBe(200);
     const body = await res.json();

@@ -433,7 +433,7 @@
         "Tests de migración (dedup, preservación de FKs, idempotencia), auto-derivación de estado, override, guards de permisos, import reconectado y e2e del cockpit pasan"
       ],
       "sdd": true,
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "id": 24,

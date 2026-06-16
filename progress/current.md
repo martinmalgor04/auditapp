@@ -47,14 +47,22 @@ ajustados (R15 aclara que el único cambio en la tabla es esa columna aditiva). 
 y T11/T12/T15 actualizadas. Las 4 open questions de `design.md` pasaron a §Decisiones de la puerta
 humana (ninguna queda abierta).
 
-## Feature en curso: #23 23_crm_empresa_unificada
+## Feature CERRADA: #23 23_crm_empresa_unificada → `done` (2026-06-16)
 
-**Estado:** in_progress — arranque. Spec aprobado por Martín (puerta humana 2026-06-16).
-Rollout faseado (6 fases). Cada fase deja el repo verde y es verificable de forma independiente.
+**Estado:** ✅ **DONE.** Las 6 fases implementadas, verificadas y APROBADAS por reviewer.
+Leader marcó #23 → `done` en `feature_list.json` tras el APROBADO de Fase 6 + cierre de feature
+(`progress/review_23_crm_empresa_unificada_fase6.md`). Trazabilidad R1–R32 completa, acceptance
+(11 criterios) cumplido, suite **870 passed / 2 skipped / 0 failed** en aislamiento, check 0 err,
+build OK. **SIN commit/push** (decisión de Martín). El working tree tiene todos los cambios de #23
+sin commitear.
 
-> Nota de arnés: #12 `reunion_asistente` queda en `in_progress` por decisión de Martín
-> (2026-06-16). Por eso `init.sh` sección 3 reporta FAIL por "2 in_progress" — condición
-> conocida y aceptada, no bloquea el trabajo de #23.
+> Nota de arnés: tras cerrar #23 queda **solo #12 `reunion_asistente` en `in_progress`** (parqueado
+> a propósito por Martín). `init.sh §3` ya NO falla por ">1 in_progress".
+
+> Follow-ups abiertos (PRE-EXISTENTES, ajenos a #23, no bloquean): (1) flakiness de entorno por DB
+> compartida + tests en paralelo / OOM si corren suite + init.sh juntos; (2) selector brittle del nav
+> en `e2e/mercado.spec.ts`; (3) `isRedirect` en `failFromError`; (4) badge de ficha no recomputa en
+> el acto tras evento; (5) limpieza física futura de tablas/vista legacy (ver `cleanup-manual.md`).
 
 ### Plan de fases (specs/23_crm_empresa_unificada/tasks.md)
 - **Fase 1** — `empresa` + migración 015 con compat `client` (T1–T5). Gate: init.sh verde.
@@ -71,8 +79,99 @@ Rollout faseado (6 fases). Cada fase deja el repo verde y es verificable de form
   (`dashboard.ts`, `clients-import.ts`: la vista no cubre `xmax`/`ON CONFLICT`/`GROUP BY`). Wart:
   el seed dev deja todo `prospecto` (inserta por la vista sin `relacion`) → se corrige en Fase 2.
   Detalle/counts en `progress/impl_23_crm_empresa_unificada.md`.
-- [ ] Fase 2
-- [ ] Fase 3
-- [ ] Fase 4
-- [ ] Fase 5
-- [ ] Fase 6
+- [x] Fase 2 — **IMPLEMENTADA Y APROBADA (reviewer, 2026-06-16).** Verificación independiente
+  reproducida; APROBADO en `progress/review_23_crm_empresa_unificada.md`. Hallazgo menor no
+  bloqueante: blindar "el UPDATE no pisa relacion" con relacion-existente ≠ selector (Fase 3+).
+  Importador #21 reconectado
+  a `empresa` con selector explícito de `relacion` (cliente|prospecto), no inferido por origen.
+  T6 (`applyClientImport(plan, relacion)`), T7 (`empresaImportSchema` Zod en el endpoint, 400 si
+  falta/inválida, guard intacto), T7b (`<select crm-import-relacion>` en el panel de CRM), T8
+  (upsert escribe `empresa` + relacion del selector, 7/7), T8b (e2e selector 3/3 + fix CUIT en
+  `import-clientes.spec`). `check` 0 err, `build` OK, suite import+empresa 48/48, e2e import 5/5.
+  Wart de Fase 1 (seed todo `prospecto`) resuelto vía selector. Detalle/trazabilidad en
+  `progress/impl_23_crm_empresa_unificada.md`. NO toqué feature_list.json. NO commit/push.
+- [x] Fase 3 — **IMPLEMENTADA Y VERDE (implementer, 2026-06-16, a espera de reviewer).** Reconectar
+  caminos calientes (form nueva auditoría + dashboard mercado) de la **vista** `client` a la tabla
+  base `empresa`. `check` 0 err, `build` OK, suite **797 passed / 2 skipped / 0 failed**, e2e
+  `auditorias-new` 1/1. Default `relacion='prospecto'` en empresa nueva del form clásico. e2e
+  `mercado.spec` "admin ve dashboard" rojo por selector brittle PRE-EXISTENTE (nav duplicado),
+  ajeno a Fase 3 (dashboard renderiza, queries empresa OK). Detalle/trazabilidad en
+  `progress/impl_23_crm_empresa_unificada.md`. NO toqué feature_list.json. NO commit/push. Plan T9–T13:
+  - T9 `backoffice/audits.ts`: `FROM/INSERT INTO empresa`; `createAudit` setea `relacion` en empresa
+    nueva = **`prospecto`** (default conservador: crear una auditoría no implica que la empresa ya sea
+    cliente; el estado de cliente se decide manual en la ficha. Coherente con el default del selector
+    de import y no-destructivo: nunca eleva a `cliente` por error).
+  - T10 `mercado/queries.ts`: 10 `JOIN client c` → `JOIN empresa c`.
+  - T11 verificar `auditorias/new/{+page.server.ts,+page.svelte}` y `cab-client-map.ts` (sin cambio:
+    solo llaman a `audits.ts`; `ClientCabFields` no cambia de forma).
+  - T12 `tests/audits-create.test.ts` + `e2e/auditorias-new.spec.ts` (nuevos).
+  - T13 `tests/mercado-queries.test.ts` (nuevo).
+- [x] Fase 4 — **IMPLEMENTADA Y VERDE (implementer, 2026-06-16, a espera de reviewer).** Cockpit
+  `/crm`: listado con filtros (relacion/estado/búsqueda) + **paginación server-side** (50/pág,
+  prev/next por URL) para ~2000 empresas, badges, y ficha ver/editar datos maestros + `relacion`.
+  Panel de import de Fase 2 **integrado** en el cockpit (testids intactos, e2e import 3/3). Estado
+  efectivo **derivado en SQL en UNA query agregada** (sin N+1, ventana 18 meses), honra
+  `estado_override`; el módulo `empresa-estado.ts` + timeline + override es Fase 5. `check` 0 err,
+  `build` OK, suite **823 passed / 2 skipped / 0 failed**, T18 26/26, e2e cockpit 6/6. Bug real
+  hallado y corregido: postgres.js rechaza `undefined` en `sql(obj,...)` (filtro `!== undefined`).
+  Eliminado `e2e/crm.spec.ts` (UI del cockpit de leads viejo, ya inexistente; reemplazo funcional
+  `e2e/crm-cockpit.spec.ts`; API de leads sigue cubierta por `tests/api/crm-leads.test.ts`).
+  Detalle/trazabilidad en `progress/impl_23_crm_empresa_unificada.md`. NO toqué feature_list.json.
+  NO commit/push. T14–T19 + Gate Fase 4 marcados `[x]`.
+- [x] Fase 5 — **IMPLEMENTADA Y VERDE (implementer, 2026-06-16, a espera de reviewer).** Estado
+  híbrido (módulo TS + **paridad SQL↔TS** verificada por test), eventos/timeline, crear auditoría
+  desde la ficha, export CSV. Retomó el intento previo que cayó por un 500: casi todo el código ya
+  estaba (módulo, funciones, schemas, CSV, endpoints, ficha); faltaba cerrar tests (T25), la
+  reconciliación SQL↔TS, verificación/marcado, y arreglar el bug del 500. **Causa raíz del 500**: el
+  test de paridad insertaba en `audit_report` columnas inexistentes (`content`/`created_by`) →
+  corregido a `canonical_json`/`schema_version`/`requested_by` + `approved_by/approved_at`. **Recon
+  SQL↔TS**: `ACTIVITY_WINDOW_MONTHS=18` constante única en `empresa-estado.ts` importada por
+  `empresa.ts` (no hardcodeada dos veces); test de paridad compara `getEmpresaById` (CASE SQL) vs
+  `deriveEmpresaEstado(getEstadoInputs)` para los 7 estados + override; política "regla de estado va
+  en TS y en CASE SQL juntos" documentada en el encabezado del módulo. `check` 0 err, `build` OK,
+  suite Fase 5 47/47 (estado 23 + eventos 17 + export 7), e2e `crm-ficha` 4/4, `pnpm test`
+  **870 passed / 2 skipped / 0 failed** (180 files) en corrida limpia. Tests creados:
+  `tests/api/empresa-eventos.test.ts`, `tests/api/empresas-export.test.ts`, `e2e/crm-ficha.spec.ts`;
+  modificado `tests/empresa-estado.test.ts` (fix del bug). Flakiness pre-existente
+  (`canonical-contract`, ocasional `audits-create`) ajena a Fase 5; pasa en aislamiento. `init.sh`
+  `[FAIL]` por ">1 in_progress" + esa flakiness. Detalle/trazabilidad R↔test en
+  `progress/impl_23_crm_empresa_unificada.md`. NO toqué feature_list.json. NO commit/push.
+  T20–T25 + Gate Fase 5 marcados `[x]`. Plan original T20–T25:
+  - T20 `src/lib/server/crm/empresa-estado.ts` (`deriveEmpresaEstado`, `effectiveEstado`,
+    `withinActivityWindow`) + constante única `ACTIVITY_WINDOW_MONTHS=18` importada por TS y por
+    `empresa.ts` (SQL). Query agregada de inputs en `empresa.ts` (sin N+1).
+  - T21 `addEvento`/`listEventos`/`setEstadoOverride` en `empresa.ts` + `empresaEventoSchema`;
+    override genera evento `cambio_estado`.
+  - T22 Ficha: estado efectivo + origen + timeline; UI evento/nota + set/clear override.
+  - T23 Crear auditoría desde la ficha (CAB precargado vía `getEmpresaCabFields`, FK a empresa).
+  - T24 `GET /api/crm/empresas/export` (CSV del listado filtrado).
+  - T25 Tests: `empresa-estado` (7 estados + reglas + override + **paridad SQL↔TS**),
+    `api/empresa-eventos`, `api/empresas-export`, `e2e/crm-ficha`.
+  - Migración eventos: `empresa_evento` YA existe (Fase 1, migr. 015). No hace falta migración nueva.
+- [x] Fase 6 — **IMPLEMENTADA Y VERDE (implementer, 2026-06-16, a espera de reviewer final).**
+  Deprecación documentada **SIN drop** (decisión humana 8). T26–T28 + Gate Fase 6 marcados `[x]`.
+  - T26: `migrations/017_empresa_deprecacion.sql` (la 016 es de #24 → se usó 017). Tres `COMMENT ON`
+    marcando `crm_lead`, `crm_lead_event` y la vista `client` como "DEPRECADO #23, conservar para
+    rollback, no escribir". **CERO `DROP`, CERO `REVOKE`** (evaluado: el rol `auditapp` es DUEÑO →
+    REVOKE no afecta al owner = no-op engañoso; la vista `client` aún recibe escrituras legacy → solo
+    COMMENT, justificado en el .sql). Idempotente (body 2× = no-op; runner la registra/saltea).
+    Aplicada con `pnpm db:migrate`. Cubre R30 (cierre sin drop).
+  - T27: `specs/23_crm_empresa_unificada/cleanup-manual.md` — limpieza manual futura (orden por FK:
+    `crm_lead_event`→`crm_lead`→vista `client`; precondición = ningún lector legacy + backup;
+    código a borrar). NO se borró `crm-leads.ts` ni `state-machine.ts` (referencia).
+  - T28: `pnpm test` **870 passed / 2 skipped / 0 failed** (180 files, corrida dedicada); e2e
+    cockpit+ficha+import 13/13 + auditorias-new 1/1 chromium; `check` 0 err, `build` OK. Mapa R↔test
+    **R13–R32 cerrado** en `progress/impl_23_crm_empresa_unificada.md` (trazabilidad #23 completa).
+  - **Incidente de entorno (no regresión):** correr 2 `pnpm test` full concurrentes (mío + init.sh)
+    OOM-mató `db-db-1` (exit 137) → `ECONNREFUSED` en cascada; tras reiniciar Postgres y correr la
+    suite aislada → 870/2/0. `./init.sh` `[FAIL]` solo por ">1 in_progress" (#12/#23/#24) + esa
+    flakiness DB-compartida (truncate race). NO toqué `feature_list.json`. NO commit/push.
+
+### #23 — LAS 6 FASES COMPLETAS (a espera de reviewer final de Fase 6)
+
+Fases 1–5 ya aprobadas/verdes; Fase 6 implementada y verde. Cierre de la feature: registro único
+`empresa` (fold `client`+`crm_lead`, FK de `audit` preservadas), importador #21 reconectado con
+selector de relacion, form de auditoría + mercado sobre `empresa`, cockpit `/crm` (listado/ficha/
+edición/export), estado híbrido + timeline + override, y deprecación documentada de los objetos
+legacy **sin drop** (red de rollback). Trazabilidad R1–R32 completa. Falta solo el **reviewer final
+de Fase 6** para mover #23 a `done`.

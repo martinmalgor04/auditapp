@@ -1,5 +1,6 @@
 import { getSql } from './client';
 import type { ImportPlan, RowError } from '$lib/server/clients/import';
+import type { EmpresaImportRelacion } from '$lib/server/crm/schemas';
 
 export type ImportResult = {
   total: number;
@@ -12,22 +13,29 @@ export type ImportResult = {
 
 /**
  * Aplica el plan en una única transacción (R12). Upsert por CUIT (R10): existente se
- * actualiza, nuevo se crea con origen='presupuestos' sin pisar origen en update (R11).
+ * actualiza, nuevo se crea sin pisar origen en update (R11).
+ *
+ * #23 Fase 2 (T6, R24/R25): escribe sobre la tabla base `empresa` (no la vista `client`). La vista
+ * no soporta la columna de sistema `xmax` (RETURNING (xmax = 0)) ni el ON CONFLICT contra el índice
+ * único de la tabla base. La `relacion` se recibe como **parámetro** desde el selector de la UI (no
+ * se infiere por origen): toda empresa NUEVA toma esa `relacion`; en el UPDATE de una existente NO
+ * se pisa su `relacion` (decisión: el upsert actualiza datos maestros, no reclasifica empresas ya
+ * registradas). El `origen` físico del importador en vivo sigue siendo 'presupuestos' (etiqueta de
+ * carga, distinta de `relacion`, que es la decisión humana del selector — R25/R32).
  */
-export async function applyClientImport(plan: ImportPlan): Promise<ImportResult> {
+export async function applyClientImport(
+  plan: ImportPlan,
+  relacion: EmpresaImportRelacion
+): Promise<ImportResult> {
   const sql = getSql();
   let created = 0;
   let updated = 0;
 
   await sql.begin(async (tx) => {
     for (const row of plan.valid) {
-      // #23 Fase 1: INSERT sobre la tabla base `empresa` (no la vista `client`). La vista no soporta
-      // la columna de sistema `xmax` (RETURNING (xmax = 0)) ni el ON CONFLICT contra el índice único
-      // de la tabla base; ambos rompen al escribir por la vista. `relacion` toma el DEFAULT
-      // ('prospecto') igual que antes vía la vista. Fase 2 (T6) reconecta este import con el selector.
       const result = await tx<{ inserted: boolean }[]>`
         INSERT INTO empresa (
-          razon_social, cuit, direccion, cp, provincia, telefono, email, origen
+          razon_social, cuit, direccion, cp, provincia, telefono, email, origen, relacion
         )
         VALUES (
           ${row.razon_social},
@@ -37,7 +45,8 @@ export async function applyClientImport(plan: ImportPlan): Promise<ImportResult>
           ${row.provincia},
           ${row.telefono},
           ${row.email},
-          'presupuestos'
+          'presupuestos',
+          ${relacion}
         )
         ON CONFLICT (cuit) WHERE cuit IS NOT NULL DO UPDATE SET
           razon_social = EXCLUDED.razon_social,

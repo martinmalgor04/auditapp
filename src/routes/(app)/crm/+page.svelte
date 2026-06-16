@@ -1,25 +1,44 @@
 <script lang="ts">
-  import LeadRow from '$lib/components/crm/lead-row.svelte';
   import SysButton from '$lib/components/brand/SysButton.svelte';
   import SysInput from '$lib/components/brand/SysInput.svelte';
-  import { CRM_FUNNEL, CRM_STATUS_LABELS, CRM_SOURCE_LABELS, type CrmStatus } from '$lib/crm/view';
+  import {
+    EMPRESA_RELACIONES,
+    EMPRESA_RELACION_LABELS,
+    EMPRESA_ESTADOS,
+    EMPRESA_ESTADO_LABELS,
+    EMPRESA_RELACION_BADGE,
+    EMPRESA_ESTADO_BADGE
+  } from '$lib/crm/empresa-view';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
 
   const isAdmin = $derived(data.user?.role === 'admin');
 
-  let statusFilter = $state(data.filters.status ?? '');
-  let sourceFilter = $state(data.filters.source ?? '');
+  let relacionFilter = $state(data.filters.relacion ?? '');
+  let estadoFilter = $state(data.filters.estado ?? '');
   let searchQ = $state(data.filters.q ?? '');
 
-  function applyFilters() {
+  function buildUrl(overrides: Record<string, string | number | undefined> = {}) {
     const params = new URLSearchParams();
-    if (statusFilter) params.set('status', statusFilter);
-    if (sourceFilter) params.set('source', sourceFilter);
-    if (searchQ.trim()) params.set('q', searchQ.trim());
+    const rel = overrides.relacion ?? relacionFilter;
+    const est = overrides.estado ?? estadoFilter;
+    const q = overrides.q ?? searchQ;
+    const page = overrides.page ?? 1;
+    if (rel) params.set('relacion', String(rel));
+    if (est) params.set('estado', String(est));
+    if (String(q).trim()) params.set('q', String(q).trim());
+    if (page && Number(page) > 1) params.set('page', String(page));
     const qs = params.toString();
-    window.location.href = qs ? `/crm?${qs}` : '/crm';
+    return qs ? `/crm?${qs}` : '/crm';
+  }
+
+  function applyFilters() {
+    window.location.href = buildUrl({ page: 1 });
+  }
+
+  function goToPage(page: number) {
+    window.location.href = buildUrl({ page });
   }
 
   type RowError = { row: number; reason: string };
@@ -34,6 +53,9 @@
 
   let importOpen = $state(false);
   let importFile = $state<File | null>(null);
+  // #23 Fase 2 (R31): selector explícito de relación que aplica a todo el lote (cliente | prospecto).
+  // No se infiere por el origen del archivo; el usuario elige y el endpoint lo recibe como parámetro.
+  let importRelacion = $state<'cliente' | 'prospecto'>('cliente');
   let importing = $state(false);
   let importError = $state<string | null>(null);
   let importReport = $state<ImportReport | null>(null);
@@ -54,6 +76,7 @@
     try {
       const body = new FormData();
       body.append('file', importFile);
+      body.append('relacion', importRelacion); // R31: relación del selector aplicada al lote
       const res = await fetch('/api/crm/clients/import', { method: 'POST', body });
       const json = await res.json();
       if (!res.ok || !json.success) {
@@ -67,22 +90,30 @@
       importing = false;
     }
   }
+
+  const rangeStart = $derived(data.total === 0 ? 0 : (data.page - 1) * data.perPage + 1);
+  const rangeEnd = $derived(Math.min(data.page * data.perPage, data.total));
 </script>
 
 <svelte:head>
-  <title>CRM — Leads</title>
+  <title>CRM — Empresas</title>
 </svelte:head>
 
-<div class="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
+<div class="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
   <div class="flex flex-wrap items-center justify-between gap-3">
-    <h1 class="text-2xl font-semibold text-sys-profundo">CRM — Leads</h1>
+    <div>
+      <h1 class="text-2xl font-semibold text-sys-profundo">CRM — Empresas</h1>
+      <p class="text-sm text-sys-medio" data-testid="crm-total">
+        {data.totalAll} empresas en el registro
+      </p>
+    </div>
     {#if isAdmin}
       <SysButton
         variant="secondary"
         data-testid="crm-import-clients-toggle"
         onclick={() => (importOpen = !importOpen)}
       >
-        Importar clientes
+        Importar empresas
       </SysButton>
     {/if}
   </div>
@@ -93,7 +124,7 @@
       data-testid="crm-import-clients-panel"
     >
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <h2 class="text-lg font-semibold text-sys-profundo">Importar clientes</h2>
+        <h2 class="text-lg font-semibold text-sys-profundo">Importar empresas</h2>
         <a
           href="/plantillas/clientes-import-template.csv"
           download
@@ -110,6 +141,17 @@
       </p>
 
       <div class="flex flex-wrap items-center gap-3">
+        <label class="flex items-center gap-2 text-sm text-sys-profundo">
+          <span class="font-medium">Relación del lote</span>
+          <select
+            bind:value={importRelacion}
+            data-testid="crm-import-relacion"
+            class="rounded-sys border border-sys-borde bg-white px-2 py-1 text-sm"
+          >
+            <option value="cliente">Cliente</option>
+            <option value="prospecto">Prospecto</option>
+          </select>
+        </label>
         <input
           type="file"
           accept=".csv,.xlsx"
@@ -184,19 +226,6 @@
     </div>
   {/if}
 
-  <div class="flex flex-wrap gap-2" data-testid="crm-funnel-counts">
-    {#each CRM_FUNNEL as stage}
-      <a
-        href="/crm?status={stage}"
-        class="rounded-sys border border-sys-borde bg-white px-3 py-2 text-sm shadow-sm transition-colors hover:border-sys-electrico"
-        data-testid="crm-count-{stage}"
-      >
-        <span class="font-medium text-sys-profundo">{CRM_STATUS_LABELS[stage]}</span>
-        <span class="ml-2 tabular-nums text-sys-electrico">{data.counts[stage]}</span>
-      </a>
-    {/each}
-  </div>
-
   <form
     class="flex flex-wrap items-end gap-3 rounded-sys border border-sys-borde bg-white p-4 shadow-sm"
     onsubmit={(e) => {
@@ -206,36 +235,36 @@
     data-testid="crm-filters"
   >
     <label class="flex flex-col gap-1 text-sm">
-      <span class="text-sys-medio">Estado</span>
+      <span class="text-sys-medio">Relación</span>
       <select
-        bind:value={statusFilter}
+        bind:value={relacionFilter}
         class="rounded-sys border border-sys-borde px-3 py-2 text-sm"
-        data-testid="crm-filter-status"
+        data-testid="crm-filter-relacion"
       >
-        <option value="">Todos (sin descartados)</option>
-        {#each [...CRM_FUNNEL, 'descartado'] as s (s)}
-          <option value={s}>{CRM_STATUS_LABELS[s as CrmStatus]}</option>
+        <option value="">Todas</option>
+        {#each EMPRESA_RELACIONES as r (r)}
+          <option value={r}>{EMPRESA_RELACION_LABELS[r]}</option>
         {/each}
       </select>
     </label>
     <label class="flex flex-col gap-1 text-sm">
-      <span class="text-sys-medio">Origen</span>
+      <span class="text-sys-medio">Estado</span>
       <select
-        bind:value={sourceFilter}
+        bind:value={estadoFilter}
         class="rounded-sys border border-sys-borde px-3 py-2 text-sm"
-        data-testid="crm-filter-source"
+        data-testid="crm-filter-estado"
       >
         <option value="">Todos</option>
-        {#each Object.entries(CRM_SOURCE_LABELS) as [value, label]}
-          <option {value}>{label}</option>
+        {#each EMPRESA_ESTADOS as s (s)}
+          <option value={s}>{EMPRESA_ESTADO_LABELS[s]}</option>
         {/each}
       </select>
     </label>
-    <label class="flex min-w-[12rem] flex-1 flex-col gap-1 text-sm">
+    <label class="flex min-w-[14rem] flex-1 flex-col gap-1 text-sm">
       <span class="text-sys-medio">Buscar</span>
       <SysInput
         value={searchQ}
-        placeholder="Email o empresa"
+        placeholder="Razón social o CUIT"
         data-testid="crm-filter-q"
         oninput={(e) => {
           searchQ = (e.currentTarget as HTMLInputElement).value;
@@ -246,33 +275,101 @@
   </form>
 
   <div class="overflow-x-auto rounded-sys border border-sys-borde bg-white shadow-sm">
-    <table class="min-w-full text-left text-sm" data-testid="crm-leads-table">
+    <table class="min-w-full text-left text-sm" data-testid="crm-empresas-table">
       <thead class="border-b border-sys-borde bg-sys-offwhite text-sys-medio">
         <tr>
+          <th class="px-4 py-3 font-medium">Razón social</th>
+          <th class="px-4 py-3 font-medium">CUIT</th>
+          <th class="px-4 py-3 font-medium">Relación</th>
           <th class="px-4 py-3 font-medium">Estado</th>
-          <th class="px-4 py-3 font-medium">Empresa</th>
-          <th class="px-4 py-3 font-medium">Contacto</th>
-          <th class="px-4 py-3 font-medium">Email</th>
-          <th class="px-4 py-3 font-medium">Origen</th>
-          <th class="px-4 py-3 font-medium">Próxima acción</th>
-          <th class="px-4 py-3 font-medium">Fecha</th>
+          <th class="px-4 py-3 font-medium">Rubro</th>
+          <th class="px-4 py-3 font-medium">Provincia</th>
           <th class="px-4 py-3 font-medium"></th>
         </tr>
       </thead>
       <tbody>
-        {#each data.leads as lead (lead.id)}
-          <LeadRow
-            {lead}
-            events={data.eventsByLead[lead.id] ?? []}
-            {isAdmin}
-            onStatusChanged={() => window.location.reload()}
-          />
+        {#each data.empresas as empresa (empresa.id)}
+          <tr class="border-b border-sys-borde/60 hover:bg-sys-offwhite" data-testid="crm-empresa-row">
+            <td class="px-4 py-3">
+              <a
+                href="/crm/{empresa.id}"
+                class="font-medium text-sys-profundo hover:text-sys-electrico hover:underline"
+                data-testid="crm-empresa-link"
+              >
+                {empresa.razonSocial}
+              </a>
+            </td>
+            <td class="px-4 py-3 tabular-nums text-sys-medio">{empresa.cuit ?? '—'}</td>
+            <td class="px-4 py-3">
+              <span
+                class="rounded-full px-2 py-0.5 text-xs font-medium {EMPRESA_RELACION_BADGE[
+                  empresa.relacion
+                ]}"
+                data-testid="crm-empresa-relacion"
+              >
+                {EMPRESA_RELACION_LABELS[empresa.relacion]}
+              </span>
+            </td>
+            <td class="px-4 py-3">
+              <span
+                class="rounded-full px-2 py-0.5 text-xs font-medium {EMPRESA_ESTADO_BADGE[
+                  empresa.estado
+                ]}"
+                data-testid="crm-empresa-estado"
+              >
+                {EMPRESA_ESTADO_LABELS[empresa.estado]}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-sys-medio">{empresa.rubro ?? '—'}</td>
+            <td class="px-4 py-3 text-sys-medio">{empresa.provincia ?? '—'}</td>
+            <td class="px-4 py-3 text-right">
+              <a
+                href="/crm/{empresa.id}"
+                class="text-sm font-medium text-sys-electrico hover:underline"
+              >
+                Ver ficha
+              </a>
+            </td>
+          </tr>
         {:else}
           <tr>
-            <td colspan="8" class="px-4 py-8 text-center text-sys-medio">Sin leads para mostrar</td>
+            <td colspan="7" class="px-4 py-8 text-center text-sys-medio" data-testid="crm-empty">
+              Sin empresas para los filtros aplicados
+            </td>
           </tr>
         {/each}
       </tbody>
     </table>
+  </div>
+
+  <div class="flex flex-wrap items-center justify-between gap-3 text-sm" data-testid="crm-pagination">
+    <span class="text-sys-medio" data-testid="crm-pagination-range">
+      {#if data.total === 0}
+        Sin resultados
+      {:else}
+        Mostrando {rangeStart}–{rangeEnd} de {data.total}
+      {/if}
+    </span>
+    <div class="flex items-center gap-2">
+      <SysButton
+        variant="secondary"
+        disabled={data.page <= 1}
+        data-testid="crm-page-prev"
+        onclick={() => goToPage(data.page - 1)}
+      >
+        Anterior
+      </SysButton>
+      <span class="tabular-nums text-sys-medio" data-testid="crm-page-indicator">
+        Página {data.page} de {data.totalPages}
+      </span>
+      <SysButton
+        variant="secondary"
+        disabled={data.page >= data.totalPages}
+        data-testid="crm-page-next"
+        onclick={() => goToPage(data.page + 1)}
+      >
+        Siguiente
+      </SysButton>
+    </div>
   </div>
 </div>

@@ -80,6 +80,14 @@
 
 <form method="POST" action="?/create" class="space-y-6 max-w-2xl">
   <ClientPicker
+    initialClient={data.preselectedEmpresa
+      ? {
+          id: data.preselectedEmpresa.id,
+          razonSocial: data.preselectedEmpresa.cabFields.razonSocial,
+          cuit: data.preselectedEmpresa.cabFields.cuit,
+          cabFields: data.preselectedEmpresa.cabFields
+        }
+      : null}
     onClientSelect={prefillCabFromClient}
     onNewClientChange={prefillCabFromNewClient}
   />

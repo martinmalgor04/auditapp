@@ -141,7 +141,7 @@ export async function getClientCabFields(clientId: string): Promise<ClientCabFie
       referente_nombre, referente_contacto,
       erp_actual, proveedor_correo, soporte_it_actual,
       direccion, telefono, email
-    FROM client
+    FROM empresa
     WHERE id = ${clientId}
     LIMIT 1
   `;
@@ -161,7 +161,7 @@ async function syncClientFromCab(
   }
 
   await tx`
-    UPDATE client
+    UPDATE empresa
     SET
       razon_social = COALESCE(${patch.razonSocial ?? null}, razon_social),
       cuit = COALESCE(${patch.cuit ?? null}, cuit),
@@ -246,12 +246,18 @@ export async function createAudit(
     let clientFields: ClientCabFields | null = null;
 
     if (data.newClient) {
+      // Empresa nueva creada desde el form clásico de auditoría: se clasifica como
+      // 'prospecto' (R27/R2). Default conservador: iniciar una auditoría no implica que la
+      // empresa ya sea cliente; ascender a 'cliente' es una decisión manual desde la ficha
+      // del CRM (Fase 4+). Coherente con el default del selector de import (Fase 2) y
+      // no-destructivo (nunca eleva a 'cliente' por error).
       const [client] = await tx<{ id: string }[]>`
-        INSERT INTO client (razon_social, cuit, rubro)
+        INSERT INTO empresa (razon_social, cuit, rubro, relacion)
         VALUES (
           ${data.newClient.razonSocial},
           ${data.newClient.cuit || null},
-          ${data.newClient.rubro || null}
+          ${data.newClient.rubro || null},
+          'prospecto'
         )
         RETURNING id
       `;
@@ -270,7 +276,7 @@ export async function createAudit(
           referente_nombre, referente_contacto,
           erp_actual, proveedor_correo, soporte_it_actual,
           direccion, telefono, email
-        FROM client
+        FROM empresa
         WHERE id = ${clientId}
       `;
       clientFields = clientRow ? mapClientRow(clientRow) : null;
@@ -282,7 +288,7 @@ export async function createAudit(
     const mergedCabResponses = mergeCabResponses(cabDefaults, data.cabResponses);
 
     const [clientRow] = await tx<{ razon_social: string }[]>`
-      SELECT razon_social FROM client WHERE id = ${clientId}
+      SELECT razon_social FROM empresa WHERE id = ${clientId}
     `;
 
     const name = `Auditoría ${clientRow.razon_social}`;
@@ -322,7 +328,7 @@ export async function getAuditById(auditId: string, viewer?: AppUser): Promise<A
       a.assigned_tech_id, u.name AS tech_name, a.scheduled_at, a.public_token,
       a.template_ids, a.archived_at
     FROM audit a
-    JOIN client c ON c.id = a.empresa_id
+    JOIN empresa c ON c.id = a.empresa_id
     LEFT JOIN app_user u ON u.id = a.assigned_tech_id
     WHERE a.id = ${auditId}
     LIMIT 1
@@ -381,7 +387,7 @@ export async function getAuditById(auditId: string, viewer?: AppUser): Promise<A
       referente_nombre, referente_contacto,
       erp_actual, proveedor_correo, soporte_it_actual,
       direccion, telefono, email
-    FROM client
+    FROM empresa
     WHERE id = ${row.client_id}
   `;
 
@@ -541,7 +547,7 @@ export async function searchClientsForPicker(query: string): Promise<ClientPicke
       referente_nombre, referente_contacto,
       erp_actual, proveedor_correo, soporte_it_actual,
       direccion, telefono, email
-    FROM client
+    FROM empresa
     WHERE razon_social ILIKE ${pattern} OR COALESCE(cuit, '') ILIKE ${pattern}
     ORDER BY razon_social ASC
     LIMIT 50

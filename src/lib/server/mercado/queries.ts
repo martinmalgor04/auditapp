@@ -73,7 +73,7 @@ export async function fetchUniverseCount(filters: MercadoFilters): Promise<numbe
   const [row] = await sql<UniverseRow[]>`
     SELECT COUNT(*)::int AS n
     FROM audit a
-    JOIN client c ON c.id = a.empresa_id
+    JOIN empresa c ON c.id = a.empresa_id
     WHERE a.status = 'cerrada'
       AND (${f.segment}::text IS NULL OR a.segment = ${f.segment})
       AND (${f.rubro}::text IS NULL OR c.rubro = ${f.rubro})
@@ -90,7 +90,7 @@ export async function fetchErpDistribution(filters: MercadoFilters): Promise<Erp
     WITH base AS (
       SELECT a.id, c.erp_actual
       FROM audit a
-      JOIN client c ON c.id = a.empresa_id
+      JOIN empresa c ON c.id = a.empresa_id
       WHERE a.status = 'cerrada'
         AND (${f.segment}::text IS NULL OR a.segment = ${f.segment})
         AND (${f.rubro}::text IS NULL OR c.rubro = ${f.rubro})
@@ -116,7 +116,7 @@ export async function fetchModulosTango(filters: MercadoFilters): Promise<Modulo
     WITH base AS (
       SELECT a.id, a.template_ids
       FROM audit a
-      JOIN client c ON c.id = a.empresa_id
+      JOIN empresa c ON c.id = a.empresa_id
       WHERE a.status = 'cerrada'
         AND (${f.segment}::text IS NULL OR a.segment = ${f.segment})
         AND (${f.rubro}::text IS NULL OR c.rubro = ${f.rubro})
@@ -152,7 +152,7 @@ export async function fetchIndicesGlobal(filters: MercadoFilters): Promise<Index
       ROUND(AVG(ac.indice_it))::int AS avg_it,
       ROUND(AVG(ac.indice_erp))::int AS avg_erp
     FROM audit a
-    JOIN client c ON c.id = a.empresa_id
+    JOIN empresa c ON c.id = a.empresa_id
     JOIN audit_closure ac ON ac.audit_id = a.id
     WHERE a.status = 'cerrada'
       AND (${f.segment}::text IS NULL OR a.segment = ${f.segment})
@@ -173,7 +173,7 @@ export async function fetchIndicesBySegment(filters: MercadoFilters): Promise<In
       ROUND(AVG(ac.indice_it))::int AS avg_it,
       ROUND(AVG(ac.indice_erp))::int AS avg_erp
     FROM audit a
-    JOIN client c ON c.id = a.empresa_id
+    JOIN empresa c ON c.id = a.empresa_id
     JOIN audit_closure ac ON ac.audit_id = a.id
     WHERE a.status = 'cerrada'
       AND (${f.segment}::text IS NULL OR a.segment = ${f.segment})
@@ -195,7 +195,7 @@ export async function fetchIndicesByRubro(filters: MercadoFilters): Promise<Inde
       ROUND(AVG(ac.indice_it))::int AS avg_it,
       ROUND(AVG(ac.indice_erp))::int AS avg_erp
     FROM audit a
-    JOIN client c ON c.id = a.empresa_id
+    JOIN empresa c ON c.id = a.empresa_id
     JOIN audit_closure ac ON ac.audit_id = a.id
     WHERE a.status = 'cerrada'
       AND (${f.segment}::text IS NULL OR a.segment = ${f.segment})
@@ -213,7 +213,7 @@ export async function fetchIndicesRaw(filters: MercadoFilters): Promise<IndexRaw
   return sql<IndexRawRow[]>`
     SELECT ac.indice_it, ac.indice_erp
     FROM audit a
-    JOIN client c ON c.id = a.empresa_id
+    JOIN empresa c ON c.id = a.empresa_id
     JOIN audit_closure ac ON ac.audit_id = a.id
     WHERE a.status = 'cerrada'
       AND (${f.segment}::text IS NULL OR a.segment = ${f.segment})
@@ -233,7 +233,7 @@ export async function fetchMonthlySeries(filters: MercadoFilters): Promise<Month
       ROUND(AVG(ac.indice_it))::int AS avg_it,
       ROUND(AVG(ac.indice_erp))::int AS avg_erp
     FROM audit a
-    JOIN client c ON c.id = a.empresa_id
+    JOIN empresa c ON c.id = a.empresa_id
     JOIN audit_closure ac ON ac.audit_id = a.id
     WHERE a.status = 'cerrada'
       AND a.closed_at IS NOT NULL
@@ -255,7 +255,7 @@ export async function fetchUpsellAggregate(filters: MercadoFilters): Promise<Ups
       COUNT(*) FILTER (WHERE jsonb_array_length(ac.upsell_findings) > 0)::int AS audits_with_findings,
       COUNT(*)::int AS universe_n
     FROM audit a
-    JOIN client c ON c.id = a.empresa_id
+    JOIN empresa c ON c.id = a.empresa_id
     JOIN audit_closure ac ON ac.audit_id = a.id
     WHERE a.status = 'cerrada'
       AND (${f.segment}::text IS NULL OR a.segment = ${f.segment})
@@ -271,7 +271,7 @@ export async function listMercadoRubros(): Promise<string[]> {
   const rows = await sql<{ rubro: string }[]>`
     SELECT DISTINCT btrim(c.rubro) AS rubro
     FROM audit a
-    JOIN client c ON c.id = a.empresa_id
+    JOIN empresa c ON c.id = a.empresa_id
     WHERE a.status = 'cerrada'
       AND c.rubro IS NOT NULL
       AND btrim(c.rubro) <> ''

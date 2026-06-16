@@ -11,12 +11,14 @@
 
   let {
     selectedClientId = '',
+    initialClient = null,
     showNewClient = false,
     onClientSelect,
     onNewClientChange,
     onClearClient
   }: {
     selectedClientId?: string;
+    initialClient?: ClientRow | null;
     showNewClient?: boolean;
     onClientSelect?: (clientId: string, cabFields: ClientCabFields) => void;
     onNewClientChange?: (data: { razonSocial: string; cuit: string; rubro: string }) => void;
@@ -24,9 +26,9 @@
   } = $props();
 
   let mode = $state<'existing' | 'new'>(showNewClient ? 'new' : 'existing');
-  let selectedId = $state(selectedClientId);
-  let selectedClient = $state<ClientRow | null>(null);
-  let query = $state('');
+  let selectedId = $state(initialClient?.id ?? selectedClientId);
+  let selectedClient = $state<ClientRow | null>(initialClient);
+  let query = $state(initialClient?.razonSocial ?? '');
   let open = $state(false);
   let searching = $state(false);
   let searchResults = $state<ClientRow[]>([]);
@@ -37,6 +39,15 @@
   let searchTimer: ReturnType<typeof setTimeout> | undefined;
 
   const filteredClients = $derived(searchResults);
+
+  // #23 Fase 5 (R21): con una empresa preseleccionada (desde la ficha del CRM), propagamos sus datos
+  // maestros al CAB una sola vez al montar; el nombre ya se muestra vía el estado inicial del input.
+  $effect(() => {
+    // Solo al montar: `initialClient` no cambia tras el load del form de nueva auditoría.
+    if (initialClient?.cabFields) {
+      onClientSelect?.(initialClient.id, initialClient.cabFields);
+    }
+  });
 
   $effect(() => {
     if (selectedClientId && selectedClientId !== selectedId) {
