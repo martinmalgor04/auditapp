@@ -56,9 +56,10 @@ export async function uploadReunionAudio(opts: UploadOptions): Promise<UploadRes
   // 2. PUT a R2
   notify({ phase: 'uploading', percent: 0 });
 
+  // No incluir Content-Type en el PUT: la URL ya está firmada con signQuery=true
+  // y mandar headers extra dispara un preflight CORS que R2 no responde en Safari.
   const putRes = await fetch(upload_url, {
     method: 'PUT',
-    headers: { ...headers, 'Content-Type': contentType },
     body: blob
   });
 
