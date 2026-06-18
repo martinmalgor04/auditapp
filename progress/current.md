@@ -1,5 +1,52 @@
 # Sesión actual
 
+## Feature en curso: #31 31_descarga_html_informe (implementer, 2026-06-18)
+
+**Estado:** in_progress. Spec aprobado (puerta humana 2026-06-18). Plan T1..T13 (5 fases).
+
+**Alcance:** descarga `.html` del informe en el panel interno (admin/técnico). Reusa
+`buildInformeRenderModel` + `renderInformeHtml`. Incluye bloque de visita (#27) en descarga Y panel.
+NO toca render, scoring ni share público.
+
+Plan (tasks.md):
+- T1 — `src/lib/server/informe/download-name.ts`: `slugify` + `informeHtmlFilename` (token tipo it/erp/mixta). (R7)
+- T2..T5 — endpoint `GET /api/audits/[id]/report/[version]/html/+server.ts`: 404s, guard, render con timestamps, headers/200. (R1–R6,R8–R14,R18)
+- T11 — `access.ts`: `getAuditForReport` devuelve `startedAt`/`finishedAt`. (R18,R19)
+- T12 — `+page.server.ts` panel: pasar timestamps a `buildInformeRenderModel`. (R19,R20)
+- T6 — `+page.svelte`: botón "Descargar HTML" envuelto en `{#if model}`. (R15,R16,R17)
+- T7 — `tests/informe-download-name.test.ts` (unit slug/filename/3 tipos). (R7)
+- T8/T13/T9 — `tests/api/report-html-download.test.ts` (200+headers+cuerpo+visita+ausencia+acceso+errores).
+- T10 — trazabilidad `progress/impl_31_descarga_html_informe.md` + gate verde.
+
+**Pre-condición init.sh (2026-06-18):** corrida inicial `[FAIL]` por (a) >1 in_progress (#32 también
+abierto) y (b) 11 tests preexistentes rotos en suites de auditoría/CRUD/form-load (empresa/CAB/
+template/specialty) — AJENOS a #31. Esos fallos existen en HEAD antes de tocar nada (verificado con
+`git stash`/log). No bloquean #31: mis archivos/tests son nuevos e independientes.
+
+### Avance
+- [ ] T1..T13 — en curso.
+
+---
+
+## Feature previa en curso: #32 32_auditoria_mixta_dos_tecnicos (implementer, 2026-06-18)
+
+**Estado:** in_progress. Spec aprobado (puerta humana 2026-06-18). Plan T1..T21 (8 fases).
+
+**Alcance:** asignación por área (`audit_assignment`), form técnico filtrado por especialidad
+asignada, CAB compartido único con bloqueo tras confirmación. NO toca scoring ni render del informe.
+
+Plan:
+- T1/T2 — migración `020_audit_assignment.sql` (tabla + columnas cab_confirmed_* + backfill, idempotente).
+- T3 — `src/lib/server/db/audit-assignment.ts` (list/insert/techAssignedTypes/techIsAssigned).
+- T4..T8 — alta: schema `techByType`, parser, `createAudit` validación+lead+insert, `listTechnicians` con audit_types, UI un select por tipo.
+- T9/T10 — form: `assertFormAccess` por asignación; filtro de secciones por templateIds visibles + CAB canónico.
+- T11..T14 — CAB lock: estado `cab` en load-form, action `confirmCab`, rechazo de edición CAB bloqueado, UI.
+- T15 — guard de informes por asignación.
+- T16..T20 — tests.
+- T21 — trazabilidad + verificación.
+
+---
+
 ## Feature implementada: #29 29_endurecimiento_preguntas (implementer, 2026-06-18) — COMPLETO, a espera de reviewer
 
 **Estado:** in_progress. T1..T6 marcadas `[x]` en `specs/29_endurecimiento_preguntas/tasks.md`.

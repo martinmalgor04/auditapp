@@ -140,6 +140,15 @@
       <a href="/auditorias/{data.auditId}/informe/{data.version}/imprimir" class="sys-btn-accent">
         Vista de impresión
       </a>
+      {#if model}
+        <a
+          href="{base}/{data.version}/html"
+          class="sys-btn-secondary"
+          data-testid="descargar-html"
+        >
+          Descargar HTML
+        </a>
+      {/if}
     </div>
 
     <div class="flex gap-1 border-b border-sys-offwhite">
