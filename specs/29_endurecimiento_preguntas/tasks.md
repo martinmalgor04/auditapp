@@ -5,7 +5,7 @@
 
 ---
 
-## T1 — Crear migración SQL 018_a4_endurecimiento.sql
+## [x] T1 — Crear migración SQL 019_a4_endurecimiento.sql
 
 **Cubre:** R8, R9, R10, R11 (revisado en design §4), R13, R14
 
@@ -46,7 +46,7 @@ NOTHING`. Toda la migración es idempotente (R8).
 
 ---
 
-## T2 — Actualizar seed/templates/it-v2.json
+## [x] T2 — Actualizar seed/templates/it-v2.json
 
 **Cubre:** R1, R2, R3, R4, R5, R6, R12
 
@@ -71,7 +71,7 @@ La sección A4 en el JSON conserva:
 
 ---
 
-## T3 — Crear tests en tests/templates/a4-endurecimiento.test.ts
+## [x] T3 — Crear tests en tests/templates/a4-endurecimiento.test.ts
 
 **Cubre:** R1, R2, R3, R5, R6, R7, R8, R10, R11, R12, R13, R14
 
@@ -208,7 +208,7 @@ describe('no solapamiento con otras secciones', () => {
 
 ---
 
-## T4 — Verificar idempotencia de la migración (manual o test de integración)
+## [x] T4 — Verificar idempotencia de la migración (manual o test de integración)
 
 **Cubre:** R8
 
@@ -224,7 +224,7 @@ que la idempotencia se verificó manualmente en la DB de desarrollo.
 
 ---
 
-## T5 — Ejecutar pnpm test y pnpm run check
+## [x] T5 — Ejecutar pnpm test y pnpm run check
 
 **Cubre:** todos los R (no-regresión general)
 
@@ -236,7 +236,7 @@ que la idempotencia se verificó manualmente en la DB de desarrollo.
 
 ---
 
-## T6 — Actualizar progress/current.md
+## [x] T6 — Actualizar progress/current.md
 
 Documentar en `progress/current.md`:
 - Que se aplicó la migración 018 en la DB de desarrollo.

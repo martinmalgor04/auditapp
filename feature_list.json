@@ -538,7 +538,7 @@
         "Tests: migración idempotente, scoring de la sección reescrita, coherencia seed↔migración y no-regresión de auditorías previas"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 30,

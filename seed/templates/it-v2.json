@@ -340,34 +340,98 @@
       "items": [
         {
           "sort_order": 0,
-          "label": "Endurecimiento de servidores",
-          "field_type": "select",
+          "label": "¿El sistema operativo del servidor tiene soporte vigente del fabricante?",
+          "help_text": "Verificar la versión de Windows Server o Linux instalada y contrastar con la tabla de fin de soporte del fabricante (Microsoft End of Support, Ubuntu LTS, RHEL). Si el SO ya no recibe parches de seguridad, responder 'no'. Si usa un programa de soporte extendido activo (ESU de Microsoft), responder 'parcial'.",
+          "field_type": "tri",
           "method": [
             "O"
           ],
           "filled_by": "tecnico",
+          "scores": true,
           "options": {
-            "choices": [
-              "Aplicado",
-              "Parcial",
-              "No aplicado"
-            ],
             "score_map": {
-              "Aplicado": 100,
-              "Parcial": 50,
-              "No aplicado": 0
+              "si": 100,
+              "parcial": 50,
+              "no": 0
             }
           }
         },
         {
           "sort_order": 1,
-          "label": "¿Se deshabilitan servicios innecesarios?",
-          "field_type": "bool",
+          "label": "¿Las credenciales de fábrica (usuarios y contraseñas predeterminados) fueron cambiadas o deshabilitadas?",
+          "help_text": "Revisar en el servidor si existen cuentas con nombres genéricos del fabricante aún activas: 'Administrator' con contraseña de fábrica, cuentas de consola IPMI/iDRAC/iLO con clave predeterminada, usuarios por defecto de servicios (SQL Server 'sa' habilitado con contraseña vacía o conocida, MySQL 'root' sin contraseña). Preguntar al técnico de sistemas si los cambió. Si algunos sí y otros no, responder 'parcial'.",
+          "field_type": "tri",
           "method": [
             "O"
           ],
           "filled_by": "tecnico",
-          "options": {}
+          "scores": true,
+          "options": {
+            "score_map": {
+              "si": 100,
+              "parcial": 50,
+              "no": 0
+            }
+          }
+        },
+        {
+          "sort_order": 2,
+          "label": "¿El acceso remoto al servidor (RDP, SSH) está protegido?",
+          "help_text": "Verificar cómo se accede remotamente al servidor: (a) si requiere conectarse primero a una VPN o está limitado a IPs específicas en el firewall → 'Sí, por VPN o IP restringida'; (b) si solo se cambió el puerto (ej. RDP en 3390 en vez de 3389) pero sigue expuesto a internet sin VPN → 'Sí, solo cambió el puerto'; (c) si el puerto estándar (3389 RDP, 22 SSH) está abierto directamente a internet sin restricción → 'No, expuesto directamente a internet'. Usar 'netstat -an' o revisar el firewall para verificar puertos escuchando.",
+          "field_type": "select",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "scores": true,
+          "options": {
+            "choices": [
+              "Sí, por VPN o IP restringida",
+              "Sí, solo cambió el puerto",
+              "No, expuesto directamente a internet"
+            ],
+            "score_map": {
+              "Sí, por VPN o IP restringida": 100,
+              "Sí, solo cambió el puerto": 50,
+              "No, expuesto directamente a internet": 0
+            }
+          }
+        },
+        {
+          "sort_order": 3,
+          "label": "¿El servidor tiene apagados los servicios y programas que no necesita?",
+          "help_text": "Revisar en el servidor los servicios activos con 'services.msc' (Windows) o 'systemctl list-units --type=service --state=running' (Linux). Buscar servicios que no cumplen ningún rol en este servidor: Telnet, FTP, SNMP con community string public, servidores web (IIS, Apache) si el servidor es de archivos, software de demostración del fabricante. Si hay varios servicios innecesarios activos, responder 'no'. Si hay uno o dos que no son críticos, 'parcial'. Si todo lo que corre tiene un propósito claro, 'si'.",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "scores": true,
+          "options": {
+            "score_map": {
+              "si": 100,
+              "parcial": 50,
+              "no": 0
+            }
+          }
+        },
+        {
+          "sort_order": 4,
+          "label": "¿El firewall del propio servidor (Windows Firewall, iptables, ufw) está activo y configurado?",
+          "help_text": "Verificar el firewall de host, distinto al firewall perimetral de la red. En Windows: Panel de control → Sistema y seguridad → Firewall de Windows Defender → debe estar Activado para las 3 redes (dominio, privada, pública). En Linux: ejecutar 'ufw status' o 'iptables -L'; si muestra 'inactive' o política ACCEPT sin reglas específicas, no está configurado. Responder 'si' si está activo con reglas que restringen acceso; 'no' si está desactivado o sin reglas.",
+          "field_type": "tri",
+          "method": [
+            "O"
+          ],
+          "filled_by": "tecnico",
+          "scores": true,
+          "options": {
+            "score_map": {
+              "si": 100,
+              "parcial": 50,
+              "no": 0
+            }
+          }
         }
       ]
     },

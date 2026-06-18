@@ -1,5 +1,34 @@
 # Sesión actual
 
+## Feature implementada: #29 29_endurecimiento_preguntas (implementer, 2026-06-18) — COMPLETO, a espera de reviewer
+
+**Estado:** in_progress. T1..T6 marcadas `[x]` en `specs/29_endurecimiento_preguntas/tasks.md`.
+Trazabilidad R1–R14 ↔ test en `progress/impl_29_endurecimiento_preguntas.md`.
+
+**Qué se hizo:** reemplazo de los 2 ítems A4 de it-v2 por 5 preguntas observables con help_text.
+Solo se tocaron datos de plantilla (migración SQL + seed JSON); sin cambios en código TypeScript.
+
+1. **Migración `migrations/019_a4_endurecimiento.sql`**: bloque DO $$ idempotente.
+   Resuelve section_id por join natural (code='it'/version='v2'/code='A4'). Borra audit_response
+   y template_item viejos (2 ítems), inserta 5 nuevos con UUIDs fijos y ON CONFLICT DO NOTHING.
+   Nota: la spec decía 018 pero ya existía 018_hora_inicio_fin.sql → se usó 019.
+
+2. **`seed/templates/it-v2.json`**: sección A4 reemplazada. 5 ítems con help_text completo,
+   field_type correcto (4 tri + 1 select), score_map explícito en cada uno.
+
+3. **`seed/templates/manifest.json`**: items it-v2: 42 → 45.
+
+4. **`tests/templates/a4-endurecimiento.test.ts`**: 23 tests en 5 bloques cubriendo
+   R1–R7, R12, R14 (estructura seed, scoring, coherencia, no-solapamiento, edge cases).
+
+5. **`tests/__snapshots__/canonical-contract.test.ts.snap`**: regenerado (cambio intencional:
+   A4 ahora tiene 5 ítems nuevos en lugar de los 2 viejos).
+
+**Verificación:** `pnpm run check` 0 errores; `pnpm test` **187 test files / 1005 passed / 2 skipped / 0 failed**.
+`tests/templates/a4-endurecimiento.test.ts` 23/23 verde. NO commit/push.
+
+---
+
 ## Feature implementada: #28 28_flujo_form_dinamico (implementer, 2026-06-17) — COMPLETO, a espera de reviewer
 
 **Estado:** in_progress. T1..T13 marcadas `[x]` en `specs/28_flujo_form_dinamico/tasks.md`.
