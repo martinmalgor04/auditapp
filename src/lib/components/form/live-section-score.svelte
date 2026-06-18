@@ -3,10 +3,12 @@
 
   let {
     score,
-    band
+    band,
+    animating = false
   }: {
     score: number | null;
     band: ScoreBand;
+    animating?: boolean;
   } = $props();
 
   const bandClass = $derived(
@@ -22,8 +24,10 @@
 
 <div
   class="rounded-lg border px-3 py-2 text-sm font-medium {bandClass}"
+  class:score-pulse={animating}
   aria-label="Score de sección"
   data-score-band={band}
+  data-animating={animating}
 >
   {#if score === null}
     <span>N/A</span>
@@ -31,3 +35,27 @@
     <span>Score: {score}/100</span>
   {/if}
 </div>
+
+<style>
+  .score-pulse {
+    animation: score-pulse var(--sys-fast, 300ms) var(--sys-ease, ease-out) 1;
+  }
+  @keyframes score-pulse {
+    0% {
+      opacity: 1;
+      transform: scale(1.04);
+    }
+    50% {
+      opacity: 0.85;
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .score-pulse {
+      animation: none;
+    }
+  }
+</style>

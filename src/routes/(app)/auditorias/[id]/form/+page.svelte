@@ -15,6 +15,8 @@
     validateBackupJson
   } from '$lib/client/form/backup';
   import { updateScoreFromApi } from '$lib/client/form/live-score';
+  import { itemStatus, sectionProgress } from '$lib/client/form/item-status';
+  import { nextPending } from '$lib/client/form/next-pending';
   import { prepareImageForUpload } from '$lib/client/form/image-pipeline';
   import { uploadPhotoFlow, type PhotoTableRow } from '$lib/client/form/photo-upload';
   import { deleteAttachmentFlow } from '$lib/client/form/attachment-delete';
@@ -31,6 +33,39 @@
   let sectionScores = $state(
     new Map(data.sections.map((s) => [s.id, { sectionId: s.id, score: s.liveScore, band: s.scoreBand }]))
   );
+
+  // T8 — Estado local de ítems para chips reactivos (R6, R20, R23)
+  let itemLocalState = $state(
+    new Map(
+      data.sections.flatMap((s) =>
+        s.items.map((it) => [it.id, { value: it.value, na: it.na ?? false, notes: it.notes ?? null }])
+      )
+    )
+  );
+
+  const itemStatuses = $derived(
+    new Map(
+      [...itemLocalState.entries()].map(([id, it]) => [id, itemStatus(it)])
+    )
+  );
+
+  const progressBySec = $derived(
+    new Map(
+      data.sections.map((sec) => [
+        sec.id,
+        sectionProgress(
+          sec.items.map((it) => itemLocalState.get(it.id) ?? { value: it.value, na: it.na ?? false, notes: it.notes ?? null })
+        )
+      ])
+    )
+  );
+
+  // T10 — Animación del score (R14, R15, R23)
+  let animatingSectionId = $state<string | null>(null);
+
+  // T11 — Próximo pendiente (R8–R12)
+  let lastVisitedItemIndex = $state(-1);
+  let noPendingMessage = $state(false);
 
   const activeSection = $derived(data.sections.find((s) => s.id === activeSectionId) ?? data.sections[0]);
 
@@ -63,6 +98,11 @@
     },
     onSectionScore: (sectionId, score, band) => {
       sectionScores = updateScoreFromApi(sectionScores, sectionId, score, band);
+      // T10 — disparar animación visual en el LiveSectionScore (R14)
+      animatingSectionId = sectionId;
+      setTimeout(() => {
+        if (animatingSectionId === sectionId) animatingSectionId = null;
+      }, 800);
     }
   });
 
@@ -83,6 +123,8 @@
   ) {
     // T9 — Registrar qué ítem se está guardando (R1, R10)
     savingItemId = itemId;
+    // T8 — Actualizar estado local inmediatamente para chip reactivo (R6)
+    itemLocalState = new Map(itemLocalState).set(itemId, { value, na, notes: notes ?? null });
     const payload = { itemId, value, na, notes };
     const outcome = await autosave.patch(payload);
     if (outcome === 'offline') {
@@ -243,6 +285,31 @@
     }
   }
 
+  // T11 — Ir al próximo pendiente (R8–R12)
+  function goToNextPending() {
+    const secs = data.sections.map((sec) => ({
+      id: sec.id,
+      items: sec.items.map((it) => ({
+        id: it.id,
+        ...(itemLocalState.get(it.id) ?? { value: it.value, na: it.na ?? false, notes: it.notes ?? null })
+      }))
+    }));
+    const target = nextPending(secs, activeSectionIndex, lastVisitedItemIndex);
+    if (!target) {
+      noPendingMessage = true;
+      setTimeout(() => (noPendingMessage = false), 2500);
+      return;
+    }
+    if (target.sectionIndex !== activeSectionIndex) {
+      activeSectionId = target.sectionId;
+      lastVisitedItemIndex = -1;
+    }
+    lastVisitedItemIndex = target.itemIndex;
+    setTimeout(() => {
+      document.getElementById(`item-${target.itemId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
+  }
+
   const activeScore = $derived(sectionScores.get(activeSection?.id ?? '') ?? {
     score: activeSection?.liveScore ?? null,
     band: activeSection?.scoreBand ?? 'na'
@@ -263,6 +330,7 @@
       sections={data.sections}
       {activeSectionId}
       progressPct={data.progressPct}
+      sectionProgress={progressBySec}
       onselect={(id) => (activeSectionId = id)}
     />
   </aside>
@@ -297,10 +365,26 @@
         <h1 class="text-xl font-bold">{activeSection?.code} — {activeSection?.title}</h1>
         <p class="text-sm text-slate-600">{data.audit.razonSocial}</p>
       </div>
-      <LiveSectionScore score={activeScore.score} band={activeScore.band} />
+      <LiveSectionScore score={activeScore.score} band={activeScore.band} animating={animatingSectionId === activeSection?.id} />
     </div>
 
     <ExportImportPanel onexport={() => void handleExport()} onimport={(f) => void handleImport(f)} />
+
+    <!-- T11 — Botón "Próximo pendiente" (R8) -->
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        class="min-h-[var(--sys-touch-min)] rounded-sys-app border border-sys-electrico/30 bg-sys-electrico/5
+               px-3 text-sm font-medium text-sys-electrico hover:bg-sys-electrico/10"
+        onclick={goToNextPending}
+        data-action="next-pending"
+      >
+        Próximo pendiente →
+      </button>
+      {#if noPendingMessage}
+        <span class="text-sm text-emerald-700" role="status">Sin pendientes</span>
+      {/if}
+    </div>
 
     <div class="space-y-4">
       {#each activeSection?.items ?? [] as item (item.id)}
@@ -314,10 +398,17 @@
             notes: item.notes,
             na: item.na
           }}
+          status={itemStatuses.get(item.id) ?? 'pendiente'}
           saveState={savingItemId === item.id ? saveState : 'idle'}
           onchange={(value) => void saveItem(item.id, item.fieldType, value, item.na, item.notes)}
           onnchange={(na) => void saveItem(item.id, item.fieldType, null, na, item.notes)}
-          onnoteschange={(notes) => void saveItem(item.id, item.fieldType, item.value, item.na, notes)}
+          onnoteschange={(notes) => {
+            itemLocalState = new Map(itemLocalState).set(item.id, {
+              ...(itemLocalState.get(item.id) ?? { value: item.value, na: item.na ?? false }),
+              notes
+            });
+            void saveItem(item.id, item.fieldType, item.value, item.na, notes);
+          }}
           oncamera={(rowId, currentRows) =>
             pickPhoto(item.id, activeSection?.code ?? '', rowId, currentRows as PhotoTableRow[])}
           onphotocapture={() => pickPhoto(item.id, activeSection?.code ?? '')}

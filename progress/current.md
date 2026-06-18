@@ -1,5 +1,37 @@
 # Sesión actual
 
+## Feature implementada: #28 28_flujo_form_dinamico (implementer, 2026-06-17) — COMPLETO, a espera de reviewer
+
+**Estado:** in_progress. T1..T13 marcadas `[x]` en `specs/28_flujo_form_dinamico/tasks.md`.
+Trazabilidad R1–R24 ↔ test en `progress/impl_28_flujo_form_dinamico.md`.
+
+**Qué se hizo:** tres mejoras de UX al form técnico, puramente client-side (sin SQL ni cambios al autosave/scoring).
+
+1. **Chip de estado por ítem (R1–R7):** función pura `itemStatus(value, na, notes)` extraída en
+   `src/lib/client/form/item-status.ts`. Tres categorías: `pendiente` / `respondido` / `con_observacion`.
+   `field-renderer.svelte` recibe prop `status?: ItemStatus` y muestra un chip inline-flex con tokens SyS
+   (`sys-electrico`/`sys-naranja`/slate) con `data-item-status`. Se agregó `id="item-{item.id}"` al article
+   para scroll. Sin layout shift (el chip se coloca en el flex-wrap existente).
+
+2. **Acción "ir al próximo pendiente" (R8–R13):** función pura `nextPending(sections, activeSectionIdx, lastVisitedIdx)`
+   extraída en `src/lib/client/form/next-pending.ts`. Búsqueda circular: desde el ítem siguiente al último
+   visitado en la sección activa, luego secciones siguientes, luego secciones anteriores (R12). Devuelve
+   `null` si no hay pendientes → mensaje "Sin pendientes" 2.5s (R11). Botón `data-action="next-pending"`
+   entre ExportImportPanel y la lista de ítems en +page.svelte.
+
+3. **Score animado y progreso por sección (R14–R20):** `live-section-score.svelte` recibe prop
+   `animating?: boolean`; clase `.score-pulse` con keyframe usando `--sys-fast`/`--sys-ease` y regla
+   `prefers-reduced-motion` que suprime la animación (R16). Trigger: `onSectionScore` del autosave fija
+   `animatingSectionId` y lo limpia con setTimeout 800ms. `section-nav.svelte` recibe
+   `sectionProgress?: Map<string, {answered, total}>` y muestra conteo `n/total` junto a cada sección.
+   `progressBySec` es `$derived` de `itemLocalState` que se actualiza en `saveItem` y `onnoteschange`.
+
+**Verificación:** `pnpm run check` 0 errores; `pnpm test` 186 test files / 982 passed / 2 skipped / 0 failed.
+`tests/form-dynamic-flow.test.ts` 38/38 verde. Suite no-regresión (form-autosave*, form-live-score,
+form-section-nav, form-item-ux, form-table-*) todos verdes. NO commit/push.
+
+---
+
 ## Feature implementada: #27 27_hora_inicio_fin (implementer, 2026-06-17) — COMPLETO, a espera de reviewer
 
 **Estado:** in_progress. T1..T12 marcadas `[x]` en `specs/27_hora_inicio_fin/tasks.md`.

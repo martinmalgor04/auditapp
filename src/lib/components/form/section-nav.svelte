@@ -5,11 +5,13 @@
     sections,
     activeSectionId,
     progressPct,
+    sectionProgress,
     onselect
   }: {
     sections: FormSection[];
     activeSectionId: string;
     progressPct: number;
+    sectionProgress?: Map<string, { answered: number; total: number }>;
     onselect?: (sectionId: string) => void;
   } = $props();
 </script>
@@ -42,7 +44,13 @@
           : 'border-sys-medio/20 bg-sys-blanco text-[var(--sys-text-body-light)] hover:border-sys-electrico'}"
         onclick={() => onselect?.(section.id)}
       >
-        {section.code} — {section.title}
+        <span class="flex items-center justify-between gap-2 w-full">
+          <span>{section.code} — {section.title}</span>
+          {#if sectionProgress?.has(section.id)}
+            {@const prog = sectionProgress.get(section.id)!}
+            <span class="text-xs opacity-70 shrink-0">{prog.answered}/{prog.total}</span>
+          {/if}
+        </span>
       </button>
     {/each}
   </nav>

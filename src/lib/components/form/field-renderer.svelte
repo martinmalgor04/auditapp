@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { FieldType } from '$lib/server/db/field-schemas';
+  import type { ItemStatus } from '$lib/client/form/item-status';
   import MethodBadge from './method-badge.svelte';
   import PreloadedBadge from './preloaded-badge.svelte';
   import BoolField from './fields/bool-field.svelte';
@@ -33,6 +34,7 @@
 
   let {
     item,
+    status = 'pendiente' as ItemStatus,
     saveState = 'idle' as SaveIndicatorState,
     onchange,
     onnoteschange,
@@ -43,6 +45,7 @@
     onphotodelete
   }: {
     item: FieldItem;
+    status?: ItemStatus;
     saveState?: SaveIndicatorState;
     onchange?: (value: unknown) => void;
     onnoteschange?: (notes: string) => void;
@@ -193,7 +196,7 @@
   }
 </script>
 
-<article class="space-y-2 rounded-lg border border-slate-100 p-3" data-field-type={item.fieldType}>
+<article id="item-{item.id}" class="space-y-2 rounded-lg border border-slate-100 p-3" data-field-type={item.fieldType}>
   <div class="flex flex-wrap items-center gap-2">
     {#if item.method}
       <MethodBadge method={item.method} />
@@ -209,6 +212,19 @@
         N/A
       </button>
     {/if}
+    <span
+      class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium
+        {status === 'con_observacion'
+          ? 'border border-sys-naranja/40 bg-sys-naranja/10 text-sys-naranja'
+          : status === 'respondido'
+            ? 'border border-sys-electrico/30 bg-sys-electrico/10 text-sys-electrico'
+            : 'border border-slate-200 bg-slate-50 text-slate-500'}"
+      data-item-status={status}
+      aria-label="Estado: {status === 'con_observacion' ? 'con observación' : status}"
+    >
+      {status === 'con_observacion' ? '⚠' : status === 'respondido' ? '✓' : '○'}
+      {status === 'con_observacion' ? 'observación' : status === 'respondido' ? 'respondido' : 'pendiente'}
+    </span>
   </div>
 
   {#if !naValue}

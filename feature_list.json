@@ -521,7 +521,7 @@
         "Tests: cómputo del estado por ítem (pendiente/respondido/observación), lógica de 'próximo pendiente' (incl. salto entre secciones y caso sin pendientes) y consistencia del progreso"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 29,
