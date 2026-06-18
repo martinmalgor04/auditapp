@@ -3,84 +3,108 @@
 exports[`informe render IT (#19 R3, R4, R9, R11) > snapshot estable variante IT 1`] = `
 "
 <style>
+@page { size: A4 portrait; margin: 14mm 16mm; }
 .informe-a4 { font-family: var(--sys-font, 'Montserrat', Arial, sans-serif); color: var(--sys-azul-profundo); }
 .informe-a4 *, .informe-a4 *::before, .informe-a4 *::after { margin:0; padding:0; box-sizing:border-box; }
 .informe-a4 .page {
   width:210mm; min-height:297mm; max-height:297mm; overflow:hidden;
-  padding:18mm 18mm 14mm; font-size:10.5pt; line-height:1.55;
+  padding:16mm 16mm 14mm; font-size:10.5pt; line-height:1.55;
   color:var(--sys-azul-profundo); background:#fff;
-  border-top:6mm solid var(--sys-azul-electrico); position:relative; page-break-after:always;
+  border-top:4px solid var(--sys-azul-electrico); position:relative; page-break-after:always;
   margin:0 auto;
 }
 .informe-a4 .page:last-of-type { page-break-after:auto; }
 .informe-a4 .page.dark {
-  background: var(--sys-bg-gradient, linear-gradient(135deg, var(--sys-azul-profundo) 0%, #0F2238 60%, var(--sys-azul-medio) 100%));
+  background: var(--sys-bg-gradient, linear-gradient(160deg, var(--sys-azul-profundo) 0%, #0d2035 55%, var(--sys-azul-medio) 100%));
   color:#fff; display:flex; flex-direction:column; justify-content:space-between;
 }
-.informe-a4 .page.dark .eyebrow { color: var(--sys-celeste); }
-.informe-a4 .eyebrow { font-size:8pt; font-weight:700; letter-spacing:3pt; text-transform:uppercase; color:var(--sys-azul-electrico); margin-bottom:5mm; }
+.informe-a4 .page.dark .eyebrow { color: var(--sys-azul-electrico); }
+.informe-a4 .eyebrow { font-size:8pt; font-weight:700; letter-spacing:3pt; text-transform:uppercase; color:var(--sys-azul-electrico); margin-bottom:4mm; display:flex; align-items:center; gap:2.5mm; }
+.informe-a4 .eyebrow::before { content:''; display:block; width:7mm; height:0.5mm; background:linear-gradient(90deg,var(--sys-azul-electrico),var(--sys-celeste)); flex-shrink:0; }
+.informe-a4 .page.dark .eyebrow::before, .informe-a4 .eyebrow-cover::before { display:none; }
 .informe-a4 h1 { font-size:34pt; font-weight:800; letter-spacing:-1pt; line-height:1.05; color:#fff; }
-.informe-a4 h2 { font-size:20pt; font-weight:800; letter-spacing:-0.5pt; color:var(--sys-azul-profundo); margin-bottom:5mm; line-height:1.1; }
+.informe-a4 h2 { font-size:17pt; font-weight:800; letter-spacing:-0.5pt; color:var(--sys-azul-profundo); margin-bottom:4mm; line-height:1.1; }
 .informe-a4 h3 { font-size:13pt; font-weight:700; color:var(--sys-azul-profundo); margin-bottom:3mm; }
-.informe-a4 p { font-size:10.5pt; line-height:1.6; }
-.informe-a4 .lead { font-size:12pt; line-height:1.6; color:var(--sys-azul-medio); }
+.informe-a4 p { font-size:10pt; line-height:1.6; }
+.informe-a4 .lead { font-size:11.5pt; line-height:1.6; color:var(--sys-azul-medio); }
+.informe-a4 .muted { color:var(--sys-gris-neutro); font-size:9.5pt; }
 .informe-a4 strong { font-weight:700; }
-.informe-a4 .footer { position:absolute; bottom:10mm; left:18mm; right:18mm; display:flex; justify-content:space-between; align-items:center; padding-top:3mm; border-top:0.3mm solid rgba(0,0,0,0.1); }
-.informe-a4 .footer img { height:7mm; }
+.informe-a4 .hl { color:var(--sys-azul-electrico); }
+.informe-a4 .footer { position:absolute; bottom:10mm; left:16mm; right:16mm; display:flex; justify-content:space-between; align-items:center; padding-top:3mm; border-top:0.3mm solid rgba(0,0,0,0.1); }
+.informe-a4 .footer img { height:6mm; }
 .informe-a4 .pagenum { font-size:8pt; font-weight:700; color:var(--sys-gris-neutro); letter-spacing:1pt; }
-.informe-a4 .stats { display:flex; gap:5mm; margin:6mm 0; }
-.informe-a4 .stat { flex:1; background:#fff; border-top:2mm solid var(--sys-azul-electrico); border-radius:1mm; padding:5mm 4mm 6mm; box-shadow:0 2mm 6mm rgba(0,0,0,0.08); text-align:center; }
-.informe-a4 .stat .num { font-size:38pt; font-weight:800; letter-spacing:-1pt; color:var(--sys-azul-electrico); line-height:1; }
+.informe-a4 .stats { display:flex; gap:4mm; margin:5mm 0; }
+.informe-a4 .stat { flex:1; background:linear-gradient(180deg,#fff 0%,#f7f9fb 100%); border:0.3mm solid #d8dee6; border-top:2mm solid var(--sys-azul-electrico); border-radius:1mm; padding:5mm 3mm 6mm; text-align:center; break-inside:avoid; page-break-inside:avoid; }
+.informe-a4 .stat .num { font-size:30pt; font-weight:800; letter-spacing:-1pt; color:var(--sys-azul-electrico); line-height:1; }
 .informe-a4 .stat .num.bad { color:var(--sys-rojo); }
 .informe-a4 .stat .num.warn { color:var(--sys-naranja); }
 .informe-a4 .stat .num.ok { color:var(--sys-verde); }
-.informe-a4 .stat .num small { font-size:16pt; color:var(--sys-gris-neutro); font-weight:600; }
-.informe-a4 .stat .label { font-size:8.5pt; font-weight:600; color:var(--sys-azul-medio); margin-top:2mm; line-height:1.35; }
-.informe-a4 table { width:100%; border-collapse:collapse; margin-top:4mm; font-size:9.5pt; }
-.informe-a4 th { text-align:left; font-size:8pt; font-weight:700; letter-spacing:1pt; text-transform:uppercase; color:var(--sys-gris-neutro); border-bottom:0.5mm solid rgba(0,0,0,0.12); padding:2.5mm 3mm; }
-.informe-a4 th.num, .informe-a4 td.num { text-align:center; }
-.informe-a4 tr:nth-child(even) td { background:var(--sys-offwhite); }
-.informe-a4 td { padding:2.8mm 3mm; border-bottom:0.3mm solid rgba(0,0,0,0.06); }
-.informe-a4 .dot { display:inline-block; width:2.2mm; height:2.2mm; border-radius:50%; margin-right:1.5mm; vertical-align:middle; }
-.informe-a4 .dot.red { background:var(--sys-rojo); }
-.informe-a4 .dot.orange { background:var(--sys-naranja); }
-.informe-a4 .dot.green { background:var(--sys-verde); }
-.informe-a4 .score-pill { font-weight:800; font-size:10pt; }
+.informe-a4 .stat .num small { font-size:14pt; color:var(--sys-gris-neutro); font-weight:600; }
+.informe-a4 .stat .label { font-size:8pt; font-weight:600; color:var(--sys-azul-medio); margin-top:2mm; line-height:1.35; }
+.informe-a4 .gauge-badge { display:inline-block; font-size:7.5pt; font-weight:700; letter-spacing:1.5pt; text-transform:uppercase; padding:1mm 3mm; border-radius:1mm; margin-top:2mm; }
+.informe-a4 .gauge-label { font-size:8pt; font-weight:600; letter-spacing:1pt; text-transform:uppercase; color:var(--sys-gris-neutro); margin-top:2mm; }
+.informe-a4 .page.dark .gauge-label { color:rgba(255,255,255,0.65); }
+.informe-a4 .score-list { display:flex; flex-direction:column; gap:2.5mm; margin-top:4mm; }
+.informe-a4 .score-row { display:grid; grid-template-columns:1fr auto; gap:5mm; align-items:center; background:#f7f9fb; border:0.3mm solid #e2e8f0; border-left:1mm solid transparent; border-radius:1mm; padding:3mm 4mm; break-inside:avoid; page-break-inside:avoid; }
+.informe-a4 .score-row.r { border-left-color:var(--sys-rojo); }
+.informe-a4 .score-row.o { border-left-color:var(--sys-naranja); }
+.informe-a4 .score-row.g { border-left-color:var(--sys-verde); }
+.informe-a4 .score-info .name { font-size:9.5pt; font-weight:600; color:var(--sys-azul-profundo); }
+.informe-a4 .score-info .detail { font-size:8pt; color:#6b7c8f; margin-top:1mm; }
+.informe-a4 .score-right { display:flex; align-items:center; gap:3.5mm; }
+.informe-a4 .bar { width:34mm; height:1.6mm; background:#e2e8f0; border-radius:1mm; overflow:hidden; }
+.informe-a4 .bar i { display:block; height:100%; border-radius:1mm; }
+.informe-a4 .score-row.r .bar i { background:var(--sys-rojo); }
+.informe-a4 .score-row.o .bar i { background:var(--sys-naranja); }
+.informe-a4 .score-row.g .bar i { background:var(--sys-verde); }
+.informe-a4 .score-val { font-size:12pt; font-weight:800; font-variant-numeric:tabular-nums; min-width:9mm; text-align:right; }
+.informe-a4 .score-row.r .score-val { color:var(--sys-rojo); }
+.informe-a4 .score-row.o .score-val { color:var(--sys-naranja); }
+.informe-a4 .score-row.g .score-val { color:var(--sys-verde); }
+.informe-a4 .legend { margin-top:4mm; font-size:9pt; color:#6b7c8f; border-left:0.5mm solid rgba(0,0,0,0.12); padding-left:3.5mm; }
+.informe-a4 .legend + .legend { margin-top:2.5mm; }
 .informe-a4 .risks { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin-top:4mm; }
-.informe-a4 .risk { background:var(--sys-offwhite); border-left:3mm solid var(--sys-rojo); border-radius:1mm; padding:4mm 4.5mm; }
-.informe-a4 .risk .n { font-size:7.5pt; font-weight:700; letter-spacing:2pt; text-transform:uppercase; color:var(--sys-rojo); margin-bottom:2mm; }
-.informe-a4 .risk h3 { font-size:11pt; margin-bottom:2mm; }
-.informe-a4 .risk p { font-size:9pt; color:#3a4a5a; line-height:1.5; }
-.informe-a4 .risk .ev { font-size:8pt; color:var(--sys-gris-neutro); margin-top:2.5mm; }
-.informe-a4 .callout { background:rgba(33,150,243,0.06); border:0.3mm solid rgba(33,150,243,0.3); border-left:3mm solid var(--sys-azul-electrico); border-radius:1mm; padding:4mm 5mm; margin:5mm 0; }
+.informe-a4 .risk { background:#f7f9fb; border:0.3mm solid #e2e8f0; border-left:3mm solid var(--sys-rojo); border-radius:1mm; padding:4mm 4.5mm; position:relative; overflow:hidden; break-inside:avoid; page-break-inside:avoid; }
+.informe-a4 .risk .wm { position:absolute; right:-1mm; top:-4mm; font-size:36pt; font-weight:800; color:rgba(16,42,67,0.05); line-height:1; pointer-events:none; }
+.informe-a4 .risk .n { font-size:7.5pt; font-weight:700; letter-spacing:2pt; text-transform:uppercase; color:var(--sys-rojo); margin-bottom:2mm; position:relative; }
+.informe-a4 .risk h3 { font-size:11pt; margin-bottom:2mm; position:relative; }
+.informe-a4 .risk p { font-size:9pt; color:#3a4a5a; line-height:1.5; position:relative; }
+.informe-a4 .risk .ev { font-size:8pt; color:var(--sys-gris-neutro); margin-top:2.5mm; font-style:italic; position:relative; }
+.informe-a4 .callout { background:rgba(33,150,243,0.06); border:0.3mm solid rgba(33,150,243,0.3); border-left:3mm solid var(--sys-azul-electrico); border-radius:1mm; padding:4mm 5mm; margin:5mm 0; break-inside:avoid; page-break-inside:avoid; }
 .informe-a4 .callout p { font-size:10pt; }
-.informe-a4 .timeline { display:grid; grid-template-columns:repeat(6,1fr); gap:3mm; margin-top:6mm; position:relative; }
-.informe-a4 .timeline::before { content:''; position:absolute; top:3.5mm; left:8%; right:8%; height:0.5mm; background:rgba(33,150,243,0.25); }
-.informe-a4 .tl-item { text-align:center; position:relative; }
+.informe-a4 .callout-green { background:rgba(39,174,96,0.06); border:0.3mm solid rgba(39,174,96,0.3); border-left:3mm solid var(--sys-verde); border-radius:1mm; padding:4mm 5mm; margin:5mm 0; break-inside:avoid; page-break-inside:avoid; }
+.informe-a4 .callout-green p { font-size:10pt; }
+.informe-a4 .tl-h { display:grid; grid-template-columns:repeat(6,1fr); gap:3mm; margin-top:6mm; position:relative; }
+.informe-a4 .tl-h::before { content:''; position:absolute; top:3.5mm; left:8%; right:8%; height:0.5mm; background:rgba(33,150,243,0.25); }
+.informe-a4 .tl-step { text-align:center; position:relative; break-inside:avoid; page-break-inside:avoid; }
 .informe-a4 .tl-dot { width:7mm; height:7mm; border-radius:50%; background:var(--sys-azul-electrico); margin:0 auto 3mm; border:1mm solid #fff; position:relative; z-index:1; box-shadow:0 0 0 0.5mm rgba(33,150,243,0.3); }
-.informe-a4 .tl-week { font-size:7pt; font-weight:700; letter-spacing:1pt; text-transform:uppercase; color:var(--sys-azul-electrico); margin-bottom:2mm; }
-.informe-a4 .tl-item h3 { font-size:9pt; font-weight:700; margin-bottom:1.5mm; }
-.informe-a4 .tl-item p { font-size:8pt; color:#4a5a6a; line-height:1.45; }
-.informe-a4 .circuitos { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:4mm 0; }
-.informe-a4 .circuito { background:var(--sys-offwhite); border-left:2.5mm solid var(--sys-azul-electrico); border-radius:1mm; padding:4mm 4.5mm; }
-.informe-a4 .circuito h3 { font-size:10.5pt; margin-bottom:2mm; }
-.informe-a4 .circuito .circuito-hoy { font-size:8.5pt; color:var(--sys-gris-neutro); margin:0 0 2.5mm; line-height:1.4; }
-.informe-a4 .circuito .circuito-hoy strong { color:#2a3a4a; }
-.informe-a4 .circuito ul { list-style:none; }
-.informe-a4 .circuito li { font-size:9pt; line-height:1.5; color:#2a3a4a; padding-left:3.5mm; position:relative; margin-bottom:1.5mm; }
-.informe-a4 .circuito li::before { content:''; position:absolute; left:0; top:2.2mm; width:1.8mm; height:1.8mm; background:var(--sys-azul-electrico); border-radius:0.3mm; }
-.informe-a4 .cover { padding:22mm 20mm; }
-.informe-a4 .cover .logo-vert { height:28mm; margin-bottom:auto; display:block; }
-.informe-a4 .cover .eyebrow-cover { font-size:9pt; font-weight:700; letter-spacing:3pt; text-transform:uppercase; color:var(--sys-celeste); margin-bottom:6mm; }
+.informe-a4 .tl-step .week { font-size:7pt; font-weight:700; letter-spacing:1pt; text-transform:uppercase; color:var(--sys-azul-electrico); margin-bottom:2mm; }
+.informe-a4 .tl-step h3 { font-size:9pt; font-weight:700; margin-bottom:1.5mm; }
+.informe-a4 .tl-step p { font-size:8pt; color:#4a5a6a; line-height:1.45; }
+.informe-a4 .fix-grid { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:4mm 0; }
+.informe-a4 .fix { background:linear-gradient(180deg,#fff 0%,#f7f9fb 100%); border:0.3mm solid #e2e8f0; border-top:2mm solid var(--sys-azul-electrico); border-radius:1mm; padding:4mm 4.5mm; break-inside:avoid; page-break-inside:avoid; }
+.informe-a4 .fix h3 { font-size:10.5pt; margin-bottom:2mm; display:flex; align-items:baseline; gap:1.5mm; flex-wrap:wrap; }
+.informe-a4 .fix .badge { font-size:7.5pt; font-weight:700; color:var(--sys-rojo); background:rgba(230,57,70,0.08); padding:0.5mm 2mm; border-radius:0.6mm; }
+.informe-a4 .fix .badge.warn { color:var(--sys-naranja); background:rgba(243,156,18,0.08); }
+.informe-a4 .fix .badge.ok { color:var(--sys-verde); background:rgba(39,174,96,0.08); }
+.informe-a4 .fix .hoy { font-size:8.5pt; color:var(--sys-gris-neutro); margin:0 0 2.5mm; line-height:1.4; }
+.informe-a4 .fix .hoy strong { color:#2a3a4a; }
+.informe-a4 .fix ul { list-style:none; }
+.informe-a4 .fix li { font-size:9pt; line-height:1.5; color:#2a3a4a; padding-left:3.5mm; position:relative; margin-bottom:1.5mm; }
+.informe-a4 .fix li::before { content:''; position:absolute; left:0; top:2.2mm; width:1.8mm; height:1.8mm; background:var(--sys-azul-electrico); border-radius:0.3mm; }
+.informe-a4 .cover { padding:22mm 16mm; }
+.informe-a4 .cover .logo-vert { height:26mm; margin-bottom:auto; display:block; }
+.informe-a4 .cover .eyebrow-cover { font-size:9pt; font-weight:700; letter-spacing:3pt; text-transform:uppercase; color:var(--sys-azul-electrico); margin-bottom:6mm; }
 .informe-a4 .cover h1 { margin-bottom:8mm; }
 .informe-a4 .cover .client { font-size:18pt; font-weight:700; color:var(--sys-celeste); margin-bottom:2mm; }
 .informe-a4 .cover .cuit { font-size:10pt; color:rgba(255,255,255,0.5); margin-bottom:10mm; }
 .informe-a4 .cover .meta { font-size:9pt; color:rgba(255,255,255,0.55); line-height:2; }
+.informe-a4 .cover .gauge-cover { margin-top:8mm; max-width:60mm; }
 .informe-a4 .circle { position:absolute; border-radius:50%; border:1px solid var(--sys-celeste); opacity:0.06; pointer-events:none; }
 .informe-a4 .c1 { width:130mm; height:130mm; top:-40mm; right:-50mm; }
 .informe-a4 .c2 { width:90mm; height:90mm; bottom:-30mm; left:-35mm; }
-.informe-a4 .backcover { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:22mm 20mm; }
-.informe-a4 .backcover .logo-vert { height:28mm; margin-bottom:10mm; }
+.informe-a4 .backcover { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:22mm 16mm; }
+.informe-a4 .backcover .logo-vert { height:26mm; margin-bottom:10mm; }
 .informe-a4 .backcover .firma { font-size:22pt; font-weight:800; letter-spacing:-0.5pt; color:#fff; margin-bottom:10mm; }
 .informe-a4 .backcover .contact { font-size:9pt; color:rgba(255,255,255,0.6); line-height:2; }
 .informe-a4 ul.clean { list-style:none; }
@@ -94,7 +118,6 @@ exports[`informe render IT (#19 R3, R4, R9, R11) > snapshot estable variante IT 
 .informe-a4 [contenteditable="true"] { outline:1px dashed var(--sys-azul-electrico); outline-offset:2px; min-width:1em; display:inline-block; }
 .informe-a4 [data-field].informe-field-error { outline:2px solid var(--sys-rojo); }
 @media print {
-  .informe-a4 .stat { box-shadow:none; border:0.3mm solid rgba(0,0,0,0.1); border-top:2mm solid var(--sys-azul-electrico); }
   .informe-a4 .informe-loom { display:none; }
 }
 </style>
@@ -109,6 +132,17 @@ exports[`informe render IT (#19 R3, R4, R9, R11) > snapshot estable variante IT 
     <div style="height:8mm"></div>
     <div class="client">Fixture Form Técnico SA</div>
     <div class="cuit">CUIT 30-12345678-9</div>
+    
+  <div class="gauge-cover" data-canonical="gauge">
+    <svg viewBox="0 0 200 112" style="width:100%; display:block;">
+      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="var(--sys-verde)" stroke-width="14" stroke-linecap="round" stroke-dasharray="251.4 251.4"/>
+      <text x="100" y="84" text-anchor="middle" font-family="Montserrat,Arial" font-weight="800" font-size="46" fill="var(--sys-verde)" letter-spacing="-1">100</text>
+      <text x="100" y="104" text-anchor="middle" font-family="Montserrat,Arial" font-weight="600" font-size="12" fill="rgba(255,255,255,0.45)">de 100</text>
+    </svg>
+    <div class="gauge-badge" style="color:var(--sys-verde); background:rgba(255,255,255,0.08);">BUENO</div>
+    <div class="gauge-label">Índice IT general</div>
+  </div>
     <div class="meta">Áreas relevadas: 14<br>8 de junio de 2026</div>
   </div>
 </section>
@@ -145,26 +179,37 @@ exports[`informe render IT (#19 R3, R4, R9, R11) > snapshot estable variante IT 
 <section class="page">
   <div class="eyebrow">02 · Hallazgos por área</div>
   <h2>Qué encontramos, área por área</h2>
-  <table>
-    <tr><th style="width:42%">Área</th><th class="num" style="width:14%">Score</th><th style="width:14%">Doc.</th><th style="width:16%">Controles</th><th style="width:14%">Madurez</th></tr>
-    <tr><td>Inventario de activos</td><td class="num"><span class="dot red"></span><span class="score-pill" data-canonical="score">20</span></td><td><span data-field="hallazgos.circuitos.0.doc">Parcial</span></td><td><span data-field="hallazgos.circuitos.0.controles">No</span></td><td><span data-field="hallazgos.circuitos.0.madurez">Manual</span></td></tr>
-<tr><td>Software / licencias</td><td class="num"><span class="dot green"></span><span class="score-pill" data-canonical="score">100</span></td><td><span data-field="hallazgos.circuitos.1.doc">Parcial</span></td><td><span data-field="hallazgos.circuitos.1.controles">No</span></td><td><span data-field="hallazgos.circuitos.1.madurez">Manual</span></td></tr>
-<tr><td>Gestión de datos</td><td class="num"><span class="dot orange"></span><span class="score-pill" data-canonical="score">55</span></td><td><span data-field="hallazgos.circuitos.2.doc">Parcial</span></td><td><span data-field="hallazgos.circuitos.2.controles">No</span></td><td><span data-field="hallazgos.circuitos.2.madurez">Manual</span></td></tr>
-  </table>
-  <div style="height:14mm"></div>
+  <p class="muted">Cada área se evaluó en tres dimensiones: proceso documentado, controles internos y madurez operativa.</p>
+  <div class="score-list">
+    <div class="score-row r">
+      <div class="score-info"><div class="name">Inventario de activos</div><div class="detail"><span data-field="hallazgos.circuitos.0.doc">Parcial</span> · <span data-field="hallazgos.circuitos.0.controles">No</span> · <span data-field="hallazgos.circuitos.0.madurez">Manual</span> · <span data-canonical="norma">CIS 1 · NIST: Identify</span></div></div>
+      <div class="score-right"><div class="bar"><i style="width:20%"></i></div><div class="score-val" data-canonical="score">20</div></div>
+    </div>
+
+    <div class="score-row g">
+      <div class="score-info"><div class="name">Software / licencias</div><div class="detail"><span data-field="hallazgos.circuitos.1.doc">Parcial</span> · <span data-field="hallazgos.circuitos.1.controles">No</span> · <span data-field="hallazgos.circuitos.1.madurez">Manual</span> · <span data-canonical="norma">CIS 2 · NIST: Identify</span></div></div>
+      <div class="score-right"><div class="bar"><i style="width:100%"></i></div><div class="score-val" data-canonical="score">100</div></div>
+    </div>
+
+    <div class="score-row o">
+      <div class="score-info"><div class="name">Gestión de datos</div><div class="detail"><span data-field="hallazgos.circuitos.2.doc">Parcial</span> · <span data-field="hallazgos.circuitos.2.controles">No</span> · <span data-field="hallazgos.circuitos.2.madurez">Manual</span> · <span data-canonical="norma">CIS 3 · NIST: Protect</span></div></div>
+      <div class="score-right"><div class="bar"><i style="width:55%"></i></div><div class="score-val" data-canonical="score">55</div></div>
+    </div></div>
+  <div style="height:8mm"></div>
   <h3>Lectura transversal</h3>
   <ul class="clean"><li><strong><span data-field="hallazgos.lectura_transversal.0.titulo">Controles manuales</span>.</strong> <span data-field="hallazgos.lectura_transversal.0.detalle">El 80% de las áreas depende de procedimientos informales.</span></li>
 <li><strong><span data-field="hallazgos.lectura_transversal.1.titulo">Sin documentación</span>.</strong> <span data-field="hallazgos.lectura_transversal.1.detalle">No hay políticas escritas de seguridad.</span></li>
 <li><strong><span data-field="hallazgos.lectura_transversal.2.titulo">Datos dispersos</span>.</strong> <span data-field="hallazgos.lectura_transversal.2.detalle">La información crítica vive fuera de sistemas centralizados.</span></li></ul>
+  <div class="legend" data-metodologia="it">Los valores de este informe se evalúan contra CIS Controls v8 y el NIST Cybersecurity Framework. El estado de fin de vida del hardware se mide por los ciclos de vida de cada fabricante (HPE, Lenovo, Dell).</div>
   <div class="footer"><img src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_horizontal_b.png" alt="SyS"><span class="pagenum">03</span></div>
 </section>
 <section class="page">
   <div class="eyebrow">03 · Riesgos priorizados</div>
   <h2>Qué está en juego si esto sigue igual</h2>
-  <p style="color:var(--sys-gris-neutro); font-size:9.5pt;"><span data-field="riesgos.intro">Los riesgos surgen directamente de los hallazgos del relevamiento.</span></p>
-  <div style="height:5mm"></div>
+  <p class="muted"><span data-field="riesgos.intro">Los riesgos surgen directamente de los hallazgos del relevamiento.</span></p>
   <div class="risks">
     <div class="risk">
+      <div class="wm">1</div>
       <div class="n">Riesgo 1</div>
       <h3><span data-field="riesgos.items.0.titulo">Riesgo operativo 1</span></h3>
       <p><span data-field="riesgos.items.0.descripcion">Puede generar pérdidas si no se corrige.</span></p>
@@ -172,6 +217,7 @@ exports[`informe render IT (#19 R3, R4, R9, R11) > snapshot estable variante IT 
     </div>
 
     <div class="risk">
+      <div class="wm">2</div>
       <div class="n">Riesgo 2</div>
       <h3><span data-field="riesgos.items.1.titulo">Riesgo operativo 2</span></h3>
       <p><span data-field="riesgos.items.1.descripcion">Puede generar pérdidas si no se corrige.</span></p>
@@ -179,6 +225,7 @@ exports[`informe render IT (#19 R3, R4, R9, R11) > snapshot estable variante IT 
     </div>
 
     <div class="risk">
+      <div class="wm">3</div>
       <div class="n">Riesgo 3</div>
       <h3><span data-field="riesgos.items.2.titulo">Riesgo operativo 3</span></h3>
       <p><span data-field="riesgos.items.2.descripcion">Puede generar pérdidas si no se corrige.</span></p>
@@ -186,6 +233,7 @@ exports[`informe render IT (#19 R3, R4, R9, R11) > snapshot estable variante IT 
     </div>
 
     <div class="risk">
+      <div class="wm">4</div>
       <div class="n">Riesgo 4</div>
       <h3><span data-field="riesgos.items.3.titulo">Riesgo operativo 4</span></h3>
       <p><span data-field="riesgos.items.3.descripcion">Puede generar pérdidas si no se corrige.</span></p>
@@ -197,10 +245,9 @@ exports[`informe render IT (#19 R3, R4, R9, R11) > snapshot estable variante IT 
   <div class="eyebrow">04 · Recomendación y plan</div>
   <h2><span data-field="plan.titulo">Plan de endurecimiento de infraestructura</span></h2>
   <div class="callout"><p><span data-field="plan.descripcion">Se priorizan áreas críticas de seguridad y continuidad operativa.</span></p></div>
-  <div style="height:7mm"></div>
-  <div class="timeline" style="grid-template-columns:repeat(3,1fr);"><div class="tl-item"><div class="tl-dot"></div><div class="tl-week"><span data-field="plan.etapas.0.semana">Sem 1</span></div><h3><span data-field="plan.etapas.0.titulo">Relevamiento</span></h3><p><span data-field="plan.etapas.0.descripcion">Áreas objetivo de infraestructura.</span></p></div>
-<div class="tl-item"><div class="tl-dot"></div><div class="tl-week"><span data-field="plan.etapas.1.semana">Sem 2–3</span></div><h3><span data-field="plan.etapas.1.titulo">Endurecimiento</span></h3><p><span data-field="plan.etapas.1.descripcion">Controles de acceso y red.</span></p></div>
-<div class="tl-item"><div class="tl-dot"></div><div class="tl-week"><span data-field="plan.etapas.2.semana">Sem 4</span></div><h3><span data-field="plan.etapas.2.titulo">Capacitación</span></h3><p><span data-field="plan.etapas.2.descripcion">Usuarios clave en buenas prácticas.</span></p></div></div>
+  <div class="tl-h" style="grid-template-columns:repeat(3,1fr);"><div class="tl-step"><div class="tl-dot"></div><div class="week"><span data-field="plan.etapas.0.semana">Sem 1</span></div><h3><span data-field="plan.etapas.0.titulo">Relevamiento</span></h3><p><span data-field="plan.etapas.0.descripcion">Áreas objetivo de infraestructura.</span></p></div>
+<div class="tl-step"><div class="tl-dot"></div><div class="week"><span data-field="plan.etapas.1.semana">Sem 2–3</span></div><h3><span data-field="plan.etapas.1.titulo">Endurecimiento</span></h3><p><span data-field="plan.etapas.1.descripcion">Controles de acceso y red.</span></p></div>
+<div class="tl-step"><div class="tl-dot"></div><div class="week"><span data-field="plan.etapas.2.semana">Sem 4</span></div><h3><span data-field="plan.etapas.2.titulo">Capacitación</span></h3><p><span data-field="plan.etapas.2.descripcion">Usuarios clave en buenas prácticas.</span></p></div></div>
   <div style="height:7mm"></div>
   <div class="twocol">
     <div><h3>Qué necesitamos de Fixture Form Técnico SA</h3><ul class="clean"><li><span data-field="plan.necesitamos_cliente.0">Referente del proyecto designado.</span></li>
@@ -213,12 +260,12 @@ exports[`informe render IT (#19 R3, R4, R9, R11) > snapshot estable variante IT 
 <section class="page">
   <div class="eyebrow">05 · Mejoras prioritarias</div>
   <h2>Lo que tu infraestructura necesita<br>y hoy no tiene</h2>
-  <p style="font-size:9.5pt; color:var(--sys-gris-neutro);"><span data-field="dia_a_dia.intro">Priorizamos mejoras concretas de infraestructura según el relevamiento.</span></p>
+  <p class="muted"><span data-field="dia_a_dia.intro">Priorizamos mejoras concretas de infraestructura según el relevamiento.</span></p>
   <div style="height:4mm"></div>
-  <div class="circuitos"><div class="circuito"><h3>Inventario de activos — hoy <span data-canonical="score">20</span>/100</h3><p class="circuito-hoy"><strong>Hoy:</strong> <span data-field="dia_a_dia.circuitos.0.hoy">área operada sin controles ni monitoreo formal</span></p><ul><li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.0.nombre">Inventario centralizado</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.0.que_resuelve">visibilidad de activos en toda la red</span>.</li>
+  <div class="fix-grid"><div class="fix"><h3>Inventario de activos <span class="badge">hoy <span data-canonical="score">20</span>/100</span></h3><div class="hoy"><strong>Hoy:</strong> <span data-field="dia_a_dia.circuitos.0.hoy">área operada sin controles ni monitoreo formal</span></div><ul><li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.0.nombre">Inventario centralizado</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.0.que_resuelve">visibilidad de activos en toda la red</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.1.nombre">Política de backups 3-2-1</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.1.que_resuelve">recuperación ante ransomware</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.2.nombre">Segmentación de red</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.2.que_resuelve">contención de incidentes</span>.</li></ul></div>
-<div class="circuito"><h3>Software / licencias — hoy <span data-canonical="score">100</span>/100</h3><p class="circuito-hoy"><strong>Hoy:</strong> <span data-field="dia_a_dia.circuitos.1.hoy">área operada sin controles ni monitoreo formal</span></p><ul><li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.0.nombre">Inventario centralizado</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.0.que_resuelve">visibilidad de activos en toda la red</span>.</li>
+<div class="fix"><h3>Software / licencias <span class="badge ok">hoy <span data-canonical="score">100</span>/100</span></h3><div class="hoy"><strong>Hoy:</strong> <span data-field="dia_a_dia.circuitos.1.hoy">área operada sin controles ni monitoreo formal</span></div><ul><li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.0.nombre">Inventario centralizado</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.0.que_resuelve">visibilidad de activos en toda la red</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.1.nombre">Política de backups 3-2-1</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.1.que_resuelve">recuperación ante ransomware</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.2.nombre">Segmentación de red</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.2.que_resuelve">contención de incidentes</span>.</li></ul></div></div>
   <div style="height:4mm"></div><div class="callout"><p><span data-field="dia_a_dia.callout_transversal">Para la dirección — visibilidad unificada de activos y riesgos.</span></p></div>
@@ -262,84 +309,108 @@ exports[`informe render IT (#19 R3, R4, R9, R11) > snapshot estable variante IT 
 exports[`informe render mixto (#19 R5, R11) > snapshot estable variante mixta 1`] = `
 "
 <style>
+@page { size: A4 portrait; margin: 14mm 16mm; }
 .informe-a4 { font-family: var(--sys-font, 'Montserrat', Arial, sans-serif); color: var(--sys-azul-profundo); }
 .informe-a4 *, .informe-a4 *::before, .informe-a4 *::after { margin:0; padding:0; box-sizing:border-box; }
 .informe-a4 .page {
   width:210mm; min-height:297mm; max-height:297mm; overflow:hidden;
-  padding:18mm 18mm 14mm; font-size:10.5pt; line-height:1.55;
+  padding:16mm 16mm 14mm; font-size:10.5pt; line-height:1.55;
   color:var(--sys-azul-profundo); background:#fff;
-  border-top:6mm solid var(--sys-azul-electrico); position:relative; page-break-after:always;
+  border-top:4px solid var(--sys-azul-electrico); position:relative; page-break-after:always;
   margin:0 auto;
 }
 .informe-a4 .page:last-of-type { page-break-after:auto; }
 .informe-a4 .page.dark {
-  background: var(--sys-bg-gradient, linear-gradient(135deg, var(--sys-azul-profundo) 0%, #0F2238 60%, var(--sys-azul-medio) 100%));
+  background: var(--sys-bg-gradient, linear-gradient(160deg, var(--sys-azul-profundo) 0%, #0d2035 55%, var(--sys-azul-medio) 100%));
   color:#fff; display:flex; flex-direction:column; justify-content:space-between;
 }
-.informe-a4 .page.dark .eyebrow { color: var(--sys-celeste); }
-.informe-a4 .eyebrow { font-size:8pt; font-weight:700; letter-spacing:3pt; text-transform:uppercase; color:var(--sys-azul-electrico); margin-bottom:5mm; }
+.informe-a4 .page.dark .eyebrow { color: var(--sys-azul-electrico); }
+.informe-a4 .eyebrow { font-size:8pt; font-weight:700; letter-spacing:3pt; text-transform:uppercase; color:var(--sys-azul-electrico); margin-bottom:4mm; display:flex; align-items:center; gap:2.5mm; }
+.informe-a4 .eyebrow::before { content:''; display:block; width:7mm; height:0.5mm; background:linear-gradient(90deg,var(--sys-azul-electrico),var(--sys-celeste)); flex-shrink:0; }
+.informe-a4 .page.dark .eyebrow::before, .informe-a4 .eyebrow-cover::before { display:none; }
 .informe-a4 h1 { font-size:34pt; font-weight:800; letter-spacing:-1pt; line-height:1.05; color:#fff; }
-.informe-a4 h2 { font-size:20pt; font-weight:800; letter-spacing:-0.5pt; color:var(--sys-azul-profundo); margin-bottom:5mm; line-height:1.1; }
+.informe-a4 h2 { font-size:17pt; font-weight:800; letter-spacing:-0.5pt; color:var(--sys-azul-profundo); margin-bottom:4mm; line-height:1.1; }
 .informe-a4 h3 { font-size:13pt; font-weight:700; color:var(--sys-azul-profundo); margin-bottom:3mm; }
-.informe-a4 p { font-size:10.5pt; line-height:1.6; }
-.informe-a4 .lead { font-size:12pt; line-height:1.6; color:var(--sys-azul-medio); }
+.informe-a4 p { font-size:10pt; line-height:1.6; }
+.informe-a4 .lead { font-size:11.5pt; line-height:1.6; color:var(--sys-azul-medio); }
+.informe-a4 .muted { color:var(--sys-gris-neutro); font-size:9.5pt; }
 .informe-a4 strong { font-weight:700; }
-.informe-a4 .footer { position:absolute; bottom:10mm; left:18mm; right:18mm; display:flex; justify-content:space-between; align-items:center; padding-top:3mm; border-top:0.3mm solid rgba(0,0,0,0.1); }
-.informe-a4 .footer img { height:7mm; }
+.informe-a4 .hl { color:var(--sys-azul-electrico); }
+.informe-a4 .footer { position:absolute; bottom:10mm; left:16mm; right:16mm; display:flex; justify-content:space-between; align-items:center; padding-top:3mm; border-top:0.3mm solid rgba(0,0,0,0.1); }
+.informe-a4 .footer img { height:6mm; }
 .informe-a4 .pagenum { font-size:8pt; font-weight:700; color:var(--sys-gris-neutro); letter-spacing:1pt; }
-.informe-a4 .stats { display:flex; gap:5mm; margin:6mm 0; }
-.informe-a4 .stat { flex:1; background:#fff; border-top:2mm solid var(--sys-azul-electrico); border-radius:1mm; padding:5mm 4mm 6mm; box-shadow:0 2mm 6mm rgba(0,0,0,0.08); text-align:center; }
-.informe-a4 .stat .num { font-size:38pt; font-weight:800; letter-spacing:-1pt; color:var(--sys-azul-electrico); line-height:1; }
+.informe-a4 .stats { display:flex; gap:4mm; margin:5mm 0; }
+.informe-a4 .stat { flex:1; background:linear-gradient(180deg,#fff 0%,#f7f9fb 100%); border:0.3mm solid #d8dee6; border-top:2mm solid var(--sys-azul-electrico); border-radius:1mm; padding:5mm 3mm 6mm; text-align:center; break-inside:avoid; page-break-inside:avoid; }
+.informe-a4 .stat .num { font-size:30pt; font-weight:800; letter-spacing:-1pt; color:var(--sys-azul-electrico); line-height:1; }
 .informe-a4 .stat .num.bad { color:var(--sys-rojo); }
 .informe-a4 .stat .num.warn { color:var(--sys-naranja); }
 .informe-a4 .stat .num.ok { color:var(--sys-verde); }
-.informe-a4 .stat .num small { font-size:16pt; color:var(--sys-gris-neutro); font-weight:600; }
-.informe-a4 .stat .label { font-size:8.5pt; font-weight:600; color:var(--sys-azul-medio); margin-top:2mm; line-height:1.35; }
-.informe-a4 table { width:100%; border-collapse:collapse; margin-top:4mm; font-size:9.5pt; }
-.informe-a4 th { text-align:left; font-size:8pt; font-weight:700; letter-spacing:1pt; text-transform:uppercase; color:var(--sys-gris-neutro); border-bottom:0.5mm solid rgba(0,0,0,0.12); padding:2.5mm 3mm; }
-.informe-a4 th.num, .informe-a4 td.num { text-align:center; }
-.informe-a4 tr:nth-child(even) td { background:var(--sys-offwhite); }
-.informe-a4 td { padding:2.8mm 3mm; border-bottom:0.3mm solid rgba(0,0,0,0.06); }
-.informe-a4 .dot { display:inline-block; width:2.2mm; height:2.2mm; border-radius:50%; margin-right:1.5mm; vertical-align:middle; }
-.informe-a4 .dot.red { background:var(--sys-rojo); }
-.informe-a4 .dot.orange { background:var(--sys-naranja); }
-.informe-a4 .dot.green { background:var(--sys-verde); }
-.informe-a4 .score-pill { font-weight:800; font-size:10pt; }
+.informe-a4 .stat .num small { font-size:14pt; color:var(--sys-gris-neutro); font-weight:600; }
+.informe-a4 .stat .label { font-size:8pt; font-weight:600; color:var(--sys-azul-medio); margin-top:2mm; line-height:1.35; }
+.informe-a4 .gauge-badge { display:inline-block; font-size:7.5pt; font-weight:700; letter-spacing:1.5pt; text-transform:uppercase; padding:1mm 3mm; border-radius:1mm; margin-top:2mm; }
+.informe-a4 .gauge-label { font-size:8pt; font-weight:600; letter-spacing:1pt; text-transform:uppercase; color:var(--sys-gris-neutro); margin-top:2mm; }
+.informe-a4 .page.dark .gauge-label { color:rgba(255,255,255,0.65); }
+.informe-a4 .score-list { display:flex; flex-direction:column; gap:2.5mm; margin-top:4mm; }
+.informe-a4 .score-row { display:grid; grid-template-columns:1fr auto; gap:5mm; align-items:center; background:#f7f9fb; border:0.3mm solid #e2e8f0; border-left:1mm solid transparent; border-radius:1mm; padding:3mm 4mm; break-inside:avoid; page-break-inside:avoid; }
+.informe-a4 .score-row.r { border-left-color:var(--sys-rojo); }
+.informe-a4 .score-row.o { border-left-color:var(--sys-naranja); }
+.informe-a4 .score-row.g { border-left-color:var(--sys-verde); }
+.informe-a4 .score-info .name { font-size:9.5pt; font-weight:600; color:var(--sys-azul-profundo); }
+.informe-a4 .score-info .detail { font-size:8pt; color:#6b7c8f; margin-top:1mm; }
+.informe-a4 .score-right { display:flex; align-items:center; gap:3.5mm; }
+.informe-a4 .bar { width:34mm; height:1.6mm; background:#e2e8f0; border-radius:1mm; overflow:hidden; }
+.informe-a4 .bar i { display:block; height:100%; border-radius:1mm; }
+.informe-a4 .score-row.r .bar i { background:var(--sys-rojo); }
+.informe-a4 .score-row.o .bar i { background:var(--sys-naranja); }
+.informe-a4 .score-row.g .bar i { background:var(--sys-verde); }
+.informe-a4 .score-val { font-size:12pt; font-weight:800; font-variant-numeric:tabular-nums; min-width:9mm; text-align:right; }
+.informe-a4 .score-row.r .score-val { color:var(--sys-rojo); }
+.informe-a4 .score-row.o .score-val { color:var(--sys-naranja); }
+.informe-a4 .score-row.g .score-val { color:var(--sys-verde); }
+.informe-a4 .legend { margin-top:4mm; font-size:9pt; color:#6b7c8f; border-left:0.5mm solid rgba(0,0,0,0.12); padding-left:3.5mm; }
+.informe-a4 .legend + .legend { margin-top:2.5mm; }
 .informe-a4 .risks { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin-top:4mm; }
-.informe-a4 .risk { background:var(--sys-offwhite); border-left:3mm solid var(--sys-rojo); border-radius:1mm; padding:4mm 4.5mm; }
-.informe-a4 .risk .n { font-size:7.5pt; font-weight:700; letter-spacing:2pt; text-transform:uppercase; color:var(--sys-rojo); margin-bottom:2mm; }
-.informe-a4 .risk h3 { font-size:11pt; margin-bottom:2mm; }
-.informe-a4 .risk p { font-size:9pt; color:#3a4a5a; line-height:1.5; }
-.informe-a4 .risk .ev { font-size:8pt; color:var(--sys-gris-neutro); margin-top:2.5mm; }
-.informe-a4 .callout { background:rgba(33,150,243,0.06); border:0.3mm solid rgba(33,150,243,0.3); border-left:3mm solid var(--sys-azul-electrico); border-radius:1mm; padding:4mm 5mm; margin:5mm 0; }
+.informe-a4 .risk { background:#f7f9fb; border:0.3mm solid #e2e8f0; border-left:3mm solid var(--sys-rojo); border-radius:1mm; padding:4mm 4.5mm; position:relative; overflow:hidden; break-inside:avoid; page-break-inside:avoid; }
+.informe-a4 .risk .wm { position:absolute; right:-1mm; top:-4mm; font-size:36pt; font-weight:800; color:rgba(16,42,67,0.05); line-height:1; pointer-events:none; }
+.informe-a4 .risk .n { font-size:7.5pt; font-weight:700; letter-spacing:2pt; text-transform:uppercase; color:var(--sys-rojo); margin-bottom:2mm; position:relative; }
+.informe-a4 .risk h3 { font-size:11pt; margin-bottom:2mm; position:relative; }
+.informe-a4 .risk p { font-size:9pt; color:#3a4a5a; line-height:1.5; position:relative; }
+.informe-a4 .risk .ev { font-size:8pt; color:var(--sys-gris-neutro); margin-top:2.5mm; font-style:italic; position:relative; }
+.informe-a4 .callout { background:rgba(33,150,243,0.06); border:0.3mm solid rgba(33,150,243,0.3); border-left:3mm solid var(--sys-azul-electrico); border-radius:1mm; padding:4mm 5mm; margin:5mm 0; break-inside:avoid; page-break-inside:avoid; }
 .informe-a4 .callout p { font-size:10pt; }
-.informe-a4 .timeline { display:grid; grid-template-columns:repeat(6,1fr); gap:3mm; margin-top:6mm; position:relative; }
-.informe-a4 .timeline::before { content:''; position:absolute; top:3.5mm; left:8%; right:8%; height:0.5mm; background:rgba(33,150,243,0.25); }
-.informe-a4 .tl-item { text-align:center; position:relative; }
+.informe-a4 .callout-green { background:rgba(39,174,96,0.06); border:0.3mm solid rgba(39,174,96,0.3); border-left:3mm solid var(--sys-verde); border-radius:1mm; padding:4mm 5mm; margin:5mm 0; break-inside:avoid; page-break-inside:avoid; }
+.informe-a4 .callout-green p { font-size:10pt; }
+.informe-a4 .tl-h { display:grid; grid-template-columns:repeat(6,1fr); gap:3mm; margin-top:6mm; position:relative; }
+.informe-a4 .tl-h::before { content:''; position:absolute; top:3.5mm; left:8%; right:8%; height:0.5mm; background:rgba(33,150,243,0.25); }
+.informe-a4 .tl-step { text-align:center; position:relative; break-inside:avoid; page-break-inside:avoid; }
 .informe-a4 .tl-dot { width:7mm; height:7mm; border-radius:50%; background:var(--sys-azul-electrico); margin:0 auto 3mm; border:1mm solid #fff; position:relative; z-index:1; box-shadow:0 0 0 0.5mm rgba(33,150,243,0.3); }
-.informe-a4 .tl-week { font-size:7pt; font-weight:700; letter-spacing:1pt; text-transform:uppercase; color:var(--sys-azul-electrico); margin-bottom:2mm; }
-.informe-a4 .tl-item h3 { font-size:9pt; font-weight:700; margin-bottom:1.5mm; }
-.informe-a4 .tl-item p { font-size:8pt; color:#4a5a6a; line-height:1.45; }
-.informe-a4 .circuitos { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:4mm 0; }
-.informe-a4 .circuito { background:var(--sys-offwhite); border-left:2.5mm solid var(--sys-azul-electrico); border-radius:1mm; padding:4mm 4.5mm; }
-.informe-a4 .circuito h3 { font-size:10.5pt; margin-bottom:2mm; }
-.informe-a4 .circuito .circuito-hoy { font-size:8.5pt; color:var(--sys-gris-neutro); margin:0 0 2.5mm; line-height:1.4; }
-.informe-a4 .circuito .circuito-hoy strong { color:#2a3a4a; }
-.informe-a4 .circuito ul { list-style:none; }
-.informe-a4 .circuito li { font-size:9pt; line-height:1.5; color:#2a3a4a; padding-left:3.5mm; position:relative; margin-bottom:1.5mm; }
-.informe-a4 .circuito li::before { content:''; position:absolute; left:0; top:2.2mm; width:1.8mm; height:1.8mm; background:var(--sys-azul-electrico); border-radius:0.3mm; }
-.informe-a4 .cover { padding:22mm 20mm; }
-.informe-a4 .cover .logo-vert { height:28mm; margin-bottom:auto; display:block; }
-.informe-a4 .cover .eyebrow-cover { font-size:9pt; font-weight:700; letter-spacing:3pt; text-transform:uppercase; color:var(--sys-celeste); margin-bottom:6mm; }
+.informe-a4 .tl-step .week { font-size:7pt; font-weight:700; letter-spacing:1pt; text-transform:uppercase; color:var(--sys-azul-electrico); margin-bottom:2mm; }
+.informe-a4 .tl-step h3 { font-size:9pt; font-weight:700; margin-bottom:1.5mm; }
+.informe-a4 .tl-step p { font-size:8pt; color:#4a5a6a; line-height:1.45; }
+.informe-a4 .fix-grid { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:4mm 0; }
+.informe-a4 .fix { background:linear-gradient(180deg,#fff 0%,#f7f9fb 100%); border:0.3mm solid #e2e8f0; border-top:2mm solid var(--sys-azul-electrico); border-radius:1mm; padding:4mm 4.5mm; break-inside:avoid; page-break-inside:avoid; }
+.informe-a4 .fix h3 { font-size:10.5pt; margin-bottom:2mm; display:flex; align-items:baseline; gap:1.5mm; flex-wrap:wrap; }
+.informe-a4 .fix .badge { font-size:7.5pt; font-weight:700; color:var(--sys-rojo); background:rgba(230,57,70,0.08); padding:0.5mm 2mm; border-radius:0.6mm; }
+.informe-a4 .fix .badge.warn { color:var(--sys-naranja); background:rgba(243,156,18,0.08); }
+.informe-a4 .fix .badge.ok { color:var(--sys-verde); background:rgba(39,174,96,0.08); }
+.informe-a4 .fix .hoy { font-size:8.5pt; color:var(--sys-gris-neutro); margin:0 0 2.5mm; line-height:1.4; }
+.informe-a4 .fix .hoy strong { color:#2a3a4a; }
+.informe-a4 .fix ul { list-style:none; }
+.informe-a4 .fix li { font-size:9pt; line-height:1.5; color:#2a3a4a; padding-left:3.5mm; position:relative; margin-bottom:1.5mm; }
+.informe-a4 .fix li::before { content:''; position:absolute; left:0; top:2.2mm; width:1.8mm; height:1.8mm; background:var(--sys-azul-electrico); border-radius:0.3mm; }
+.informe-a4 .cover { padding:22mm 16mm; }
+.informe-a4 .cover .logo-vert { height:26mm; margin-bottom:auto; display:block; }
+.informe-a4 .cover .eyebrow-cover { font-size:9pt; font-weight:700; letter-spacing:3pt; text-transform:uppercase; color:var(--sys-azul-electrico); margin-bottom:6mm; }
 .informe-a4 .cover h1 { margin-bottom:8mm; }
 .informe-a4 .cover .client { font-size:18pt; font-weight:700; color:var(--sys-celeste); margin-bottom:2mm; }
 .informe-a4 .cover .cuit { font-size:10pt; color:rgba(255,255,255,0.5); margin-bottom:10mm; }
 .informe-a4 .cover .meta { font-size:9pt; color:rgba(255,255,255,0.55); line-height:2; }
+.informe-a4 .cover .gauge-cover { margin-top:8mm; max-width:60mm; }
 .informe-a4 .circle { position:absolute; border-radius:50%; border:1px solid var(--sys-celeste); opacity:0.06; pointer-events:none; }
 .informe-a4 .c1 { width:130mm; height:130mm; top:-40mm; right:-50mm; }
 .informe-a4 .c2 { width:90mm; height:90mm; bottom:-30mm; left:-35mm; }
-.informe-a4 .backcover { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:22mm 20mm; }
-.informe-a4 .backcover .logo-vert { height:28mm; margin-bottom:10mm; }
+.informe-a4 .backcover { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:22mm 16mm; }
+.informe-a4 .backcover .logo-vert { height:26mm; margin-bottom:10mm; }
 .informe-a4 .backcover .firma { font-size:22pt; font-weight:800; letter-spacing:-0.5pt; color:#fff; margin-bottom:10mm; }
 .informe-a4 .backcover .contact { font-size:9pt; color:rgba(255,255,255,0.6); line-height:2; }
 .informe-a4 ul.clean { list-style:none; }
@@ -353,7 +424,6 @@ exports[`informe render mixto (#19 R5, R11) > snapshot estable variante mixta 1`
 .informe-a4 [contenteditable="true"] { outline:1px dashed var(--sys-azul-electrico); outline-offset:2px; min-width:1em; display:inline-block; }
 .informe-a4 [data-field].informe-field-error { outline:2px solid var(--sys-rojo); }
 @media print {
-  .informe-a4 .stat { box-shadow:none; border:0.3mm solid rgba(0,0,0,0.1); border-top:2mm solid var(--sys-azul-electrico); }
   .informe-a4 .informe-loom { display:none; }
 }
 </style>
@@ -368,6 +438,17 @@ exports[`informe render mixto (#19 R5, R11) > snapshot estable variante mixta 1`
     <div style="height:8mm"></div>
     <div class="client">Fixture Form Técnico SA</div>
     <div class="cuit">CUIT 30-12345678-9</div>
+    
+  <div class="gauge-cover" data-canonical="gauge">
+    <svg viewBox="0 0 200 112" style="width:100%; display:block;">
+      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="var(--sys-naranja)" stroke-width="14" stroke-linecap="round" stroke-dasharray="105.6 251.4"/>
+      <text x="100" y="84" text-anchor="middle" font-family="Montserrat,Arial" font-weight="800" font-size="46" fill="var(--sys-naranja)" letter-spacing="-1">42</text>
+      <text x="100" y="104" text-anchor="middle" font-family="Montserrat,Arial" font-weight="600" font-size="12" fill="rgba(255,255,255,0.45)">de 100</text>
+    </svg>
+    <div class="gauge-badge" style="color:var(--sys-naranja); background:rgba(255,255,255,0.08);">REGULAR</div>
+    <div class="gauge-label">Índice ERP general</div>
+  </div>
     <div class="meta">Módulos relevados: ventas, stock<br>8 de junio de 2026 · Sistema: Tango Gestión</div>
   </div>
 </section>
@@ -415,34 +496,43 @@ exports[`informe render mixto (#19 R5, R11) > snapshot estable variante mixta 1`
 <section class="page">
   <div class="eyebrow">02 · Hallazgos por área (IT)</div>
   <h2>Qué encontramos en infraestructura y seguridad</h2>
-  <table>
-    <tr><th style="width:42%">Área</th><th class="num" style="width:14%">Score</th><th style="width:14%">Doc.</th><th style="width:16%">Controles</th><th style="width:14%">Madurez</th></tr>
-    <tr><td>Inventario de activos / hardware</td><td class="num"><span class="dot red"></span><span class="score-pill" data-canonical="score">20</span></td><td><span data-field="hallazgos.circuitos.0.doc">Parcial</span></td><td><span data-field="hallazgos.circuitos.0.controles">No</span></td><td><span data-field="hallazgos.circuitos.0.madurez">Manual</span></td></tr>
-<tr><td>Software / licencias</td><td class="num"><span class="dot green"></span><span class="score-pill" data-canonical="score">100</span></td><td><span data-field="hallazgos.circuitos.1.doc">Parcial</span></td><td><span data-field="hallazgos.circuitos.1.controles">No</span></td><td><span data-field="hallazgos.circuitos.1.madurez">Manual</span></td></tr>
-<tr><td>Gestión de datos</td><td class="num"><span class="dot orange"></span><span class="score-pill" data-canonical="score">55</span></td><td><span data-field="hallazgos.circuitos.2.doc">Parcial</span></td><td><span data-field="hallazgos.circuitos.2.controles">No</span></td><td><span data-field="hallazgos.circuitos.2.madurez">Manual</span></td></tr>
-  </table>
-  <div style="height:14mm"></div>
+  <p class="muted">Cada área se evaluó en tres dimensiones: proceso documentado, controles internos y madurez operativa.</p>
+  <div class="score-list">
+    <div class="score-row r">
+      <div class="score-info"><div class="name">Inventario de activos / hardware</div><div class="detail"><span data-field="hallazgos.circuitos.0.doc">Parcial</span> · <span data-field="hallazgos.circuitos.0.controles">No</span> · <span data-field="hallazgos.circuitos.0.madurez">Manual</span> · <span data-canonical="norma">CIS 1 · NIST: Identify</span></div></div>
+      <div class="score-right"><div class="bar"><i style="width:20%"></i></div><div class="score-val" data-canonical="score">20</div></div>
+    </div>
+
+    <div class="score-row g">
+      <div class="score-info"><div class="name">Software / licencias</div><div class="detail"><span data-field="hallazgos.circuitos.1.doc">Parcial</span> · <span data-field="hallazgos.circuitos.1.controles">No</span> · <span data-field="hallazgos.circuitos.1.madurez">Manual</span> · <span data-canonical="norma">CIS 2 · NIST: Identify</span></div></div>
+      <div class="score-right"><div class="bar"><i style="width:100%"></i></div><div class="score-val" data-canonical="score">100</div></div>
+    </div>
+
+    <div class="score-row o">
+      <div class="score-info"><div class="name">Gestión de datos</div><div class="detail"><span data-field="hallazgos.circuitos.2.doc">Parcial</span> · <span data-field="hallazgos.circuitos.2.controles">No</span> · <span data-field="hallazgos.circuitos.2.madurez">Manual</span> · <span data-canonical="norma">CIS 3 · NIST: Protect</span></div></div>
+      <div class="score-right"><div class="bar"><i style="width:55%"></i></div><div class="score-val" data-canonical="score">55</div></div>
+    </div></div>
+  <div style="height:8mm"></div>
   <h3>Lectura transversal</h3>
   <ul class="clean"><li><strong><span data-field="hallazgos.lectura_transversal.0.titulo">Controles manuales</span>.</strong> <span data-field="hallazgos.lectura_transversal.0.detalle">Dependencia de planillas en IT y ERP.</span></li>
 <li><strong><span data-field="hallazgos.lectura_transversal.1.titulo">Sin documentación</span>.</strong> <span data-field="hallazgos.lectura_transversal.1.detalle">Procedimientos ausentes en ambos dominios.</span></li>
 <li><strong><span data-field="hallazgos.lectura_transversal.2.titulo">Datos dispersos</span>.</strong> <span data-field="hallazgos.lectura_transversal.2.detalle">Información fuera de los sistemas.</span></li></ul>
+  <div class="legend" data-metodologia="it">Los valores de este informe se evalúan contra CIS Controls v8 y el NIST Cybersecurity Framework. El estado de fin de vida del hardware se mide por los ciclos de vida de cada fabricante (HPE, Lenovo, Dell).</div>
   <div class="footer"><img src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_horizontal_b.png" alt="SyS"><span class="pagenum">03</span></div>
 </section>
 <section class="page">
   <div class="eyebrow">03 · Hallazgos por circuito (ERP)</div>
   <h2>Qué encontramos en los circuitos del ERP</h2>
-  <table>
-    <tr><th style="width:42%">Circuito</th><th class="num" style="width:14%">Score</th><th style="width:14%">Doc.</th><th style="width:16%">Controles</th><th style="width:14%">Madurez</th></tr>
-    
-  </table>
+  <p class="muted">Cada circuito se evaluó en tres dimensiones: proceso documentado, controles internos y madurez operativa.</p>
+  <div class="score-list"></div>
   <div class="footer"><img src="https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/sys_horizontal_b.png" alt="SyS"><span class="pagenum">04</span></div>
 </section>
 <section class="page">
   <div class="eyebrow">04 · Mejoras prioritarias por área</div>
   <h2>Lo que tu infraestructura necesita<br>y hoy no tiene</h2>
-  <p style="font-size:9.5pt; color:var(--sys-gris-neutro);"><span data-field="dia_a_dia.intro">No hace falta desarrollo a medida: la funcionalidad ya está en el producto.</span></p>
+  <p class="muted"><span data-field="dia_a_dia.intro">No hace falta desarrollo a medida: la funcionalidad ya está en el producto.</span></p>
   <div style="height:4mm"></div>
-  <div class="circuitos"><div class="circuito"><h3>Inventario de activos / hardware — hoy <span data-canonical="score">20</span>/100</h3><p class="circuito-hoy"><strong>Hoy:</strong> <span data-field="dia_a_dia.circuitos.0.hoy">área IT sin monitoreo formal</span></p><ul><li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.0.nombre">Inventario centralizado</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.0.que_resuelve">visibilidad de activos en toda la red</span>.</li>
+  <div class="fix-grid"><div class="fix"><h3>Inventario de activos / hardware <span class="badge">hoy <span data-canonical="score">20</span>/100</span></h3><div class="hoy"><strong>Hoy:</strong> <span data-field="dia_a_dia.circuitos.0.hoy">área IT sin monitoreo formal</span></div><ul><li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.0.nombre">Inventario centralizado</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.0.que_resuelve">visibilidad de activos en toda la red</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.1.nombre">Política de backups 3-2-1</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.1.que_resuelve">recuperación ante ransomware</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.0.funcionalidades.2.nombre">Segmentación de red</span></strong>: <span data-field="dia_a_dia.circuitos.0.funcionalidades.2.que_resuelve">contención de incidentes</span>.</li></ul></div></div>
   <div style="height:4mm"></div><div class="callout"><p><span data-field="dia_a_dia.callout_transversal">Para la dirección — Tango Live: informes en línea.</span></p></div>
@@ -451,10 +541,10 @@ exports[`informe render mixto (#19 R5, R11) > snapshot estable variante mixta 1`
 <section class="page">
   <div class="eyebrow">05 · Riesgos priorizados</div>
   <h2>Qué está en juego si esto sigue igual</h2>
-  <p style="color:var(--sys-gris-neutro); font-size:9.5pt;"><span data-field="riesgos.intro">Los riesgos surgen directamente de los hallazgos del relevamiento.</span></p>
-  <div style="height:5mm"></div>
+  <p class="muted"><span data-field="riesgos.intro">Los riesgos surgen directamente de los hallazgos del relevamiento.</span></p>
   <div class="risks">
     <div class="risk">
+      <div class="wm">1</div>
       <div class="n">Riesgo 1</div>
       <h3><span data-field="riesgos.items.0.titulo">Riesgo operativo 1</span></h3>
       <p><span data-field="riesgos.items.0.descripcion">Puede generar pérdidas si no se corrige.</span></p>
@@ -462,6 +552,7 @@ exports[`informe render mixto (#19 R5, R11) > snapshot estable variante mixta 1`
     </div>
 
     <div class="risk">
+      <div class="wm">2</div>
       <div class="n">Riesgo 2</div>
       <h3><span data-field="riesgos.items.1.titulo">Riesgo operativo 2</span></h3>
       <p><span data-field="riesgos.items.1.descripcion">Puede generar pérdidas si no se corrige.</span></p>
@@ -469,6 +560,7 @@ exports[`informe render mixto (#19 R5, R11) > snapshot estable variante mixta 1`
     </div>
 
     <div class="risk">
+      <div class="wm">3</div>
       <div class="n">Riesgo 3</div>
       <h3><span data-field="riesgos.items.2.titulo">Riesgo operativo 3</span></h3>
       <p><span data-field="riesgos.items.2.descripcion">Puede generar pérdidas si no se corrige.</span></p>
@@ -476,6 +568,7 @@ exports[`informe render mixto (#19 R5, R11) > snapshot estable variante mixta 1`
     </div>
 
     <div class="risk">
+      <div class="wm">4</div>
       <div class="n">Riesgo 4</div>
       <h3><span data-field="riesgos.items.3.titulo">Riesgo operativo 4</span></h3>
       <p><span data-field="riesgos.items.3.descripcion">Puede generar pérdidas si no se corrige.</span></p>
@@ -487,10 +580,9 @@ exports[`informe render mixto (#19 R5, R11) > snapshot estable variante mixta 1`
   <div class="eyebrow">06 · Recomendación y plan</div>
   <h2><span data-field="plan.titulo">Plan de ordenamiento de circuitos</span></h2>
   <div class="callout"><p><span data-field="plan.descripcion">Se ordenan los circuitos críticos y quedan controles funcionando.</span></p></div>
-  <div style="height:7mm"></div>
-  <div class="timeline" style="grid-template-columns:repeat(3,1fr);"><div class="tl-item"><div class="tl-dot"></div><div class="tl-week"><span data-field="plan.etapas.0.semana">Sem 1</span></div><h3><span data-field="plan.etapas.0.titulo">Relevamiento</span></h3><p><span data-field="plan.etapas.0.descripcion">Circuitos objetivo.</span></p></div>
-<div class="tl-item"><div class="tl-dot"></div><div class="tl-week"><span data-field="plan.etapas.1.semana">Sem 2–3</span></div><h3><span data-field="plan.etapas.1.titulo">Parametrización</span></h3><p><span data-field="plan.etapas.1.descripcion">Módulos y permisos.</span></p></div>
-<div class="tl-item"><div class="tl-dot"></div><div class="tl-week"><span data-field="plan.etapas.2.semana">Sem 4</span></div><h3><span data-field="plan.etapas.2.titulo">Capacitación</span></h3><p><span data-field="plan.etapas.2.descripcion">Usuarios clave.</span></p></div></div>
+  <div class="tl-h" style="grid-template-columns:repeat(3,1fr);"><div class="tl-step"><div class="tl-dot"></div><div class="week"><span data-field="plan.etapas.0.semana">Sem 1</span></div><h3><span data-field="plan.etapas.0.titulo">Relevamiento</span></h3><p><span data-field="plan.etapas.0.descripcion">Circuitos objetivo.</span></p></div>
+<div class="tl-step"><div class="tl-dot"></div><div class="week"><span data-field="plan.etapas.1.semana">Sem 2–3</span></div><h3><span data-field="plan.etapas.1.titulo">Parametrización</span></h3><p><span data-field="plan.etapas.1.descripcion">Módulos y permisos.</span></p></div>
+<div class="tl-step"><div class="tl-dot"></div><div class="week"><span data-field="plan.etapas.2.semana">Sem 4</span></div><h3><span data-field="plan.etapas.2.titulo">Capacitación</span></h3><p><span data-field="plan.etapas.2.descripcion">Usuarios clave.</span></p></div></div>
   <div style="height:7mm"></div>
   <div class="twocol">
     <div><h3>Qué necesitamos de Fixture Form Técnico SA</h3><ul class="clean"><li><span data-field="plan.necesitamos_cliente.0">Referente del proyecto designado.</span></li>
@@ -503,9 +595,9 @@ exports[`informe render mixto (#19 R5, R11) > snapshot estable variante mixta 1`
 <section class="page">
   <div class="eyebrow">07 · Qué cambia en el día a día</div>
   <h2>Lo que Tango ya sabe hacer<br>y hoy no se usa</h2>
-  <p style="font-size:9.5pt; color:var(--sys-gris-neutro);"><span data-field="dia_a_dia.intro">No hace falta desarrollo a medida: la funcionalidad ya está en el producto.</span></p>
+  <p class="muted"><span data-field="dia_a_dia.intro">No hace falta desarrollo a medida: la funcionalidad ya está en el producto.</span></p>
   <div style="height:4mm"></div>
-  <div class="circuitos"><div class="circuito"><h3>Administración y parametrización — hoy <span data-canonical="score">—</span>/100</h3><p class="circuito-hoy"><strong>Hoy:</strong> <span data-field="dia_a_dia.circuitos.1.hoy">circuito ERP operado a mano</span></p><ul><li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.0.nombre">Perfiles de usuario</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.0.que_resuelve">limita qué puede hacer cada puesto</span>.</li>
+  <div class="fix-grid"><div class="fix"><h3>Administración y parametrización </h3><div class="hoy"><strong>Hoy:</strong> <span data-field="dia_a_dia.circuitos.1.hoy">circuito ERP operado a mano</span></div><ul><li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.0.nombre">Perfiles de usuario</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.0.que_resuelve">limita qué puede hacer cada puesto</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.1.nombre">Tango Live</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.1.que_resuelve">informes en línea sin planillas</span>.</li>
 <li><strong><span data-field="dia_a_dia.circuitos.1.funcionalidades.2.nombre">Circuito de autorización</span></strong>: <span data-field="dia_a_dia.circuitos.1.funcionalidades.2.que_resuelve">controles antes de emitir comprobantes</span>.</li></ul></div></div>
   <div style="height:4mm"></div><div class="callout"><p><span data-field="dia_a_dia.callout_transversal">Para la dirección — Tango Live: informes en línea.</span></p></div>

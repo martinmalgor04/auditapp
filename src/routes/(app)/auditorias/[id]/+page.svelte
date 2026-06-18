@@ -7,6 +7,7 @@
   import InformeSection from '$lib/components/informe/informe-section.svelte';
   import PsysCard from '$lib/components/auditoria/psys-card.svelte';
   import AuditBundleActions from '$lib/components/backoffice/audit-bundle-actions.svelte';
+  import { formatVisita } from '$lib/informe/visita';
 
   let { data, form }: { data: PageData; form?: { error?: string; url?: string } } = $props();
 
@@ -14,6 +15,25 @@
     data.audit.scheduledAt
       ? new Date(data.audit.scheduledAt).toISOString().slice(0, 10)
       : ''
+  );
+
+  const startedAtValue = $derived(
+    data.startedAt
+      ? new Date(data.startedAt).toISOString().slice(0, 16)
+      : ''
+  );
+
+  const finishedAtValue = $derived(
+    data.finishedAt
+      ? new Date(data.finishedAt).toISOString().slice(0, 16)
+      : ''
+  );
+
+  const visita = $derived(
+    formatVisita({
+      startedAt: data.startedAt ? new Date(data.startedAt) : null,
+      finishedAt: data.finishedAt ? new Date(data.finishedAt) : null
+    })
   );
 </script>
 
@@ -95,6 +115,12 @@
     />
   {/if}
 
+  {#if visita}
+    <section class="sys-card-pad">
+      <p class="text-sm text-sys-medio">{visita.rangoStr}</p>
+    </section>
+  {/if}
+
   {#if !data.readonly}
     <form method="POST" action="?/update" class="space-y-5">
       <label class="block space-y-1.5">
@@ -123,6 +149,18 @@
       </label>
 
       <CabSectionForm items={data.audit.cabItems} />
+
+      {#if data.canEditVisita}
+        <label class="block space-y-1.5">
+          <span class="sys-field-label">Hora de inicio del relevamiento</span>
+          <input type="datetime-local" name="startedAt" value={startedAtValue} class="sys-field" />
+        </label>
+
+        <label class="block space-y-1.5">
+          <span class="sys-field-label">Hora de fin del relevamiento</span>
+          <input type="datetime-local" name="finishedAt" value={finishedAtValue} class="sys-field" />
+        </label>
+      {/if}
 
       <button type="submit" class="sys-btn-primary">Guardar cambios</button>
     </form>

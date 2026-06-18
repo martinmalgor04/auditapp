@@ -41,6 +41,8 @@ export type AuditDetail = {
   assignedTechId: string | null;
   techName: string | null;
   scheduledAt: Date | null;
+  startedAt: Date | null;
+  finishedAt: Date | null;
   publicToken: string | null;
   templateIds: string[];
   archivedAt: Date | null;
@@ -68,6 +70,8 @@ type AuditRow = {
   assigned_tech_id: string | null;
   tech_name: string | null;
   scheduled_at: Date | null;
+  started_at: Date | null;
+  finished_at: Date | null;
   public_token: string | null;
   template_ids: string[];
   archived_at: Date | null;
@@ -325,8 +329,8 @@ export async function getAuditById(auditId: string, viewer?: AppUser): Promise<A
   const [row] = await sql<AuditRow[]>`
     SELECT
       a.id, a.name, a.empresa_id AS client_id, c.razon_social, a.types, a.segment, a.status,
-      a.assigned_tech_id, u.name AS tech_name, a.scheduled_at, a.public_token,
-      a.template_ids, a.archived_at
+      a.assigned_tech_id, u.name AS tech_name, a.scheduled_at, a.started_at, a.finished_at,
+      a.public_token, a.template_ids, a.archived_at
     FROM audit a
     JOIN empresa c ON c.id = a.empresa_id
     LEFT JOIN app_user u ON u.id = a.assigned_tech_id
@@ -417,6 +421,8 @@ export async function getAuditById(auditId: string, viewer?: AppUser): Promise<A
     assignedTechId: row.assigned_tech_id,
     techName: row.tech_name,
     scheduledAt: row.scheduled_at,
+    startedAt: row.started_at,
+    finishedAt: row.finished_at,
     publicToken: row.public_token,
     templateIds: row.template_ids,
     archivedAt: row.archived_at,
@@ -461,6 +467,19 @@ export async function updateAudit(
   }
 
   await sql.begin(async (tx) => {
+    const newStartedAt =
+      data.startedAt !== undefined
+        ? data.startedAt !== null
+          ? new Date(data.startedAt)
+          : null
+        : undefined;
+    const newFinishedAt =
+      data.finishedAt !== undefined
+        ? data.finishedAt !== null
+          ? new Date(data.finishedAt)
+          : null
+        : undefined;
+
     await tx`
       UPDATE audit
       SET
@@ -469,7 +488,9 @@ export async function updateAudit(
         template_ids = ${templateIds}::uuid[],
         segment = COALESCE(${data.segment ?? null}, segment),
         assigned_tech_id = COALESCE(${data.assignedTechId ?? null}::uuid, assigned_tech_id),
-        scheduled_at = COALESCE(${data.scheduledAt ? new Date(data.scheduledAt) : null}, scheduled_at)
+        scheduled_at = COALESCE(${data.scheduledAt ? new Date(data.scheduledAt) : null}, scheduled_at),
+        started_at = ${newStartedAt !== undefined ? newStartedAt : sql`started_at`},
+        finished_at = ${newFinishedAt !== undefined ? newFinishedAt : sql`finished_at`}
       WHERE id = ${auditId}
     `;
 

@@ -48,14 +48,26 @@ export const createAuditSchema = z
 
 export type CreateAuditInput = z.infer<typeof createAuditSchema>;
 
-export const updateAuditSchema = z.object({
-  clientId: z.string().uuid().optional(),
-  types: z.array(auditTypeSchema).min(1).optional(),
-  segment: auditSegmentSchema.optional(),
-  assignedTechId: z.string().uuid().optional(),
-  scheduledAt: z.string().min(1).optional(),
-  cabResponses: z.record(z.unknown()).optional()
-});
+export const updateAuditSchema = z
+  .object({
+    clientId: z.string().uuid().optional(),
+    types: z.array(auditTypeSchema).min(1).optional(),
+    segment: auditSegmentSchema.optional(),
+    assignedTechId: z.string().uuid().optional(),
+    scheduledAt: z.string().min(1).optional(),
+    cabResponses: z.record(z.unknown()).optional(),
+    startedAt: z.string().datetime({ offset: true }).nullable().optional(),
+    finishedAt: z.string().datetime({ offset: true }).nullable().optional()
+  })
+  .refine(
+    (data) => {
+      if (data.startedAt && data.finishedAt) {
+        return new Date(data.finishedAt) >= new Date(data.startedAt);
+      }
+      return true;
+    },
+    { message: 'La hora de fin no puede ser anterior a la de inicio' }
+  );
 
 export type UpdateAuditInput = z.infer<typeof updateAuditSchema>;
 

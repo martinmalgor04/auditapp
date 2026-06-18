@@ -198,23 +198,24 @@ exports[`informe web render (R10, R11, R12) > snapshot estable del render web 1`
   </div>
   <div class="score-list">
     <div class="score-row reveal r">
-      <div class="score-info"><div class="name">Inventario de activos / hardware</div><div class="detail">Parcial · No · Manual</div></div>
+      <div class="score-info"><div class="name">Inventario de activos / hardware</div><div class="detail">Parcial · No · Manual · <span data-canonical="norma">CIS 1 · NIST: Identify</span></div></div>
       <div class="score-right"><div class="bar"><i data-w="20"></i></div><div class="score-val" data-canonical="score">20</div></div>
     </div>
 
     <div class="score-row reveal g">
-      <div class="score-info"><div class="name">Software / licencias</div><div class="detail">Parcial · No · Manual</div></div>
+      <div class="score-info"><div class="name">Software / licencias</div><div class="detail">Parcial · No · Manual · <span data-canonical="norma">CIS 2 · NIST: Identify</span></div></div>
       <div class="score-right"><div class="bar"><i data-w="100"></i></div><div class="score-val" data-canonical="score">100</div></div>
     </div>
 
     <div class="score-row reveal o">
-      <div class="score-info"><div class="name">Gestión de datos</div><div class="detail">Parcial · No · Manual</div></div>
+      <div class="score-info"><div class="name">Gestión de datos</div><div class="detail">Parcial · No · Manual · <span data-canonical="norma">CIS 3 · NIST: Protect</span></div></div>
       <div class="score-right"><div class="bar"><i data-w="55"></i></div><div class="score-val" data-canonical="score">55</div></div>
     </div>
   </div>
   <div class="legend reveal"><strong>Controles manuales.</strong> El 80% de los circuitos depende de planillas.</div>
 <div class="legend reveal"><strong>Sin documentación.</strong> No hay procedimientos escritos.</div>
 <div class="legend reveal"><strong>Datos dispersos.</strong> La información operativa vive fuera del sistema.</div>
+  <div class="legend reveal" data-metodologia="it">Los valores se evalúan contra CIS Controls v8 y el NIST Cybersecurity Framework. El estado de fin de vida del hardware se mide por los ciclos de vida de cada fabricante (HPE, Lenovo, Dell).</div>
 </section>
 
 <section class="wrap">

@@ -68,15 +68,41 @@ describe('informe render (R12, R16, R25, R26, R30)', () => {
     expect(gaugeDasharray(42)).toBe('105.6 251.4');
   });
 
-  it('dots de semáforo coherentes con indexToSemaphore', () => {
-    expect(html).toMatch(/dot (red|green|orange)/);
+  it('#30 hallazgos como score-rows del lenguaje web-v2 con barra estática (R1, R7)', () => {
+    // El restyle reemplaza la tabla por score-rows con barra de ancho inline.
+    expect(html).toContain('class="score-row');
+    expect(html).toMatch(/score-row (r|o|g)/);
+    expect(html).toMatch(/class="bar"><i style="width:\d+%"/);
+    expect(html).toContain('class="score-val" data-canonical="score"');
+    // Ya no hay tabla de hallazgos.
+    expect(html).not.toContain('<table>');
   });
 
-  it('los scores de la tabla salen del snapshot canónico, no del draft', () => {
+  it('#30 piezas visuales web-v2 presentes: hero oscura, risk/fix cards, timeline, footer branded (R1)', () => {
+    expect(html).toContain('page dark cover');
+    expect(html).toContain('class="risks"');
+    expect(html).toContain('class="risk"');
+    expect(html).toContain('class="fix-grid"');
+    expect(html).toContain('class="fix"');
+    expect(html).toContain('class="tl-h"');
+    expect(html).toContain('class="tl-step"');
+    expect(html).toContain('class="footer"');
+    // Gauge estático en la portada oscura (sin JS), canónico.
+    expect(html).toContain('class="gauge-cover" data-canonical="gauge"');
+  });
+
+  it('los scores de los hallazgos salen del snapshot canónico, no del draft (R22)', () => {
     const scored = golden.sections.filter((s) => s.score !== null);
     for (const sec of scored) {
       expect(html).toContain(`data-canonical="score">${sec.score}<`);
     }
+  });
+
+  it('#30 @page A4 portrait 14mm 16mm + break-inside:avoid en cards (R5)', () => {
+    expect(html).toContain('@page { size: A4 portrait; margin: 14mm 16mm; }');
+    expect(html).toMatch(/\.score-row\b[^}]*break-inside:avoid/);
+    expect(html).toMatch(/\.risk\b[^}]*break-inside:avoid/);
+    expect(html).toMatch(/\.fix\b[^}]*break-inside:avoid/);
   });
 
   it('usa variables --sys-* y regla @media print (R26)', () => {

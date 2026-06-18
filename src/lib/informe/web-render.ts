@@ -13,11 +13,13 @@ import {
   type InformeRenderModel,
   type RenderSemaphore
 } from './render';
+import { hayNorma, hayAlgunaNormaIt } from './render-shared';
 import {
   WEB_GAUGE_CIRCUMFERENCE,
   webGaugeBadgeLabel,
   webGaugeColorVar
 } from '$lib/client/informe/web-effects';
+import { formatDuracion } from './visita';
 
 const e = escapeHtml;
 
@@ -209,7 +211,7 @@ function renderHero(model: InformeRenderModel): string {
       ${model.cliente.cuit ? `<div class="cuit">CUIT ${e(model.cliente.cuit)}</div>` : ''}
     </div>
     ${renderGauge(model)}
-    <div class="meta">Relevamiento presencial · ${e(model.fechaInforme)} · Sistema auditado: ${e(model.sistema)}</div>
+    <div class="meta">Relevamiento presencial · ${e(model.fechaInforme)} · Sistema auditado: ${e(model.sistema)}</div>${model.visita ? `\n    <div class="visita-meta">Visita: ${e(model.visita.inicio)}–${e(model.visita.fin)} · ${e(formatDuracion(model.visita.duracionMin))}</div>` : ''}
   </div>
   <div class="scroll-cue" aria-hidden="true"></div>
 </section>`;
@@ -293,7 +295,13 @@ function renderHallazgos(model: InformeRenderModel): string {
       const title = sec?.title ?? c.seccion_code;
       const score = sec?.score ?? null;
       const rowClass = sec?.semaforo ? semaphoreToRowClass(sec.semaforo) : 'o';
-      const detail = `${e(c.doc)} · ${e(c.controles)} · ${e(c.madurez)}`;
+      // #30 R8–R10: norma inline solo si hayNorma (domain it + standardRef CIS…);
+      // sin norma → nada (ni separador, ni data-canonical="norma").
+      const normaPiece =
+        sec && hayNorma(sec)
+          ? ` · <span data-canonical="norma">${e(sec.standardRef!.trim())}</span>`
+          : '';
+      const detail = `${e(c.doc)} · ${e(c.controles)} · ${e(c.madurez)}${normaPiece}`;
       return `
     <div class="score-row reveal ${rowClass}">
       <div class="score-info"><div class="name">${e(title)}</div><div class="detail">${detail}</div></div>
@@ -309,6 +317,13 @@ function renderHallazgos(model: InformeRenderModel): string {
     )
     .join('\n');
 
+  // #30 R10/R11: metodología IT solo cuando hay contexto IT (it/mixta) Y al menos
+  // una sección con norma real; si ninguna sección tiene norma, no se muestra.
+  const metodologia =
+    (model.tipoAuditoria === 'it' || model.tipoAuditoria === 'mixta') && hayAlgunaNormaIt(model)
+      ? `\n  <div class="legend reveal" data-metodologia="it">Los valores se evalúan contra CIS Controls v8 y el NIST Cybersecurity Framework. El estado de fin de vida del hardware se mide por los ciclos de vida de cada fabricante (HPE, Lenovo, Dell).</div>`
+      : '';
+
   return `
 <section class="wrap">
   <div class="reveal">
@@ -318,7 +333,7 @@ function renderHallazgos(model: InformeRenderModel): string {
   </div>
   <div class="score-list">${rows}
   </div>
-  ${legend}
+  ${legend}${metodologia}
 </section>`;
 }
 

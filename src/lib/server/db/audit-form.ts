@@ -213,6 +213,26 @@ export async function batchUpsertFormResponses(
   }
 }
 
+export async function stampStartedAt(auditId: string): Promise<void> {
+  const sql = getSql();
+  await sql`
+    UPDATE audit
+    SET started_at = now()
+    WHERE id = ${auditId}
+      AND started_at IS NULL
+  `;
+}
+
+export async function stampFinishedAt(auditId: string): Promise<void> {
+  const sql = getSql();
+  await sql`
+    UPDATE audit
+    SET finished_at = now()
+    WHERE id = ${auditId}
+      AND finished_at IS NULL
+  `;
+}
+
 export async function setAuditStatus(auditId: string, status: AuditStatus): Promise<void> {
   const sql = getSql();
   await sql`UPDATE audit SET status = ${status} WHERE id = ${auditId}`;

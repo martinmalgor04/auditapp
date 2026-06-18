@@ -52,11 +52,17 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
   const hasApprovedReport = reports.some((r) => r.status === 'aprobado');
 
+  const canEditVisita =
+    isAdmin || (audit.assignedTechId !== null && audit.assignedTechId === user.id);
+
   return {
     audit,
     technicians,
     readonly,
     isAdmin,
+    canEditVisita,
+    startedAt: audit.startedAt?.toISOString() ?? null,
+    finishedAt: audit.finishedAt?.toISOString() ?? null,
     briefingUrl: audit.publicToken ? getBriefingUrl(audit.publicToken) : null,
     reports: reports.map((r) => ({
       report_id: r.id,
@@ -86,13 +92,18 @@ export const actions: Actions = {
       const formData = await request.formData();
       const cabResponses = parseCabResponses(formData);
 
+      const startedAtRaw = formData.get('startedAt');
+      const finishedAtRaw = formData.get('finishedAt');
+
       await updateAudit(
         params.id,
         {
           segment: String(formData.get('segment') ?? '') as 'A' | 'B' | 'C',
           assignedTechId: String(formData.get('assignedTechId') ?? ''),
           scheduledAt: String(formData.get('scheduledAt') ?? ''),
-          cabResponses
+          cabResponses,
+          startedAt: startedAtRaw !== null ? String(startedAtRaw) || null : undefined,
+          finishedAt: finishedAtRaw !== null ? String(finishedAtRaw) || null : undefined
         },
         user.id
       );

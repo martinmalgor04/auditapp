@@ -5,8 +5,9 @@ import {
   LOGO_VERT_URL,
   renderCircuitoCards,
   renderCierrePage,
+  renderGaugeCover,
   renderGaugeErp,
-  renderHallazgosFilas,
+  renderHallazgosScoreRows,
   renderLecturaTransversal,
   renderLoomBlock,
   renderPlanPage,
@@ -18,6 +19,7 @@ import {
   type InformeRenderModel,
   type RenderOptions
 } from './render-shared';
+import { formatDuracion } from './visita';
 
 export function renderInformeErp(model: InformeRenderModel, opts: RenderOptions = {}): string {
   const d = model.draft;
@@ -33,7 +35,8 @@ export function renderInformeErp(model: InformeRenderModel, opts: RenderOptions 
     <div style="height:8mm"></div>
     <div class="client">${e(model.cliente.razonSocial)}</div>
     <div class="cuit">${model.cliente.cuit ? `CUIT ${e(model.cliente.cuit)}` : ''}</div>
-    <div class="meta">Módulos relevados: ${e(modulosLista)}<br>${e(model.fechaInforme)} · Sistema: ${e(model.sistema)}</div>
+    ${renderGaugeCover(model)}
+    <div class="meta">Módulos relevados: ${e(modulosLista)}<br>${e(model.fechaInforme)} · Sistema: ${e(model.sistema)}</div>${model.visita ? `\n    <p class="visita">${e(model.visita.inicio)}–${e(model.visita.fin)} · ${e(formatDuracion(model.visita.duracionMin))}</p>` : ''}
   </div>
 </section>`;
 
@@ -66,18 +69,16 @@ export function renderInformeErp(model: InformeRenderModel, opts: RenderOptions 
   ${footer('02')}
 </section>`;
 
-  const filas = renderHallazgosFilas(model, opts);
+  const filas = renderHallazgosScoreRows(model, opts);
   const lectura = renderLecturaTransversal(d, opts);
 
   const hallazgos = `
 <section class="page">
   <div class="eyebrow">02 · Hallazgos por circuito</div>
   <h2>Qué encontramos, sección por sección</h2>
-  <table>
-    <tr><th style="width:42%">Circuito</th><th class="num" style="width:14%">Score</th><th style="width:14%">Doc.</th><th style="width:16%">Controles</th><th style="width:14%">Madurez</th></tr>
-    ${filas}
-  </table>
-  <div style="height:14mm"></div>
+  <p class="muted">Cada circuito se evaluó en tres dimensiones: proceso documentado, controles internos y madurez operativa.</p>
+  <div class="score-list">${filas}</div>
+  <div style="height:8mm"></div>
   <h3>Lectura transversal</h3>
   <ul class="clean">${lectura}</ul>
   ${footer('03')}
@@ -89,9 +90,9 @@ export function renderInformeErp(model: InformeRenderModel, opts: RenderOptions 
 <section class="page">
   <div class="eyebrow">05 · Qué cambia en el día a día</div>
   <h2>Lo que Tango ya sabe hacer<br>y hoy no se usa</h2>
-  <p style="font-size:9.5pt; color:var(--sys-gris-neutro);">${field('dia_a_dia.intro', d.dia_a_dia.intro, opts)}</p>
+  <p class="muted">${field('dia_a_dia.intro', d.dia_a_dia.intro, opts)}</p>
   <div style="height:4mm"></div>
-  <div class="circuitos">${circuitoCards}</div>
+  <div class="fix-grid">${circuitoCards}</div>
   ${
     d.dia_a_dia.callout_transversal !== null
       ? `<div style="height:4mm"></div><div class="callout"><p>${field('dia_a_dia.callout_transversal', d.dia_a_dia.callout_transversal, opts)}</p></div>`

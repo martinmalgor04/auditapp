@@ -26,6 +26,7 @@
 
   let activeSectionId = $state(data.sections[0]?.id ?? '');
   let saveState = $state<SaveIndicatorState>('idle');
+  let savingItemId = $state<string | null>(null);
   let saveErrorMessage = $state<string | null>(null);
   let sectionScores = $state(
     new Map(data.sections.map((s) => [s.id, { sectionId: s.id, score: s.liveScore, band: s.scoreBand }]))
@@ -57,6 +58,8 @@
     onStateChange: (s, message) => {
       saveState = s;
       saveErrorMessage = s === 'error' ? (message ?? 'Error al guardar') : null;
+      // Limpiar savingItemId cuando el estado vuelve a idle (R1, R10)
+      if (s === 'idle') savingItemId = null;
     },
     onSectionScore: (sectionId, score, band) => {
       sectionScores = updateScoreFromApi(sectionScores, sectionId, score, band);
@@ -78,6 +81,8 @@
     na = false,
     notes?: string | null
   ) {
+    // T9 — Registrar qué ítem se está guardando (R1, R10)
+    savingItemId = itemId;
     const payload = { itemId, value, na, notes };
     const outcome = await autosave.patch(payload);
     if (outcome === 'offline') {
@@ -309,6 +314,7 @@
             notes: item.notes,
             na: item.na
           }}
+          saveState={savingItemId === item.id ? saveState : 'idle'}
           onchange={(value) => void saveItem(item.id, item.fieldType, value, item.na, item.notes)}
           onnchange={(na) => void saveItem(item.id, item.fieldType, null, na, item.notes)}
           onnoteschange={(notes) => void saveItem(item.id, item.fieldType, item.value, item.na, notes)}

@@ -61,9 +61,11 @@ export type InformeRenderModel = {
     score: number | null;
     semaforo: RenderSemaphore | null;
     domain: 'it' | 'erp';
+    standardRef: string | null;
   }>;
   draft: RenderClientDraft;
   loomUrl: string | null;
+  visita?: { inicio: string; fin: string; duracionMin: number };
 };
 
 export function escapeHtml(value: string): string {
@@ -95,6 +97,28 @@ export function gaugeDasharray(valor: number): string {
   return `${(valor * 2.514).toFixed(1)} 251.4`;
 }
 
+/**
+ * #30 R8/R12 — norma condicional. Una sección "tiene norma" si y solo si su
+ * dominio es IT y su `standardRef` (sin espacios) empieza con `CIS`. Reutilizado
+ * por el PDF (render-it/mixto) y por web-render.ts para mantener la regla idéntica
+ * en ambos medios. Nunca lanza (trim + startsWith). En ERP siempre false → la
+ * nomenclatura interna (`ERP B1`…) nunca se publica.
+ */
+export function hayNorma(sec: InformeRenderModel['secciones'][number]): boolean {
+  return sec.domain === 'it' && (sec.standardRef ?? '').trim().startsWith('CIS');
+}
+
+/** Clase de score-row del lenguaje web-v2: r = rojo · o = naranja · g = verde. */
+export function semaphoreToRowClass(s: RenderSemaphore): 'r' | 'o' | 'g' {
+  return s === 'green' ? 'g' : s === 'amber' ? 'o' : 'r';
+}
+
+/** Ancho estático (clamp 0–100) para la barra del score-row en print (R7). */
+export function clampScore(score: number | null): number {
+  if (score === null) return 0;
+  return Math.max(0, Math.min(100, score));
+}
+
 export type RenderOptions = { editMode?: boolean };
 
 export function field(path: string, text: string, opts: RenderOptions, tag = 'span'): string {
@@ -114,86 +138,120 @@ export function tipoLabel(tipo: InformeRenderModel['tipoAuditoria']): string {
   return 'ERP';
 }
 
+/**
+ * #30 — Hoja de estilo del PDF A4 restilada al lenguaje visual del web-v2
+ * (contrato `docs/plantillas/informe/ref_informe_a4_v2_plastipress.html`),
+ * conservando la estructura paginada `.informe-a4 .page` (R1, R7b). Portada
+ * oscura con gauge + `page-break-after:always`, páginas blancas, score-rows con
+ * barra estática, riesgos en cards con borde rojo, día a día en `.fix` cards,
+ * plan en timeline, footer branded. `@page A4 portrait 14mm 16mm` (R5) y
+ * `break-inside:avoid` en cards/riesgos/fix/score-row (R5, R6). Sin `.ps-*`
+ * (propuestas comerciales) — fuera del informe.
+ */
 export const STYLE = `
 <style>
+@page { size: A4 portrait; margin: 14mm 16mm; }
 .informe-a4 { font-family: var(--sys-font, 'Montserrat', Arial, sans-serif); color: var(--sys-azul-profundo); }
 .informe-a4 *, .informe-a4 *::before, .informe-a4 *::after { margin:0; padding:0; box-sizing:border-box; }
 .informe-a4 .page {
   width:210mm; min-height:297mm; max-height:297mm; overflow:hidden;
-  padding:18mm 18mm 14mm; font-size:10.5pt; line-height:1.55;
+  padding:16mm 16mm 14mm; font-size:10.5pt; line-height:1.55;
   color:var(--sys-azul-profundo); background:#fff;
-  border-top:6mm solid var(--sys-azul-electrico); position:relative; page-break-after:always;
+  border-top:4px solid var(--sys-azul-electrico); position:relative; page-break-after:always;
   margin:0 auto;
 }
 .informe-a4 .page:last-of-type { page-break-after:auto; }
 .informe-a4 .page.dark {
-  background: var(--sys-bg-gradient, linear-gradient(135deg, var(--sys-azul-profundo) 0%, #0F2238 60%, var(--sys-azul-medio) 100%));
+  background: var(--sys-bg-gradient, linear-gradient(160deg, var(--sys-azul-profundo) 0%, #0d2035 55%, var(--sys-azul-medio) 100%));
   color:#fff; display:flex; flex-direction:column; justify-content:space-between;
 }
-.informe-a4 .page.dark .eyebrow { color: var(--sys-celeste); }
-.informe-a4 .eyebrow { font-size:8pt; font-weight:700; letter-spacing:3pt; text-transform:uppercase; color:var(--sys-azul-electrico); margin-bottom:5mm; }
+.informe-a4 .page.dark .eyebrow { color: var(--sys-azul-electrico); }
+.informe-a4 .eyebrow { font-size:8pt; font-weight:700; letter-spacing:3pt; text-transform:uppercase; color:var(--sys-azul-electrico); margin-bottom:4mm; display:flex; align-items:center; gap:2.5mm; }
+.informe-a4 .eyebrow::before { content:''; display:block; width:7mm; height:0.5mm; background:linear-gradient(90deg,var(--sys-azul-electrico),var(--sys-celeste)); flex-shrink:0; }
+.informe-a4 .page.dark .eyebrow::before, .informe-a4 .eyebrow-cover::before { display:none; }
 .informe-a4 h1 { font-size:34pt; font-weight:800; letter-spacing:-1pt; line-height:1.05; color:#fff; }
-.informe-a4 h2 { font-size:20pt; font-weight:800; letter-spacing:-0.5pt; color:var(--sys-azul-profundo); margin-bottom:5mm; line-height:1.1; }
+.informe-a4 h2 { font-size:17pt; font-weight:800; letter-spacing:-0.5pt; color:var(--sys-azul-profundo); margin-bottom:4mm; line-height:1.1; }
 .informe-a4 h3 { font-size:13pt; font-weight:700; color:var(--sys-azul-profundo); margin-bottom:3mm; }
-.informe-a4 p { font-size:10.5pt; line-height:1.6; }
-.informe-a4 .lead { font-size:12pt; line-height:1.6; color:var(--sys-azul-medio); }
+.informe-a4 p { font-size:10pt; line-height:1.6; }
+.informe-a4 .lead { font-size:11.5pt; line-height:1.6; color:var(--sys-azul-medio); }
+.informe-a4 .muted { color:var(--sys-gris-neutro); font-size:9.5pt; }
 .informe-a4 strong { font-weight:700; }
-.informe-a4 .footer { position:absolute; bottom:10mm; left:18mm; right:18mm; display:flex; justify-content:space-between; align-items:center; padding-top:3mm; border-top:0.3mm solid rgba(0,0,0,0.1); }
-.informe-a4 .footer img { height:7mm; }
+.informe-a4 .hl { color:var(--sys-azul-electrico); }
+.informe-a4 .footer { position:absolute; bottom:10mm; left:16mm; right:16mm; display:flex; justify-content:space-between; align-items:center; padding-top:3mm; border-top:0.3mm solid rgba(0,0,0,0.1); }
+.informe-a4 .footer img { height:6mm; }
 .informe-a4 .pagenum { font-size:8pt; font-weight:700; color:var(--sys-gris-neutro); letter-spacing:1pt; }
-.informe-a4 .stats { display:flex; gap:5mm; margin:6mm 0; }
-.informe-a4 .stat { flex:1; background:#fff; border-top:2mm solid var(--sys-azul-electrico); border-radius:1mm; padding:5mm 4mm 6mm; box-shadow:0 2mm 6mm rgba(0,0,0,0.08); text-align:center; }
-.informe-a4 .stat .num { font-size:38pt; font-weight:800; letter-spacing:-1pt; color:var(--sys-azul-electrico); line-height:1; }
+.informe-a4 .stats { display:flex; gap:4mm; margin:5mm 0; }
+.informe-a4 .stat { flex:1; background:linear-gradient(180deg,#fff 0%,#f7f9fb 100%); border:0.3mm solid #d8dee6; border-top:2mm solid var(--sys-azul-electrico); border-radius:1mm; padding:5mm 3mm 6mm; text-align:center; break-inside:avoid; page-break-inside:avoid; }
+.informe-a4 .stat .num { font-size:30pt; font-weight:800; letter-spacing:-1pt; color:var(--sys-azul-electrico); line-height:1; }
 .informe-a4 .stat .num.bad { color:var(--sys-rojo); }
 .informe-a4 .stat .num.warn { color:var(--sys-naranja); }
 .informe-a4 .stat .num.ok { color:var(--sys-verde); }
-.informe-a4 .stat .num small { font-size:16pt; color:var(--sys-gris-neutro); font-weight:600; }
-.informe-a4 .stat .label { font-size:8.5pt; font-weight:600; color:var(--sys-azul-medio); margin-top:2mm; line-height:1.35; }
-.informe-a4 table { width:100%; border-collapse:collapse; margin-top:4mm; font-size:9.5pt; }
-.informe-a4 th { text-align:left; font-size:8pt; font-weight:700; letter-spacing:1pt; text-transform:uppercase; color:var(--sys-gris-neutro); border-bottom:0.5mm solid rgba(0,0,0,0.12); padding:2.5mm 3mm; }
-.informe-a4 th.num, .informe-a4 td.num { text-align:center; }
-.informe-a4 tr:nth-child(even) td { background:var(--sys-offwhite); }
-.informe-a4 td { padding:2.8mm 3mm; border-bottom:0.3mm solid rgba(0,0,0,0.06); }
-.informe-a4 .dot { display:inline-block; width:2.2mm; height:2.2mm; border-radius:50%; margin-right:1.5mm; vertical-align:middle; }
-.informe-a4 .dot.red { background:var(--sys-rojo); }
-.informe-a4 .dot.orange { background:var(--sys-naranja); }
-.informe-a4 .dot.green { background:var(--sys-verde); }
-.informe-a4 .score-pill { font-weight:800; font-size:10pt; }
+.informe-a4 .stat .num small { font-size:14pt; color:var(--sys-gris-neutro); font-weight:600; }
+.informe-a4 .stat .label { font-size:8pt; font-weight:600; color:var(--sys-azul-medio); margin-top:2mm; line-height:1.35; }
+.informe-a4 .gauge-badge { display:inline-block; font-size:7.5pt; font-weight:700; letter-spacing:1.5pt; text-transform:uppercase; padding:1mm 3mm; border-radius:1mm; margin-top:2mm; }
+.informe-a4 .gauge-label { font-size:8pt; font-weight:600; letter-spacing:1pt; text-transform:uppercase; color:var(--sys-gris-neutro); margin-top:2mm; }
+.informe-a4 .page.dark .gauge-label { color:rgba(255,255,255,0.65); }
+.informe-a4 .score-list { display:flex; flex-direction:column; gap:2.5mm; margin-top:4mm; }
+.informe-a4 .score-row { display:grid; grid-template-columns:1fr auto; gap:5mm; align-items:center; background:#f7f9fb; border:0.3mm solid #e2e8f0; border-left:1mm solid transparent; border-radius:1mm; padding:3mm 4mm; break-inside:avoid; page-break-inside:avoid; }
+.informe-a4 .score-row.r { border-left-color:var(--sys-rojo); }
+.informe-a4 .score-row.o { border-left-color:var(--sys-naranja); }
+.informe-a4 .score-row.g { border-left-color:var(--sys-verde); }
+.informe-a4 .score-info .name { font-size:9.5pt; font-weight:600; color:var(--sys-azul-profundo); }
+.informe-a4 .score-info .detail { font-size:8pt; color:#6b7c8f; margin-top:1mm; }
+.informe-a4 .score-right { display:flex; align-items:center; gap:3.5mm; }
+.informe-a4 .bar { width:34mm; height:1.6mm; background:#e2e8f0; border-radius:1mm; overflow:hidden; }
+.informe-a4 .bar i { display:block; height:100%; border-radius:1mm; }
+.informe-a4 .score-row.r .bar i { background:var(--sys-rojo); }
+.informe-a4 .score-row.o .bar i { background:var(--sys-naranja); }
+.informe-a4 .score-row.g .bar i { background:var(--sys-verde); }
+.informe-a4 .score-val { font-size:12pt; font-weight:800; font-variant-numeric:tabular-nums; min-width:9mm; text-align:right; }
+.informe-a4 .score-row.r .score-val { color:var(--sys-rojo); }
+.informe-a4 .score-row.o .score-val { color:var(--sys-naranja); }
+.informe-a4 .score-row.g .score-val { color:var(--sys-verde); }
+.informe-a4 .legend { margin-top:4mm; font-size:9pt; color:#6b7c8f; border-left:0.5mm solid rgba(0,0,0,0.12); padding-left:3.5mm; }
+.informe-a4 .legend + .legend { margin-top:2.5mm; }
 .informe-a4 .risks { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin-top:4mm; }
-.informe-a4 .risk { background:var(--sys-offwhite); border-left:3mm solid var(--sys-rojo); border-radius:1mm; padding:4mm 4.5mm; }
-.informe-a4 .risk .n { font-size:7.5pt; font-weight:700; letter-spacing:2pt; text-transform:uppercase; color:var(--sys-rojo); margin-bottom:2mm; }
-.informe-a4 .risk h3 { font-size:11pt; margin-bottom:2mm; }
-.informe-a4 .risk p { font-size:9pt; color:#3a4a5a; line-height:1.5; }
-.informe-a4 .risk .ev { font-size:8pt; color:var(--sys-gris-neutro); margin-top:2.5mm; }
-.informe-a4 .callout { background:rgba(33,150,243,0.06); border:0.3mm solid rgba(33,150,243,0.3); border-left:3mm solid var(--sys-azul-electrico); border-radius:1mm; padding:4mm 5mm; margin:5mm 0; }
+.informe-a4 .risk { background:#f7f9fb; border:0.3mm solid #e2e8f0; border-left:3mm solid var(--sys-rojo); border-radius:1mm; padding:4mm 4.5mm; position:relative; overflow:hidden; break-inside:avoid; page-break-inside:avoid; }
+.informe-a4 .risk .wm { position:absolute; right:-1mm; top:-4mm; font-size:36pt; font-weight:800; color:rgba(16,42,67,0.05); line-height:1; pointer-events:none; }
+.informe-a4 .risk .n { font-size:7.5pt; font-weight:700; letter-spacing:2pt; text-transform:uppercase; color:var(--sys-rojo); margin-bottom:2mm; position:relative; }
+.informe-a4 .risk h3 { font-size:11pt; margin-bottom:2mm; position:relative; }
+.informe-a4 .risk p { font-size:9pt; color:#3a4a5a; line-height:1.5; position:relative; }
+.informe-a4 .risk .ev { font-size:8pt; color:var(--sys-gris-neutro); margin-top:2.5mm; font-style:italic; position:relative; }
+.informe-a4 .callout { background:rgba(33,150,243,0.06); border:0.3mm solid rgba(33,150,243,0.3); border-left:3mm solid var(--sys-azul-electrico); border-radius:1mm; padding:4mm 5mm; margin:5mm 0; break-inside:avoid; page-break-inside:avoid; }
 .informe-a4 .callout p { font-size:10pt; }
-.informe-a4 .timeline { display:grid; grid-template-columns:repeat(6,1fr); gap:3mm; margin-top:6mm; position:relative; }
-.informe-a4 .timeline::before { content:''; position:absolute; top:3.5mm; left:8%; right:8%; height:0.5mm; background:rgba(33,150,243,0.25); }
-.informe-a4 .tl-item { text-align:center; position:relative; }
+.informe-a4 .callout-green { background:rgba(39,174,96,0.06); border:0.3mm solid rgba(39,174,96,0.3); border-left:3mm solid var(--sys-verde); border-radius:1mm; padding:4mm 5mm; margin:5mm 0; break-inside:avoid; page-break-inside:avoid; }
+.informe-a4 .callout-green p { font-size:10pt; }
+.informe-a4 .tl-h { display:grid; grid-template-columns:repeat(6,1fr); gap:3mm; margin-top:6mm; position:relative; }
+.informe-a4 .tl-h::before { content:''; position:absolute; top:3.5mm; left:8%; right:8%; height:0.5mm; background:rgba(33,150,243,0.25); }
+.informe-a4 .tl-step { text-align:center; position:relative; break-inside:avoid; page-break-inside:avoid; }
 .informe-a4 .tl-dot { width:7mm; height:7mm; border-radius:50%; background:var(--sys-azul-electrico); margin:0 auto 3mm; border:1mm solid #fff; position:relative; z-index:1; box-shadow:0 0 0 0.5mm rgba(33,150,243,0.3); }
-.informe-a4 .tl-week { font-size:7pt; font-weight:700; letter-spacing:1pt; text-transform:uppercase; color:var(--sys-azul-electrico); margin-bottom:2mm; }
-.informe-a4 .tl-item h3 { font-size:9pt; font-weight:700; margin-bottom:1.5mm; }
-.informe-a4 .tl-item p { font-size:8pt; color:#4a5a6a; line-height:1.45; }
-.informe-a4 .circuitos { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:4mm 0; }
-.informe-a4 .circuito { background:var(--sys-offwhite); border-left:2.5mm solid var(--sys-azul-electrico); border-radius:1mm; padding:4mm 4.5mm; }
-.informe-a4 .circuito h3 { font-size:10.5pt; margin-bottom:2mm; }
-.informe-a4 .circuito .circuito-hoy { font-size:8.5pt; color:var(--sys-gris-neutro); margin:0 0 2.5mm; line-height:1.4; }
-.informe-a4 .circuito .circuito-hoy strong { color:#2a3a4a; }
-.informe-a4 .circuito ul { list-style:none; }
-.informe-a4 .circuito li { font-size:9pt; line-height:1.5; color:#2a3a4a; padding-left:3.5mm; position:relative; margin-bottom:1.5mm; }
-.informe-a4 .circuito li::before { content:''; position:absolute; left:0; top:2.2mm; width:1.8mm; height:1.8mm; background:var(--sys-azul-electrico); border-radius:0.3mm; }
-.informe-a4 .cover { padding:22mm 20mm; }
-.informe-a4 .cover .logo-vert { height:28mm; margin-bottom:auto; display:block; }
-.informe-a4 .cover .eyebrow-cover { font-size:9pt; font-weight:700; letter-spacing:3pt; text-transform:uppercase; color:var(--sys-celeste); margin-bottom:6mm; }
+.informe-a4 .tl-step .week { font-size:7pt; font-weight:700; letter-spacing:1pt; text-transform:uppercase; color:var(--sys-azul-electrico); margin-bottom:2mm; }
+.informe-a4 .tl-step h3 { font-size:9pt; font-weight:700; margin-bottom:1.5mm; }
+.informe-a4 .tl-step p { font-size:8pt; color:#4a5a6a; line-height:1.45; }
+.informe-a4 .fix-grid { display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:4mm 0; }
+.informe-a4 .fix { background:linear-gradient(180deg,#fff 0%,#f7f9fb 100%); border:0.3mm solid #e2e8f0; border-top:2mm solid var(--sys-azul-electrico); border-radius:1mm; padding:4mm 4.5mm; break-inside:avoid; page-break-inside:avoid; }
+.informe-a4 .fix h3 { font-size:10.5pt; margin-bottom:2mm; display:flex; align-items:baseline; gap:1.5mm; flex-wrap:wrap; }
+.informe-a4 .fix .badge { font-size:7.5pt; font-weight:700; color:var(--sys-rojo); background:rgba(230,57,70,0.08); padding:0.5mm 2mm; border-radius:0.6mm; }
+.informe-a4 .fix .badge.warn { color:var(--sys-naranja); background:rgba(243,156,18,0.08); }
+.informe-a4 .fix .badge.ok { color:var(--sys-verde); background:rgba(39,174,96,0.08); }
+.informe-a4 .fix .hoy { font-size:8.5pt; color:var(--sys-gris-neutro); margin:0 0 2.5mm; line-height:1.4; }
+.informe-a4 .fix .hoy strong { color:#2a3a4a; }
+.informe-a4 .fix ul { list-style:none; }
+.informe-a4 .fix li { font-size:9pt; line-height:1.5; color:#2a3a4a; padding-left:3.5mm; position:relative; margin-bottom:1.5mm; }
+.informe-a4 .fix li::before { content:''; position:absolute; left:0; top:2.2mm; width:1.8mm; height:1.8mm; background:var(--sys-azul-electrico); border-radius:0.3mm; }
+.informe-a4 .cover { padding:22mm 16mm; }
+.informe-a4 .cover .logo-vert { height:26mm; margin-bottom:auto; display:block; }
+.informe-a4 .cover .eyebrow-cover { font-size:9pt; font-weight:700; letter-spacing:3pt; text-transform:uppercase; color:var(--sys-azul-electrico); margin-bottom:6mm; }
 .informe-a4 .cover h1 { margin-bottom:8mm; }
 .informe-a4 .cover .client { font-size:18pt; font-weight:700; color:var(--sys-celeste); margin-bottom:2mm; }
 .informe-a4 .cover .cuit { font-size:10pt; color:rgba(255,255,255,0.5); margin-bottom:10mm; }
 .informe-a4 .cover .meta { font-size:9pt; color:rgba(255,255,255,0.55); line-height:2; }
+.informe-a4 .cover .gauge-cover { margin-top:8mm; max-width:60mm; }
 .informe-a4 .circle { position:absolute; border-radius:50%; border:1px solid var(--sys-celeste); opacity:0.06; pointer-events:none; }
 .informe-a4 .c1 { width:130mm; height:130mm; top:-40mm; right:-50mm; }
 .informe-a4 .c2 { width:90mm; height:90mm; bottom:-30mm; left:-35mm; }
-.informe-a4 .backcover { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:22mm 20mm; }
-.informe-a4 .backcover .logo-vert { height:28mm; margin-bottom:10mm; }
+.informe-a4 .backcover { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:22mm 16mm; }
+.informe-a4 .backcover .logo-vert { height:26mm; margin-bottom:10mm; }
 .informe-a4 .backcover .firma { font-size:22pt; font-weight:800; letter-spacing:-0.5pt; color:#fff; margin-bottom:10mm; }
 .informe-a4 .backcover .contact { font-size:9pt; color:rgba(255,255,255,0.6); line-height:2; }
 .informe-a4 ul.clean { list-style:none; }
@@ -207,7 +265,6 @@ export const STYLE = `
 .informe-a4 [contenteditable="true"] { outline:1px dashed var(--sys-azul-electrico); outline-offset:2px; min-width:1em; display:inline-block; }
 .informe-a4 [data-field].informe-field-error { outline:2px solid var(--sys-rojo); }
 @media print {
-  .informe-a4 .stat { box-shadow:none; border:0.3mm solid rgba(0,0,0,0.1); border-top:2mm solid var(--sys-azul-electrico); }
   .informe-a4 .informe-loom { display:none; }
 }
 </style>`;
@@ -225,6 +282,12 @@ export function renderStatCircuitos(model: InformeRenderModel, opts: RenderOptio
   return `<div class="num warn" data-field="resumen.circuitos_con_controles">${cc.n}<small>&nbsp;de&nbsp;${cc.total}</small></div>`;
 }
 
+const SEM_BADGE_LABEL: Record<RenderSemaphore, string> = {
+  green: 'BUENO',
+  amber: 'REGULAR',
+  red: 'CRÍTICO'
+};
+
 export function renderGaugeSvg(
   index: IndexWithSemaphore | null | undefined,
   label: string
@@ -241,6 +304,30 @@ export function renderGaugeSvg(
       <text x="100" y="104" text-anchor="middle" font-family="Montserrat,Arial" font-weight="600" font-size="12" fill="#908A82">de 100</text>
     </svg>
     <div class="label">${label}</div>`;
+}
+
+/**
+ * #30 R7 — Gauge estático para la portada oscura (lenguaje web-v2). El arco se
+ * pinta directo con `stroke-dasharray` derivado del índice canónico (sin JS), el
+ * número del centro es fijo y se agrega un badge por semáforo. No editable.
+ */
+export function renderGaugeCover(model: InformeRenderModel): string {
+  const indices = model.draft.indices;
+  const index = indices.erp ?? indices.it ?? null;
+  if (!index) return '';
+  const label = indices.erp ? 'Índice ERP general' : 'Índice IT general';
+  const color = SEM_COLOR[index.semaforo];
+  return `
+  <div class="gauge-cover" data-canonical="gauge">
+    <svg viewBox="0 0 200 112" style="width:100%; display:block;">
+      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="${color}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${gaugeDasharray(index.valor)}"/>
+      <text x="100" y="84" text-anchor="middle" font-family="Montserrat,Arial" font-weight="800" font-size="46" fill="${color}" letter-spacing="-1">${index.valor}</text>
+      <text x="100" y="104" text-anchor="middle" font-family="Montserrat,Arial" font-weight="600" font-size="12" fill="rgba(255,255,255,0.45)">de 100</text>
+    </svg>
+    <div class="gauge-badge" style="color:${color}; background:rgba(255,255,255,0.08);">${SEM_BADGE_LABEL[index.semaforo]}</div>
+    <div class="gauge-label">${label}</div>
+  </div>`;
 }
 
 export function renderGaugeErp(model: InformeRenderModel): string {
@@ -275,7 +362,16 @@ export function domainForSeccionCode(
   return model.secciones.find((s) => s.code === seccionCode)?.domain ?? null;
 }
 
-export function renderHallazgosFilas(
+/**
+ * #30 R1/R7/R9/R10 — Hallazgos como `.score-row` del lenguaje web-v2 dentro de la
+ * estructura paginada A4. Cada circuito: nombre + línea `.detail`
+ * (Doc · Controles · Madurez), barra estática con ancho = score canónico (R7) y
+ * `.score-val`. La norma se agrega inline en `.detail` SOLO si `hayNorma(sec)`
+ * (R9); si no hay, no se emite `data-canonical="norma"` ni separador (R10) → no
+ * existe "columna Norma" que ocultar (R11). Doc/Controles/Madurez siguen siendo
+ * editables (`field()`); score/norma son canónicos, nunca editables (R20c).
+ */
+export function renderHallazgosScoreRows(
   model: InformeRenderModel,
   opts: RenderOptions,
   filterDomain?: 'it' | 'erp'
@@ -288,19 +384,53 @@ export function renderHallazgosFilas(
   });
 
   return circuitos
-    .map((c, i) => {
+    .map((c) => {
       const sec = sectionByCode.get(c.seccion_code);
       const title = sec?.title ?? c.seccion_code;
       const score = sec?.score ?? null;
-      const dot = sec?.semaforo ? semaphoreToDotClass(sec.semaforo) : null;
-      const scoreCell =
-        score !== null && dot !== null
-          ? `<span class="dot ${dot}"></span><span class="score-pill" data-canonical="score">${score}</span>`
-          : '<span class="score-pill" data-canonical="score">—</span>';
+      const rowClass = sec?.semaforo ? semaphoreToRowClass(sec.semaforo) : 'o';
       const idx = model.draft.hallazgos.circuitos.indexOf(c);
-      return `<tr><td>${e(title)}</td><td class="num">${scoreCell}</td><td>${field(`hallazgos.circuitos.${idx}.doc`, c.doc, opts)}</td><td>${field(`hallazgos.circuitos.${idx}.controles`, c.controles, opts)}</td><td>${field(`hallazgos.circuitos.${idx}.madurez`, c.madurez, opts)}</td></tr>`;
+      const normaPiece =
+        sec && hayNorma(sec)
+          ? ` · <span data-canonical="norma">${e(sec.standardRef!.trim())}</span>`
+          : '';
+      const detail =
+        `${field(`hallazgos.circuitos.${idx}.doc`, c.doc, opts)} · ` +
+        `${field(`hallazgos.circuitos.${idx}.controles`, c.controles, opts)} · ` +
+        `${field(`hallazgos.circuitos.${idx}.madurez`, c.madurez, opts)}${normaPiece}`;
+      return `
+    <div class="score-row ${rowClass}">
+      <div class="score-info"><div class="name">${e(title)}</div><div class="detail">${detail}</div></div>
+      <div class="score-right"><div class="bar"><i style="width:${clampScore(score)}%"></i></div><div class="score-val" data-canonical="score">${score ?? '—'}</div></div>
+    </div>`;
     })
     .join('\n');
+}
+
+/**
+ * Bloque de metodología IT (#30, ajusta #25): `.legend` (lenguaje web-v2) que
+ * declara SOLO el marco IT (CIS Controls v8 + NIST CSF + ciclos de vida de
+ * fabricante para EOL). El llamador lo emite solo en contexto `it`/`mixta` y
+ * cuando ≥1 sección IT tiene norma real (`hayNorma`), coherente con la norma
+ * condicional (R10/R11). No existe variante `erp` (sin nomenclatura interna).
+ */
+export function renderMetodologiaBlock(tipo: 'it' | 'mixta'): string {
+  void tipo;
+  return `<div class="legend" data-metodologia="it">Los valores de este informe se evalúan contra CIS Controls v8 y el NIST Cybersecurity Framework. El estado de fin de vida del hardware se mide por los ciclos de vida de cada fabricante (HPE, Lenovo, Dell).</div>`;
+}
+
+/**
+ * #30 — ¿hay al menos una sección IT con norma real renderable en los hallazgos
+ * de este modelo (filtrando por dominio si aplica)? Gobierna si se muestra el
+ * bloque de metodología IT (R10/R11): si ninguna sección tiene norma, no se
+ * muestra metodología.
+ */
+export function hayAlgunaNormaIt(model: InformeRenderModel): boolean {
+  const sectionByCode = sectionByCodeMap(model);
+  return model.draft.hallazgos.circuitos.some((c) => {
+    const sec = sectionByCode.get(c.seccion_code);
+    return sec !== undefined && hayNorma(sec);
+  });
 }
 
 export function renderLecturaTransversal(d: RenderClientDraft, opts: RenderOptions): string {
@@ -323,6 +453,7 @@ export function renderRiesgosPage(
     .map(
       (r, i) => `
     <div class="risk">
+      <div class="wm">${i + 1}</div>
       <div class="n">Riesgo ${i + 1}</div>
       <h3>${field(`riesgos.items.${i}.titulo`, r.titulo, opts)}</h3>
       <p>${field(`riesgos.items.${i}.descripcion`, r.descripcion, opts)}</p>
@@ -335,8 +466,7 @@ export function renderRiesgosPage(
 <section class="page">
   <div class="eyebrow">${eyebrow}</div>
   <h2>Qué está en juego si esto sigue igual</h2>
-  <p style="color:var(--sys-gris-neutro); font-size:9.5pt;">${field('riesgos.intro', d.riesgos.intro, opts)}</p>
-  <div style="height:5mm"></div>
+  <p class="muted">${field('riesgos.intro', d.riesgos.intro, opts)}</p>
   <div class="risks">${riesgoCards}</div>
   ${footer(pagenum)}
 </section>`;
@@ -352,7 +482,7 @@ export function renderPlanPage(
   const etapas = d.plan.etapas
     .map(
       (et, i) =>
-        `<div class="tl-item"><div class="tl-dot"></div><div class="tl-week">${field(`plan.etapas.${i}.semana`, et.semana, opts)}</div><h3>${field(`plan.etapas.${i}.titulo`, et.titulo, opts)}</h3><p>${field(`plan.etapas.${i}.descripcion`, et.descripcion, opts)}</p></div>`
+        `<div class="tl-step"><div class="tl-dot"></div><div class="week">${field(`plan.etapas.${i}.semana`, et.semana, opts)}</div><h3>${field(`plan.etapas.${i}.titulo`, et.titulo, opts)}</h3><p>${field(`plan.etapas.${i}.descripcion`, et.descripcion, opts)}</p></div>`
     )
     .join('\n');
 
@@ -368,8 +498,7 @@ export function renderPlanPage(
   <div class="eyebrow">${eyebrow}</div>
   <h2>${field('plan.titulo', d.plan.titulo, opts)}</h2>
   <div class="callout"><p>${field('plan.descripcion', d.plan.descripcion, opts)}</p></div>
-  <div style="height:7mm"></div>
-  <div class="timeline" style="grid-template-columns:repeat(${d.plan.etapas.length},1fr);">${etapas}</div>
+  <div class="tl-h" style="grid-template-columns:repeat(${d.plan.etapas.length},1fr);">${etapas}</div>
   <div style="height:7mm"></div>
   <div class="twocol">
     <div><h3>Qué necesitamos de ${e(model.cliente.razonSocial)}</h3><ul class="clean">${necesitamos}</ul></div>
@@ -431,11 +560,17 @@ export function renderCircuitoCards(
     .map((c) => {
       const sec = sectionByCode.get(c.seccion_code);
       const title = sec?.title ?? c.seccion_code;
-      const score = sec?.score !== null && sec?.score !== undefined ? sec.score : '—';
+      const score = sec?.score ?? null;
       const idx = model.draft.dia_a_dia.circuitos.indexOf(c);
+      const badgeClass =
+        sec?.semaforo === 'green' ? 'badge ok' : sec?.semaforo === 'amber' ? 'badge warn' : 'badge';
+      const badge =
+        score !== null
+          ? `<span class="${badgeClass}">hoy <span data-canonical="score">${score}</span>/100</span>`
+          : '';
       const hoyLine =
         c.hoy !== null && c.hoy !== undefined && c.hoy !== ''
-          ? `<p class="circuito-hoy"><strong>Hoy:</strong> ${field(`dia_a_dia.circuitos.${idx}.hoy`, c.hoy, opts)}</p>`
+          ? `<div class="hoy"><strong>Hoy:</strong> ${field(`dia_a_dia.circuitos.${idx}.hoy`, c.hoy, opts)}</div>`
           : '';
       const items = c.funcionalidades
         .map(
@@ -443,7 +578,7 @@ export function renderCircuitoCards(
             `<li><strong>${field(`dia_a_dia.circuitos.${idx}.funcionalidades.${j}.nombre`, f.nombre, opts)}</strong>: ${field(`dia_a_dia.circuitos.${idx}.funcionalidades.${j}.que_resuelve`, f.que_resuelve, opts)}.</li>`
         )
         .join('\n');
-      return `<div class="circuito"><h3>${e(title)} — hoy <span data-canonical="score">${score}</span>/100</h3>${hoyLine}<ul>${items}</ul></div>`;
+      return `<div class="fix"><h3>${e(title)} ${badge}</h3>${hoyLine}<ul>${items}</ul></div>`;
     })
     .join('\n');
 }

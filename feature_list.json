@@ -455,6 +455,109 @@
       ],
       "sdd": true,
       "status": "done"
+    },
+    {
+      "id": 25,
+      "name": "25_normas_informe",
+      "title": "Normas y metodología en el informe",
+      "description": "Exponer en el informe las normas/estándares que respaldan los valores del scoring. El dato ya existe pero no se muestra: cada sección tiene section.standard_ref (IT: 'CIS N · NIST: fase'; ERP: nomenclatura propia) y viaja hasta el JSON canónico (#09), pero se corta antes del render del informe (#14/#15). Agregar (1) un bloque de metodología en el informe que declare el marco usado — CIS Controls v8 + NIST Cybersecurity Framework para IT, ciclos de vida de fabricante (HPE/Lenovo/Dell) para EOL de hardware, buenas prácticas de control interno para circuitos ERP/Tango — y (2) la referencia de norma por sección en la tabla de hallazgos. Engancha en render-shared/model + render-erp/render-it/render-mixto; opcionalmente instruir al prompt de Claude (generate-report.ts) para que no invente normas sino que use standard_ref. No cambia el motor de scoring ni los umbrales.",
+      "source": "Solicitud operativa SyS (2026-06-17, Martín): que los informes digan qué normas usamos para los valores que damos. Data existente: section.standard_ref en seed/templates/*.json y canonical/schema.ts.",
+      "acceptance": [
+        "El informe incluye un bloque de metodología visible (portada o resumen) que declara el marco: CIS Controls v8 + NIST CSF para IT, ciclos de vida de fabricante para hardware, control interno para circuitos ERP",
+        "Cada sección relevada muestra su norma (standard_ref) en la tabla/listado de hallazgos del informe (IT con CIS/NIST; ERP con su referencia propia o 'control interno' cuando no haya norma externa)",
+        "El modelo de render se extiende para incluir standard_ref por sección sin romper los informes ya generados (snapshots ERP/IT existentes solo cambian por el agregado, de forma controlada)",
+        "Si el prompt de IA se modifica, la instrucción es usar standard_ref del canónico y nunca inventar una norma; el pipeline sigue funcionando sin contexto extra",
+        "Tests: el modelo de render expone standard_ref, el render muestra el bloque de metodología y la norma por sección, y snapshots actualizados pasan"
+      ],
+      "sdd": true,
+      "status": "done"
+    },
+    {
+      "id": 26,
+      "name": "26_feedback_inventario",
+      "title": "Feedback visual al guardar inventario (grilla)",
+      "description": "Hoy al guardar una fila de la grilla de inventario (field-table.svelte) el único feedback es el SaveIndicator global sticky arriba de todo, lejos del dedo y casi imperceptible en mobile; el técnico siente que 'no pasa nada'. Agregar micro-feedback local y discreto: el botón Guardar de la fila confirma con 'Guardado ✓' por ~1s y vuelve, más un flash sutil de fondo en la fila recién guardada. Nada de toasts ni overlays que tapen contenido. Reusa los estados existentes del autosave (saving/saved/error) para no inventar otra fuente de verdad. No cambia el modelo de datos ni el flujo de guardado.",
+      "source": "Solicitud operativa SyS (2026-06-17, Martín): al guardar inventario no hay feedback, parece que el click no hace nada. Componente: src/lib/components/form/fields/field-table.svelte; indicador: save-indicator.svelte.",
+      "acceptance": [
+        "Al guardar una fila de inventario, el botón de la fila confirma visualmente (p.ej. 'Guardado ✓') por ~1s y vuelve a su estado normal",
+        "La fila recién guardada muestra un flash de fondo sutil y breve, sin layout shift",
+        "Si el guardado falla, la fila refleja el error de forma local coherente con el SaveIndicator global (no se muestra 'guardado' en falso)",
+        "El feedback es no intrusivo: sin toasts, modales ni overlays que tapen el formulario",
+        "El feedback se deriva de los estados existentes del autosave; no se introduce una segunda fuente de verdad del estado de guardado",
+        "Tests: el componente refleja el estado de guardado de la fila (éxito y error) sin romper el guardado existente"
+      ],
+      "sdd": true,
+      "status": "done"
+    },
+    {
+      "id": 27,
+      "name": "27_hora_inicio_fin",
+      "title": "Hora de inicio y fin de la auditoría",
+      "description": "Agregar a toda auditoría la hora real de inicio y fin del relevamiento en campo, hoy inexistente (solo hay audit.scheduled_at programada y audit.closed_at de cierre). started_at se sella automáticamente cuando el técnico arranca el relevamiento (primera apertura/edición del form, no se pide a mano); finished_at al marcar 'Relevamiento completo'. Ambas editables por admin/técnico para corregir, y se muestran en el detalle de la auditoría y en el informe (rango y duración, p.ej. 'Visita: 14/06 09:30–11:15 · 1h 45m'). Migración SQL idempotente añade columnas started_at/finished_at a audit. Aplica a las 3 plantillas (no es un ítem de template, es metadato de la auditoría).",
+      "source": "Solicitud operativa SyS (2026-06-17, Martín): falta la hora de inicio y fin que hablamos, para todas las auditorías. Tabla audit en migrations/001_schema.sql; cierre en rutas /cierre.",
+      "acceptance": [
+        "Migración idempotente agrega audit.started_at y audit.finished_at (timestamptz, nullable)",
+        "started_at se sella automáticamente al iniciar el relevamiento (no se solicita manualmente) y no se sobreescribe si ya existe",
+        "finished_at se sella al marcar 'Relevamiento completo'; reabrir/editar no lo pisa salvo edición explícita",
+        "Ambas horas son editables por técnico/admin con guard de permisos; valores inválidos (fin < inicio) se rechazan con mensaje claro",
+        "El detalle de la auditoría y el informe muestran el rango y la duración calculada cuando ambos existen, y degradan limpio cuando falta alguno",
+        "Tests: sellado automático de inicio/fin, no-sobreescritura, edición con validación fin≥inicio, guards y render de duración"
+      ],
+      "sdd": true,
+      "status": "done"
+    },
+    {
+      "id": 28,
+      "name": "28_flujo_form_dinamico",
+      "title": "Form técnico más dinámico (chips de estado + salto a pendiente)",
+      "description": "Mejorar la dinámica del form técnico SIN rediseñarlo (se descartó el wizard y el modo una-pregunta-por-pantalla; decisión humana 2026-06-17). Sobre la estructura lineal actual (lista por secciones con nav y Anterior/Siguiente), agregar: (1) chip de estado por ítem — pendiente ○ / respondido ✓ / con observación ⚠ — para que el técnico vea de un vistazo qué falta; (2) botón 'ir al próximo pendiente' que saltea a la siguiente pregunta sin responder (dentro de la sección y a la siguiente sección con pendientes); (3) animación/semáforo del score por sección que reacciona al guardar. Reusa el cálculo de avance ya existente (% por sección) y el live-section-score. Mejora de UX de captura, no toca modelo de datos ni scoring.",
+      "source": "Solicitud operativa SyS (2026-06-17, Martín): el flujo de auditoría se siente poco dinámico. Decisión humana: mejorar el actual (chips + salto a pendiente + score animado), no rediseño total. Componentes: form/+page.svelte, section-nav.svelte, field-renderer.svelte, live-section-score.svelte.",
+      "acceptance": [
+        "Cada ítem muestra un chip de estado: pendiente, respondido y con observación (cuando hay nota/observación cargada), derivado del estado real de la respuesta",
+        "Existe una acción 'ir al próximo pendiente' que navega al siguiente ítem sin responder, dentro de la sección y saltando a la próxima sección con pendientes; si no quedan pendientes lo indica",
+        "El indicador de score por sección reacciona visualmente al guardar (transición/semáforo) usando el live-section-score existente, sin recalcular en cliente de forma divergente al server",
+        "La barra/indicador de progreso por sección refleja los chips (responded vs total) de forma consistente con el avance ya calculado",
+        "No se altera el modelo de datos, el autosave ni el scoring; la estructura por secciones se mantiene",
+        "Tests: cómputo del estado por ítem (pendiente/respondido/observación), lógica de 'próximo pendiente' (incl. salto entre secciones y caso sin pendientes) y consistencia del progreso"
+      ],
+      "sdd": true,
+      "status": "spec_ready"
+    },
+    {
+      "id": 29,
+      "name": "29_endurecimiento_preguntas",
+      "title": "Reescritura de preguntas de endurecimiento (it-v2)",
+      "description": "Los técnicos no entienden la sección A4 'Configuración segura' de la plantilla IT (it-v2): hoy tiene 2 ítems con jerga ('Endurecimiento de servidores' select Aplicado/Parcial/No aplicado; '¿Se deshabilitan servicios innecesarios?' bool), sin help_text y sin criterio observable. Reemplazar por ~5 preguntas observables en lenguaje llano, cada una con help_text que dice qué mirar en el servidor, manteniendo el mapeo a CIS 4 para el scoring (0/50/100). Base propuesta (a detallar en spec): (1) ¿SO con soporte del fabricante?; (2) ¿usuarios/contraseñas de fábrica cambiados o deshabilitados?; (3) ¿acceso remoto RDP/SSH protegido (VPN/IP restringida/puerto cambiado, no expuesto directo)?; (4) ¿servicios/programas que el servidor no necesita siguen prendidos?; (5) ¿firewall del propio servidor activo?. Evitar solapamiento con secciones existentes (A6 cuentas, A7 vulnerabilidades, A9 malware, A12 firewall perimetral): esta sección es la configuración segura del servidor en sí. Requiere migración SQL idempotente sobre template_item del template it-v2 y actualizar el seed seed/templates/it-v2.json para coherencia en re-seed. Las respuestas A4 ya guardadas en auditorías existentes no deben romperse.",
+      "source": "Solicitud operativa SyS (2026-06-17, Martín): las preguntas de endurecimiento de servidores no las entienden los técnicos; reescribirlas como preguntas observables con ayuda. Sección A4 en seed/templates/it-v2.json (CIS 4 · NIST Protect).",
+      "acceptance": [
+        "La sección A4 de it-v2 expone ~5 preguntas observables en lenguaje llano, cada una con help_text que indica qué revisar en el servidor para responderla",
+        "Cada pregunta mantiene scoring 0/50/100 con rúbrica explícita (score_map para select/tri, true/false para bool) y la sección sigue mapeada a CIS 4 · NIST Protect",
+        "Las preguntas nuevas no duplican controles ya cubiertos por A6 (cuentas), A7 (vulnerabilidades), A9 (malware) ni A12 (firewall perimetral)",
+        "Migración SQL idempotente actualiza template_item del template it-v2 (no falla si ya está aplicada) y el seed seed/templates/it-v2.json refleja los mismos ítems para re-seed coherente",
+        "Las respuestas A4 ya guardadas en auditorías existentes no se rompen tras la migración (definir y testear la política de compatibilidad)",
+        "Tests: migración idempotente, scoring de la sección reescrita, coherencia seed↔migración y no-regresión de auditorías previas"
+      ],
+      "sdd": true,
+      "status": "spec_ready"
+    },
+    {
+      "id": 30,
+      "name": "30_informe_pdf_restyle",
+      "title": "Rediseño visual del informe PDF (formato web-v2) + logos CDN + norma condicional",
+      "description": "Rework del informe para llevar el PDF A4 al mismo lenguaje visual que el formato web-v2 que aprobó Martín (hero/portada oscura con gauge animado, score-rows con barras, riesgos en cards con borde rojo, 'qué cambia en el día a día' en cards claras, plan en timeline, footer branded). Decisión humana 2026-06-17: se MANTIENEN web-v2 y PDF como dos formatos separados; el web-v2 (entrega pública #15, src/lib/informe/web-render.ts) ya tiene el look aprobado y NO se rediseña; lo que se rehace es el PDF A4 (src/lib/informe/render-erp.ts, render-it.ts, render-mixto*.ts, render-shared.ts y las plantillas docs/plantillas/informe/template_informe_pdf_a4*.html) para que se parezca. Contrato visual de referencia: docs/plantillas/informe/ref_informe_a4_v2_plastipress.html (HTML hecho a mano por Martín; su bloque @media print define el A4 limpio: portada oscura, páginas blancas, score-rows, riesgos, timeline, A4 portrait 14/16mm). Secciones del informe al cliente (se mantienen las 6): Resumen ejecutivo, Hallazgos por sección/circuito, Riesgos priorizados, Qué cambia en el día a día, El plan/roadmap, Próximos pasos. Quick wins y upsell_findings NUNCA aparecen en el informe cliente (hoy ya no se renderizan; queda como invariante con test). LOGOS: 100% desde el CDN R2 (catálogo oficial sys-brand/references/assets.md, base https://pub-9195f8a94602486395419c2bb7beab6b.r2.dev/LOGOS/): reemplazar el placeholder base64 __LOGO_VERT__ de las plantillas A4 por la URL del CDN, usando la variante por fondo (sys_vertical_w.png en portada oscura, sys_horizontal_b.png en footer claro), centralizado en las constantes ya existentes de render-shared.ts. NORMA CONDICIONAL (ajuste de #25, decisión 2026-06-17): la norma de cada sección se muestra SOLO donde exista (standard_ref con norma externa real, p.ej. CIS/NIST); si no hay norma, no se muestra NADA (sin etiqueta 'Control interno', sin celda con texto). Aplica de forma consistente a PDF y web. La cotización/propuesta comercial NO va dentro del informe (se mantiene aparte vía presupuestossys #16); queda anotado el puente futuro informe↔presupuesto para conectar ambos mundos. No cambia el motor de scoring.",
+      "source": "Solicitud operativa SyS (2026-06-17, Martín): mejorar el informe con el formato del HTML web-v2 que armó a mano (ref_informe_a4_v2_plastipress.html), sacar lo que agrega el técnico que no corresponde (quick wins ya fuera), logos siempre del CDN (assets.md), y norma solo donde exista (vacío si no hay). Decisiones de puerta: PDF A4 restilado aparte (web-v2 intacto); mantener las 6 secciones; propuesta fuera del informe.",
+      "acceptance": [
+        "El PDF A4 (render-erp/it/mixto) se rediseña al lenguaje visual del formato web-v2 según el contrato docs/plantillas/informe/ref_informe_a4_v2_plastipress.html: portada oscura con gauge, páginas blancas con score-rows, riesgos en cards, día a día en cards, plan en timeline y footer branded, imprimible A4 portrait sin desbordes",
+        "El render web-v2 (web-render.ts / #15) NO se rediseña; solo se ajusta para la norma condicional para mantener consistencia con el PDF",
+        "Todos los logos del informe se sirven desde el CDN R2 (assets.md): se elimina el base64 __LOGO_VERT__ de las plantillas A4 y se usa la variante correcta por fondo (vertical blanco en portada oscura, horizontal oscuro en footer claro)",
+        "La norma por sección se muestra SOLO cuando existe una norma real; si no hay norma la fila/sección no muestra etiqueta alguna (se elimina 'Control interno'); aplica a PDF y web de forma consistente",
+        "El informe al cliente mantiene las 6 secciones (resumen, hallazgos, riesgos, día a día, plan, próximos pasos) y NUNCA incluye quick_wins ni upsell_findings (test invariante)",
+        "El informe no incluye propuesta/cotización comercial (queda en presupuestossys #16); documentado el puente futuro informe↔presupuesto",
+        "El motor de scoring y los valores de score/semáforo no cambian",
+        "Tests: snapshot del nuevo render A4 (ERP/IT/mixto), norma condicional (con y sin norma) en PDF y web, logos apuntando al CDN, ausencia de quick wins/upsell en el render cliente, y no-regresión del scoring"
+      ],
+      "sdd": true,
+      "status": "done"
     }
   ]
 }

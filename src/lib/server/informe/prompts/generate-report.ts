@@ -7,8 +7,8 @@ import {
 } from '../context/build';
 import { tipoAuditoria, type TipoAuditoria } from '../tipo';
 
-/** Prompt versionado del informe IA (R9, R12, #19 R8). */
-export const INFORME_PROMPT_VERSION = '2.1';
+/** Prompt versionado del informe IA (R9, R12, #19 R8, #25 R16). */
+export const INFORME_PROMPT_VERSION = '2.2';
 
 export const JERGA_PROHIBIDA = [
   'solución 360°',
@@ -48,7 +48,8 @@ const SYSTEM_PROMPT_CLIENTE_IT = `
 - Riesgos: 3 a 5 con evidencia concreta del relevamiento. Insumo: top_risks.
 - Plan: 2 a 6 etapas orientadas a infraestructura/seguridad.
 - "dia_a_dia": 2 a 4 áreas IT débiles con exactamente 3 mejoras concretas de infraestructura/seguridad/backups/redes cada una (campo funcionalidades con nombre + que_resuelve). PROHIBIDO proponer funcionalidades Tango. Cada área incluye "hoy": UNA línea (máx. 100 caracteres) con el estado actual problemático según el relevamiento; sin evidencia devolvé null.
-- "proximos_pasos": 3 a 5 ítems accionables.`;
+- "proximos_pasos": 3 a 5 ítems accionables.
+- Al referir la norma o estándar de una sección, usá exclusivamente el "standard_ref" provisto en el canónico (p. ej. «CIS N · NIST: fase»). Nunca inventes ni completes una norma que no esté en el dato.`;
 
 const SYSTEM_PROMPT_CLIENTE_MIXTA = `
 ## Reglas para la salida "cliente" (auditoría IT + ERP mixta)
@@ -60,7 +61,8 @@ const SYSTEM_PROMPT_CLIENTE_MIXTA = `
 - Riesgos: 3 a 6 en un único ranking cross-dominio, con evidencia del relevamiento.
 - Plan: timeline unificado de 2 a 6 etapas cubriendo ambos dominios.
 - "dia_a_dia.circuitos": 2 a 6 entradas — áreas IT con 3 mejoras de infraestructura/seguridad (sin Tango) y circuitos ERP con 3 funcionalidades Tango existentes cada uno, según el dominio del seccion_code. Cada entrada incluye "hoy": UNA línea (máx. 100 caracteres) con el estado actual problemático según el relevamiento; sin evidencia devolvé null.
-- "proximos_pasos": 3 a 5 ítems.`;
+- "proximos_pasos": 3 a 5 ítems.
+- Al referir la norma o estándar de una sección IT, usá exclusivamente el "standard_ref" provisto en el canónico (p. ej. «CIS N · NIST: fase»). Nunca inventes ni completes una norma que no esté en el dato.`;
 
 const SYSTEM_PROMPT_INTERNA = `
 ## Reglas para la salida "interna" (recomendaciones de presupuesto, solo uso interno SyS)

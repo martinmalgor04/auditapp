@@ -2,7 +2,8 @@ import type { AppUser } from '$lib/server/auth/types';
 import {
   getAuditFormHeader,
   listPendingRequiredItems,
-  setAuditStatus
+  setAuditStatus,
+  stampFinishedAt
 } from '$lib/server/db/audit-form';
 import { recalculateAndPersistScores } from '$lib/server/scoring/persist';
 import { AuditFormNotAllowedError, AuditFormNotEditableError } from './errors';
@@ -29,6 +30,8 @@ export async function completeRelevamiento(
   }
 
   const pending = await listPendingRequiredItems(auditId);
+  // Sella finished_at si aún es NULL (R5, R7). Patrón atómico: solo actúa si es NULL.
+  await stampFinishedAt(auditId);
   await setAuditStatus(auditId, 'en_cierre');
   await recalculateAndPersistScores(auditId);
 

@@ -4,9 +4,10 @@ import {
   footer,
   LOGO_VERT_URL,
   renderCircuitoCards,
+  renderGaugeCover,
   renderGaugeErpOnly,
   renderGaugeIt,
-  renderHallazgosFilas,
+  renderHallazgosScoreRows,
   renderStatCircuitos,
   tipoLabel,
   tituloPortada,
@@ -20,16 +21,14 @@ export function renderHallazgosErpPage(
   opts: RenderOptions,
   pagenum: string
 ): string {
-  const filas = renderHallazgosFilas(model, opts, 'erp');
+  const filas = renderHallazgosScoreRows(model, opts, 'erp');
 
   return `
 <section class="page">
   <div class="eyebrow">03 · Hallazgos por circuito (ERP)</div>
   <h2>Qué encontramos en los circuitos del ERP</h2>
-  <table>
-    <tr><th style="width:42%">Circuito</th><th class="num" style="width:14%">Score</th><th style="width:14%">Doc.</th><th style="width:16%">Controles</th><th style="width:14%">Madurez</th></tr>
-    ${filas}
-  </table>
+  <p class="muted">Cada circuito se evaluó en tres dimensiones: proceso documentado, controles internos y madurez operativa.</p>
+  <div class="score-list">${filas}</div>
   ${footer(pagenum)}
 </section>`;
 }
@@ -48,9 +47,9 @@ export function renderDiaADiaErpPage(
 <section class="page">
   <div class="eyebrow">${eyebrow}</div>
   <h2>Lo que Tango ya sabe hacer<br>y hoy no se usa</h2>
-  <p style="font-size:9.5pt; color:var(--sys-gris-neutro);">${field('dia_a_dia.intro', d.dia_a_dia.intro, opts)}</p>
+  <p class="muted">${field('dia_a_dia.intro', d.dia_a_dia.intro, opts)}</p>
   <div style="height:4mm"></div>
-  <div class="circuitos">${circuitoCards}</div>
+  <div class="fix-grid">${circuitoCards}</div>
   ${
     d.dia_a_dia.callout_transversal !== null
       ? `<div style="height:4mm"></div><div class="callout"><p>${field('dia_a_dia.callout_transversal', d.dia_a_dia.callout_transversal, opts)}</p></div>`
@@ -111,6 +110,7 @@ export function renderPortadaMixta(model: InformeRenderModel): string {
     <div style="height:8mm"></div>
     <div class="client">${e(model.cliente.razonSocial)}</div>
     <div class="cuit">${model.cliente.cuit ? `CUIT ${e(model.cliente.cuit)}` : ''}</div>
+    ${renderGaugeCover(model)}
     <div class="meta">Módulos relevados: ${e(modulosLista)}<br>${e(model.fechaInforme)} · Sistema: ${e(model.sistema)}</div>
   </div>
 </section>`;

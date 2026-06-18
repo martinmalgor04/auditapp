@@ -3,13 +3,16 @@ import {
   e,
   field,
   footer,
+  hayAlgunaNormaIt,
   LOGO_VERT_URL,
   renderCircuitoCards,
   renderCierrePage,
+  renderGaugeCover,
   renderGaugeIt,
-  renderHallazgosFilas,
+  renderHallazgosScoreRows,
   renderLecturaTransversal,
   renderLoomBlock,
+  renderMetodologiaBlock,
   renderPlanPage,
   renderRiesgosPage,
   renderStatCircuitos,
@@ -19,6 +22,7 @@ import {
   type InformeRenderModel,
   type RenderOptions
 } from './render-shared';
+import { formatDuracion } from './visita';
 
 export function renderInformeIt(model: InformeRenderModel, opts: RenderOptions = {}): string {
   const d = model.draft;
@@ -34,7 +38,8 @@ export function renderInformeIt(model: InformeRenderModel, opts: RenderOptions =
     <div style="height:8mm"></div>
     <div class="client">${e(model.cliente.razonSocial)}</div>
     <div class="cuit">${model.cliente.cuit ? `CUIT ${e(model.cliente.cuit)}` : ''}</div>
-    <div class="meta">Áreas relevadas: ${areasCount}<br>${e(model.fechaInforme)}</div>
+    ${renderGaugeCover(model)}
+    <div class="meta">Áreas relevadas: ${areasCount}<br>${e(model.fechaInforme)}</div>${model.visita ? `\n    <p class="visita">${e(model.visita.inicio)}–${e(model.visita.fin)} · ${e(formatDuracion(model.visita.duracionMin))}</p>` : ''}
   </div>
 </section>`;
 
@@ -67,20 +72,20 @@ export function renderInformeIt(model: InformeRenderModel, opts: RenderOptions =
   ${footer('02')}
 </section>`;
 
-  const filas = renderHallazgosFilas(model, opts, 'it');
+  const filas = renderHallazgosScoreRows(model, opts, 'it');
   const lectura = renderLecturaTransversal(d, opts);
+  const metodologia = hayAlgunaNormaIt(model) ? renderMetodologiaBlock('it') : '';
 
   const hallazgos = `
 <section class="page">
   <div class="eyebrow">02 · Hallazgos por área</div>
   <h2>Qué encontramos, área por área</h2>
-  <table>
-    <tr><th style="width:42%">Área</th><th class="num" style="width:14%">Score</th><th style="width:14%">Doc.</th><th style="width:16%">Controles</th><th style="width:14%">Madurez</th></tr>
-    ${filas}
-  </table>
-  <div style="height:14mm"></div>
+  <p class="muted">Cada área se evaluó en tres dimensiones: proceso documentado, controles internos y madurez operativa.</p>
+  <div class="score-list">${filas}</div>
+  <div style="height:8mm"></div>
   <h3>Lectura transversal</h3>
   <ul class="clean">${lectura}</ul>
+  ${metodologia}
   ${footer('03')}
 </section>`;
 
@@ -90,9 +95,9 @@ export function renderInformeIt(model: InformeRenderModel, opts: RenderOptions =
 <section class="page">
   <div class="eyebrow">05 · Mejoras prioritarias</div>
   <h2>Lo que tu infraestructura necesita<br>y hoy no tiene</h2>
-  <p style="font-size:9.5pt; color:var(--sys-gris-neutro);">${field('dia_a_dia.intro', d.dia_a_dia.intro, opts)}</p>
+  <p class="muted">${field('dia_a_dia.intro', d.dia_a_dia.intro, opts)}</p>
   <div style="height:4mm"></div>
-  <div class="circuitos">${circuitoCards}</div>
+  <div class="fix-grid">${circuitoCards}</div>
   ${
     d.dia_a_dia.callout_transversal !== null
       ? `<div style="height:4mm"></div><div class="callout"><p>${field('dia_a_dia.callout_transversal', d.dia_a_dia.callout_transversal, opts)}</p></div>`
@@ -115,20 +120,20 @@ export function renderHallazgosItPage(
   pagenum: string
 ): string {
   const d = model.draft;
-  const filas = renderHallazgosFilas(model, opts, 'it');
+  const filas = renderHallazgosScoreRows(model, opts, 'it');
   const lectura = renderLecturaTransversal(d, opts);
+  const metodologia = hayAlgunaNormaIt(model) ? renderMetodologiaBlock('mixta') : '';
 
   return `
 <section class="page">
   <div class="eyebrow">02 · Hallazgos por área (IT)</div>
   <h2>Qué encontramos en infraestructura y seguridad</h2>
-  <table>
-    <tr><th style="width:42%">Área</th><th class="num" style="width:14%">Score</th><th style="width:14%">Doc.</th><th style="width:16%">Controles</th><th style="width:14%">Madurez</th></tr>
-    ${filas}
-  </table>
-  <div style="height:14mm"></div>
+  <p class="muted">Cada área se evaluó en tres dimensiones: proceso documentado, controles internos y madurez operativa.</p>
+  <div class="score-list">${filas}</div>
+  <div style="height:8mm"></div>
   <h3>Lectura transversal</h3>
   <ul class="clean">${lectura}</ul>
+  ${metodologia}
   ${footer(pagenum)}
 </section>`;
 }
@@ -147,9 +152,9 @@ export function renderMejorasItPage(
 <section class="page">
   <div class="eyebrow">${eyebrow}</div>
   <h2>Lo que tu infraestructura necesita<br>y hoy no tiene</h2>
-  <p style="font-size:9.5pt; color:var(--sys-gris-neutro);">${field('dia_a_dia.intro', d.dia_a_dia.intro, opts)}</p>
+  <p class="muted">${field('dia_a_dia.intro', d.dia_a_dia.intro, opts)}</p>
   <div style="height:4mm"></div>
-  <div class="circuitos">${circuitoCards}</div>
+  <div class="fix-grid">${circuitoCards}</div>
   ${
     d.dia_a_dia.callout_transversal !== null
       ? `<div style="height:4mm"></div><div class="callout"><p>${field('dia_a_dia.callout_transversal', d.dia_a_dia.callout_transversal, opts)}</p></div>`

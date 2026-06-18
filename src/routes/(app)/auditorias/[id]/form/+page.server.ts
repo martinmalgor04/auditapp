@@ -7,6 +7,7 @@ import {
 } from '$lib/server/form/errors';
 import { completeRelevamiento } from '$lib/server/form/complete';
 import { loadAuditForm } from '$lib/server/form/load-form';
+import { stampStartedAt } from '$lib/server/db/audit-form';
 import { countPendingProposalsByAudit } from '$lib/server/db/reunion-proposals';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -17,6 +18,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
       loadAuditForm(params.id, user),
       countPendingProposalsByAudit(params.id).catch(() => 0)
     ]);
+    // Sella started_at en la primera apertura del form (R2, R3, R4).
+    // Fire-and-forget: no bloquea el render si falla.
+    stampStartedAt(params.id).catch(() => {});
     return { ...form, auditId: params.id, pendingProposalCount };
   } catch (err) {
     if (err instanceof AuditFormNotAllowedError) {

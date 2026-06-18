@@ -7,6 +7,7 @@
   import DatetimeField from './fields/datetime-field.svelte';
   import FieldFileRef from './fields/field-file-ref.svelte';
   import FieldTable, { type TableColumn, type TableRow } from './fields/field-table.svelte';
+  import type { SaveIndicatorState } from '$lib/components/form/save-indicator.svelte';
   import ListField from './fields/list-field.svelte';
   import MoneyField from './fields/money-field.svelte';
   import MultiselectField from './fields/multiselect-field.svelte';
@@ -32,6 +33,7 @@
 
   let {
     item,
+    saveState = 'idle' as SaveIndicatorState,
     onchange,
     onnoteschange,
     onnchange,
@@ -41,6 +43,7 @@
     onphotodelete
   }: {
     item: FieldItem;
+    saveState?: SaveIndicatorState;
     onchange?: (value: unknown) => void;
     onnoteschange?: (notes: string) => void;
     onnchange?: (na: boolean) => void;
@@ -236,6 +239,7 @@
         helpText={item.helpText}
         {columns}
         bind:rows={tableRows}
+        {saveState}
         onchange={emitChange}
         oncamera={async (rowId) => {
           const snapshot = $state.snapshot(tableRows) as TableRow[];

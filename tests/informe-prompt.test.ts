@@ -20,9 +20,9 @@ describe('informe prompt (R9, R12, R18, R19, #19 R8)', () => {
   const erpCanonical = loadInformeCanonicalErp();
   const erpPrompt = buildInformePrompt(erpCanonical);
 
-  it('exporta versión 2.1 y la usa el módulo versionado', () => {
-    expect(INFORME_PROMPT_VERSION).toBe('2.1');
-    expect(INFORME_PROMPT_VERSION).not.toBe('2.0');
+  it('exporta versión 2.2 y la usa el módulo versionado (#25 R16)', () => {
+    expect(INFORME_PROMPT_VERSION).toBe('2.2');
+    expect(INFORME_PROMPT_VERSION).not.toBe('2.1');
     const pipelineSource = readFileSync(
       join(process.cwd(), 'src/lib/server/informe/pipeline.ts'),
       'utf8'
@@ -88,8 +88,17 @@ describe('informe prompt (R9, R12, R18, R19, #19 R8)', () => {
     expect(clienteSection).not.toContain('catálogo SyS');
   });
 
+  it('instruye usar standard_ref del canónico y no inventar normas en IT/mixta (#25 R15)', () => {
+    const itPrompt = buildInformePrompt(loadInformeCanonicalIt());
+    expect(itPrompt.system).toContain('standard_ref');
+    expect(itPrompt.system).toContain('Nunca inventes');
+    const mixta = buildInformePrompt(loadInformeCanonicalGolden());
+    expect(mixta.system).toContain('standard_ref');
+    expect(mixta.system).toContain('Nunca inventes');
+  });
+
   it('resolvePromptVersion cubre combinaciones y fallback sin +rag (R12)', () => {
-    expect(resolvePromptVersion(null)).toBe('2.1');
+    expect(resolvePromptVersion(null)).toBe('2.2');
 
     const none: InformeContext = {
       rag: null,
@@ -97,7 +106,7 @@ describe('informe prompt (R9, R12, R18, R19, #19 R8)', () => {
       fewshot: null,
       meta: emptyContextMeta({ rag: false, catalogo: false, fewshot: false })
     };
-    expect(resolvePromptVersion(none)).toBe('2.1');
+    expect(resolvePromptVersion(none)).toBe('2.2');
 
     const all: InformeContext = {
       rag: { chunks: [{ id: '1', content: 'x', modulo: null, similarity: 0.5 }], discarded: 0 },
@@ -108,7 +117,7 @@ describe('informe prompt (R9, R12, R18, R19, #19 R8)', () => {
         injected: { rag: true, catalogo: true, fewshot: true }
       }
     };
-    expect(resolvePromptVersion(all)).toBe('2.1+rag+catalogo+fewshot');
+    expect(resolvePromptVersion(all)).toBe('2.2+rag+catalogo+fewshot');
 
     const ragFailed: InformeContext = {
       rag: { chunks: [], discarded: 0, error: 'timeout' },
@@ -120,7 +129,7 @@ describe('informe prompt (R9, R12, R18, R19, #19 R8)', () => {
         injected: { rag: false, catalogo: false, fewshot: false }
       }
     };
-    expect(resolvePromptVersion(ragFailed)).toBe('2.1');
+    expect(resolvePromptVersion(ragFailed)).toBe('2.2');
 
     const ragOnly: InformeContext = {
       ...all,
@@ -131,6 +140,6 @@ describe('informe prompt (R9, R12, R18, R19, #19 R8)', () => {
         injected: { rag: true, catalogo: false, fewshot: false }
       }
     };
-    expect(resolvePromptVersion(ragOnly)).toBe('2.1+rag');
+    expect(resolvePromptVersion(ragOnly)).toBe('2.2+rag');
   });
 });
