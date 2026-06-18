@@ -18,6 +18,8 @@ export type AuditFormHeaderRow = {
   types: string[];
   segment: string;
   archived_at: Date | null;
+  cab_confirmed_by: string | null;
+  cab_confirmed_at: Date | null;
 };
 
 export type FormSectionRow = {
@@ -26,11 +28,13 @@ export type FormSectionRow = {
   title: string;
   sort_order: number;
   has_score: boolean;
+  template_id: string;
 };
 
 export type FormItemRow = {
   id: string;
   section_id: string;
+  template_id: string;
   label: string;
   help_text: string | null;
   field_type: FieldType;
@@ -65,7 +69,9 @@ export async function getAuditFormHeader(auditId: string): Promise<AuditFormHead
       c.razon_social,
       a.types,
       a.segment,
-      a.archived_at
+      a.archived_at,
+      a.cab_confirmed_by,
+      a.cab_confirmed_at
     FROM audit a
     JOIN client c ON c.id = a.empresa_id
     WHERE a.id = ${auditId}
@@ -83,7 +89,8 @@ export async function listFormSections(auditId: string): Promise<FormSectionRow[
       s.code,
       s.title,
       s.sort_order,
-      s.has_score
+      s.has_score,
+      s.template_id
     FROM audit a
     JOIN section s ON s.template_id = ANY(a.template_ids)
     WHERE a.id = ${auditId}
@@ -103,6 +110,7 @@ export async function listFormItems(auditId: string): Promise<FormItemRow[]> {
     SELECT
       ti.id,
       ti.section_id,
+      s.template_id,
       ti.label,
       ti.help_text,
       ti.field_type,
@@ -114,9 +122,8 @@ export async function listFormItems(auditId: string): Promise<FormItemRow[]> {
       ti.scores,
       ti.sort_order
     FROM audit a
-    JOIN template_item ti ON ti.section_id IN (
-      SELECT s2.id FROM section s2 WHERE s2.template_id = ANY(a.template_ids)
-    )
+    JOIN section s ON s.template_id = ANY(a.template_ids)
+    JOIN template_item ti ON ti.section_id = s.id
     WHERE a.id = ${auditId}
       AND ti.filled_by IN ('tecnico', 'admin')
     ORDER BY ti.section_id, ti.sort_order
@@ -231,6 +238,22 @@ export async function stampFinishedAt(auditId: string): Promise<void> {
     WHERE id = ${auditId}
       AND finished_at IS NULL
   `;
+}
+
+/**
+ * #32 (R17): confirma el CAB compartido de forma atómica e idempotente.
+ * Solo escribe si aún no está confirmado (WHERE cab_confirmed_at IS NULL).
+ * Devuelve true si esta llamada efectuó la confirmación.
+ */
+export async function confirmCab(auditId: string, userId: string): Promise<boolean> {
+  const sql = getSql();
+  const rows = await sql`
+    UPDATE audit
+    SET cab_confirmed_by = ${userId}, cab_confirmed_at = now()
+    WHERE id = ${auditId} AND cab_confirmed_at IS NULL
+    RETURNING id
+  `;
+  return rows.length > 0;
 }
 
 export async function setAuditStatus(auditId: string, status: AuditStatus): Promise<void> {

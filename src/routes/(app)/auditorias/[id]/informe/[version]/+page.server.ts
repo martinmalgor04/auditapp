@@ -4,6 +4,7 @@ import { requireUser } from '$lib/server/auth/guards';
 import { getReportByAuditVersion } from '$lib/server/db/informe-reports';
 import { listSharesByReport } from '$lib/server/db/informe-shares';
 import { getAuditForReport } from '$lib/server/informe/access';
+import { listAuditAssignments } from '$lib/server/db/audit-assignment';
 import { buildInformeRenderModel } from '$lib/server/informe/model';
 import { buildShareView, type ShareView } from '$lib/server/informe/share';
 
@@ -25,8 +26,15 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
   const isAdmin = user.role === 'admin';
   if (!isAdmin) {
-    // Técnico asignado: solo render aprobado (R1) → directo a imprimir.
-    if (audit.assignedTechId === user.id && report.status === 'aprobado') {
+    // #32 (R23): técnico asignado a algún tipo de la auditoría; solo render
+    // aprobado (R1) → directo a imprimir.
+    const assignments = await listAuditAssignments(audit.id);
+    const assignedIds = new Set(
+      [audit.assignedTechId, ...assignments.map((a) => a.techId)].filter(
+        (id): id is string => id !== null
+      )
+    );
+    if (assignedIds.has(user.id) && report.status === 'aprobado') {
       redirect(303, `/auditorias/${audit.id}/informe/${report.version}/imprimir`);
     }
     error(403, 'No tenés permiso para esta acción');
@@ -54,7 +62,10 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     upsellFindings: report.canonicalJson.upsell_findings,
     model:
       report.clientDraft && (report.status === 'borrador' || report.status === 'aprobado')
-        ? buildInformeRenderModel(report)
+        ? buildInformeRenderModel(report, {
+            startedAt: audit.startedAt,
+            finishedAt: audit.finishedAt
+          })
         : null
   };
 };

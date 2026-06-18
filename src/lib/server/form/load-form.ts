@@ -1,5 +1,7 @@
 import type { AppUser } from '$lib/server/auth/types';
-import { auditMatchesUserScope } from '$lib/server/auth/audit-access';
+import type { AuditType } from '$lib/audit-types';
+import { techAssignedTypes } from '$lib/server/db/audit-assignment';
+import { resolveTemplateIdsForTypes } from '$lib/server/backoffice/audits';
 import {
   FORM_EDITABLE_STATUSES,
   getAuditFormHeader,
@@ -116,16 +118,44 @@ function mapResponse(r: {
   };
 }
 
-export function assertFormAccess(audit: NonNullable<Awaited<ReturnType<typeof getAuditFormHeader>>>, user: AppUser): void {
+/**
+ * #32 (R14, R22): el acceso al form se decide por **asignación efectiva**
+ * (`audit_assignment`), no por overlap de especialidad. Admin sin restricción;
+ * técnico sin ningún tipo asignado a la auditoría → 403.
+ */
+export async function assertFormAccess(
+  audit: NonNullable<Awaited<ReturnType<typeof getAuditFormHeader>>>,
+  user: AppUser
+): Promise<void> {
   if (user.role !== 'admin' && user.role !== 'tecnico') {
     throw new AuditFormNotAllowedError();
   }
-  if (!auditMatchesUserScope(audit.types, user)) {
-    throw new AuditFormNotAllowedError();
+  if (user.role === 'tecnico') {
+    const assigned = await techAssignedTypes(audit.id, user.id);
+    if (assigned.length === 0) {
+      throw new AuditFormNotAllowedError();
+    }
   }
   if (!FORM_EDITABLE_STATUSES.includes(audit.status)) {
     throw new AuditFormNotEditableError();
   }
+}
+
+/**
+ * #32 (R11, R12, R13, R15): tipos visibles para el usuario (admin → todos los de
+ * la auditoría; técnico → sus tipos asignados) → conjunto de `template_id`
+ * visibles para filtrar secciones.
+ */
+async function visibleTemplateIds(
+  audit: { id: string; types: string[] },
+  user: AppUser
+): Promise<Set<string>> {
+  const visibleTypes: AuditType[] =
+    user.role === 'admin'
+      ? (audit.types as AuditType[])
+      : await techAssignedTypes(audit.id, user.id);
+  const ids = visibleTypes.length > 0 ? await resolveTemplateIdsForTypes(visibleTypes) : [];
+  return new Set(ids);
 }
 
 export type LiveIndices = {
@@ -133,6 +163,13 @@ export type LiveIndices = {
   erp: number | null;
   itSemaphore: Semaphore | null;
   erpSemaphore: Semaphore | null;
+};
+
+export type CabState = {
+  locked: boolean;
+  confirmed: boolean;
+  confirmedBy: string | null;
+  canConfirm: boolean;
 };
 
 export async function loadAuditForm(
@@ -143,19 +180,40 @@ export async function loadAuditForm(
   sections: FormSection[];
   progressPct: number;
   liveIndices: LiveIndices;
+  cab: CabState;
 }> {
   const header = await getAuditFormHeader(auditId);
   if (!header) {
     throw new AuditFormNotAllowedError('Auditoría no encontrada');
   }
 
-  assertFormAccess(header, user);
+  await assertFormAccess(header, user);
 
-  const [sectionRows, itemRows, responseRows] = await Promise.all([
+  const visibleTemplates = await visibleTemplateIds(header, user);
+
+  const [allSectionRows, allItemRows, responseRows] = await Promise.all([
     listFormSections(auditId),
     listFormItems(auditId),
     listFormResponses(auditId)
   ]);
+
+  // #32 (R15): el CAB es único y compartido. Hay una sección CAB por template;
+  // se conserva UNA sola (la del template canónico: menor sort_order, luego id),
+  // y sus ítems. El resto de las secciones se filtra a los templates visibles
+  // del usuario (R11/R12); admin ve todas (R13).
+  const cabSections = allSectionRows
+    .filter((s) => s.code === 'CAB')
+    .sort((a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id));
+  const canonicalCabSectionId = cabSections[0]?.id ?? null;
+
+  const sectionRows = allSectionRows.filter((s) => {
+    if (s.code === 'CAB') {
+      return s.id === canonicalCabSectionId;
+    }
+    return visibleTemplates.has(s.template_id);
+  });
+  const visibleSectionIds = new Set(sectionRows.map((s) => s.id));
+  const itemRows = allItemRows.filter((it) => visibleSectionIds.has(it.section_id));
 
   const responseMap = new Map(
     responseRows.map((r) => [r.item_id, mapResponse(r)])
@@ -227,6 +285,19 @@ export async function loadAuditForm(
   const indiceIt = liveScores.indiceIt;
   const indiceErp = liveScores.indiceErp;
 
+  // #32 (R16, R18, R19): estado del CAB compartido.
+  const confirmed = header.cab_confirmed_at !== null;
+  const isConfirmer = header.cab_confirmed_by === user.id;
+  const cab: CabState = {
+    confirmed,
+    confirmedBy: header.cab_confirmed_by,
+    // Bloqueado (solo-lectura) si está confirmado y el usuario no es ni el
+    // confirmador ni admin (el confirmador y el admin pueden reeditar, R18).
+    locked: confirmed && !isConfirmer && user.role !== 'admin',
+    // Puede confirmar mientras no esté confirmado (cualquier técnico asignado o admin).
+    canConfirm: !confirmed
+  };
+
   return {
     audit: {
       id: header.id,
@@ -243,7 +314,8 @@ export async function loadAuditForm(
       erp: indiceErp,
       itSemaphore: indiceIt !== null ? indexToSemaphore(indiceIt) : null,
       erpSemaphore: indiceErp !== null ? indexToSemaphore(indiceErp) : null
-    }
+    },
+    cab
   };
 }
 

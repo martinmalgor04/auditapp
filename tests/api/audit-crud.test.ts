@@ -45,7 +45,7 @@ describe('audit CRUD', () => {
         clientId: client.id,
         types: ['it'],
         segment: 'B',
-        assignedTechId: tecnicoId,
+        techByType: { it: tecnicoId },
         scheduledAt: '2026-07-01',
         cabResponses: { [cabItemId]: 'Test SA' }
       },

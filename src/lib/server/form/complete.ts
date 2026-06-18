@@ -23,7 +23,7 @@ export async function completeRelevamiento(
     throw new AuditFormNotAllowedError('Auditoría no encontrada');
   }
 
-  assertFormAccess(header, user);
+  await assertFormAccess(header, user);
 
   if (header.status === 'en_cierre') {
     return { status: 'en_cierre', warnings: [] };

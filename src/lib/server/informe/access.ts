@@ -15,17 +15,35 @@ export type AuditForReport = {
   id: string;
   status: string;
   assignedTechId: string | null;
+  startedAt: Date | null;
+  finishedAt: Date | null;
 };
 
 export async function getAuditForReport(auditId: string): Promise<AuditForReport | null> {
   const sql = getSql();
-  const [row] = await sql<{ id: string; status: string; assigned_tech_id: string | null }[]>`
-    SELECT id, status, assigned_tech_id
+  const [row] = await sql<
+    {
+      id: string;
+      status: string;
+      assigned_tech_id: string | null;
+      started_at: Date | null;
+      finished_at: Date | null;
+    }[]
+  >`
+    SELECT id, status, assigned_tech_id, started_at, finished_at
     FROM audit
     WHERE id = ${auditId} AND archived_at IS NULL
     LIMIT 1
   `;
-  return row ? { id: row.id, status: row.status, assignedTechId: row.assigned_tech_id } : null;
+  return row
+    ? {
+        id: row.id,
+        status: row.status,
+        assignedTechId: row.assigned_tech_id,
+        startedAt: row.started_at,
+        finishedAt: row.finished_at
+      }
+    : null;
 }
 
 /** Mapeo de errores de dominio informe → Response (envelope estándar). */

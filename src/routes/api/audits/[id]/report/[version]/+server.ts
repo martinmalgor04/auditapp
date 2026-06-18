@@ -9,6 +9,7 @@ import {
   type AuditReportRow
 } from '$lib/server/db/informe-reports';
 import { getAuditForReport, informeErrorResponse } from '$lib/server/informe/access';
+import { listAuditAssignments } from '$lib/server/db/audit-assignment';
 import { InformeDraftValidationError } from '$lib/server/informe/errors';
 import {
   assertSeccionCodesExist,
@@ -69,7 +70,12 @@ export const GET: RequestHandler = async ({ params, locals }): Promise<Response>
     return loaded.error;
   }
 
-  const userOrResponse = requireReportReadAccess(locals, loaded.audit, loaded.report);
+  const assignments = await listAuditAssignments(loaded.audit.id);
+  const userOrResponse = requireReportReadAccess(
+    locals,
+    { ...loaded.audit, assignedTechIds: assignments.map((a) => a.techId) },
+    loaded.report
+  );
   if (userOrResponse instanceof Response) {
     return userOrResponse;
   }

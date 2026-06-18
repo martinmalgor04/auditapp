@@ -66,6 +66,29 @@ export async function insertTestAuditRow(
     RETURNING id
   `;
 
+  // #32: el acceso al form se decide por `audit_assignment` (una fila por tipo).
+  // La migración 020 sólo hace backfill de filas preexistentes; las auditorías
+  // que seedean los tests nacen después, así que replicamos el backfill acá para
+  // que el técnico asignado quede efectivamente asignado por área. Idempotente y
+  // guardado por existencia de tabla (compat. con DBs sin la 020).
+  if (techId) {
+    const [{ exists: hasAssignmentTable }] = await sql<{ exists: boolean }[]>`
+      SELECT EXISTS (
+        SELECT 1 FROM information_schema.tables
+        WHERE table_schema = 'public' AND table_name = 'audit_assignment'
+      ) AS exists
+    `;
+    if (hasAssignmentTable) {
+      for (const t of types) {
+        await sql`
+          INSERT INTO audit_assignment (audit_id, audit_type, tech_id)
+          VALUES (${audit.id}, ${t}, ${techId})
+          ON CONFLICT (audit_id, audit_type) DO UPDATE SET tech_id = EXCLUDED.tech_id
+        `;
+      }
+    }
+  }
+
   return { auditId: audit.id, clientId: client.id };
 }
 

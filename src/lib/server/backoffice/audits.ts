@@ -14,7 +14,8 @@ type DbExecutor = postgres.Sql | postgres.TransactionSql;
 import type { AuditStatus } from '$lib/server/db/audit-status';
 import type { AppUser } from '$lib/server/auth/types';
 import { auditMatchesUserScope, userCanUseAuditTypes } from '$lib/server/auth/audit-access';
-import type { AuditType } from '$lib/audit-types';
+import { insertAuditAssignments } from '$lib/server/db/audit-assignment';
+import { AUDIT_TYPES, type AuditType } from '$lib/audit-types';
 import {
   AuditClosedError,
   AuditNotFoundError,
@@ -29,6 +30,18 @@ const TYPE_TO_TEMPLATE_CODE: Record<string, string> = {
   'erp-tango': 'erp-tango',
   'erp-estandar': 'erp-estandar'
 };
+
+// #32 (R10): orden canónico de tipos para elegir el técnico líder de forma
+// determinística (it < erp-tango < erp-estandar). El líder es el técnico del
+// primer tipo presente en este orden y puebla audit.assigned_tech_id.
+const CANONICAL_TYPE_ORDER: AuditType[] = [...AUDIT_TYPES];
+
+function leadAuditType(types: AuditType[]): AuditType {
+  const ordered = [...types].sort(
+    (a, b) => CANONICAL_TYPE_ORDER.indexOf(a) - CANONICAL_TYPE_ORDER.indexOf(b)
+  );
+  return ordered[0];
+}
 
 export type AuditDetail = {
   id: string;
@@ -241,6 +254,42 @@ export async function createAudit(
     throw new ForbiddenError('No tenés permiso para crear auditorías con esos tipos');
   }
   const sql = getSql();
+
+  // #32 (R7): validar especialidad de cada técnico para el tipo que se le asigna.
+  // Un técnico solo puede ser asignado a un tipo que esté en su scope de especialidad.
+  const techByType = data.techByType as Record<AuditType, string>;
+  const assignmentEntries = data.types.map((type) => ({
+    auditType: type as AuditType,
+    techId: techByType[type as AuditType]
+  }));
+  const techIds = [...new Set(assignmentEntries.map((a) => a.techId))];
+  const techRows = await sql<{ id: string; role: 'admin' | 'tecnico'; audit_types: AuditType[] | null }[]>`
+    SELECT id, role, audit_types
+    FROM app_user
+    WHERE id = ANY(${techIds}) AND active = true
+  `;
+  const techById = new Map(techRows.map((r) => [r.id, r]));
+  for (const { auditType, techId } of assignmentEntries) {
+    const tech = techById.get(techId);
+    if (!tech) {
+      throw new ValidationError('Técnico inválido o inactivo');
+    }
+    const techUser: AppUser = {
+      id: tech.id,
+      email: '',
+      name: '',
+      role: tech.role,
+      active: true,
+      auditTypes: tech.audit_types
+    };
+    if (!userCanUseAuditTypes([auditType], techUser)) {
+      throw new ValidationError(`El técnico no tiene especialidad para ${auditType}`);
+    }
+  }
+
+  // #32 (R10): técnico líder = el del tipo en orden canónico → assigned_tech_id (nunca nulo).
+  const leadTechId = techByType[leadAuditType(data.types as AuditType[])];
+
   const templateIds = await resolveTemplateIdsForTypes(data.types);
   const scheduledAt = new Date(data.scheduledAt);
   const cabItems = await getCabItemsForTypes(data.types);
@@ -309,12 +358,15 @@ export async function createAudit(
         ${templateIds}::uuid[],
         ${data.segment},
         'borrador',
-        ${data.assignedTechId},
+        ${leadTechId},
         ${createdBy},
         ${scheduledAt}
       )
       RETURNING id
     `;
+
+    // #32 (R8, R9): una fila audit_assignment por tipo, en la misma tx del alta.
+    await insertAuditAssignments(tx, audit.id, assignmentEntries);
 
     await upsertCabResponses(tx, audit.id, templateIds, mergedCabResponses, createdBy);
     await syncClientFromCab(tx, clientId, cabItems, mergedCabResponses);
@@ -536,15 +588,19 @@ export function assertCanEditAudit(audit: { status: AuditStatus; archivedAt: Dat
   }
 }
 
-export async function listTechnicians(): Promise<Array<{ id: string; name: string }>> {
+export async function listTechnicians(): Promise<
+  Array<{ id: string; name: string; role: 'admin' | 'tecnico'; auditTypes: AuditType[] | null }>
+> {
   const sql = getSql();
-  const rows = await sql<{ id: string; name: string }[]>`
-    SELECT id, name
+  const rows = await sql<
+    { id: string; name: string; role: 'admin' | 'tecnico'; audit_types: AuditType[] | null }[]
+  >`
+    SELECT id, name, role, audit_types
     FROM app_user
     WHERE role IN ('admin', 'tecnico') AND active = true
     ORDER BY name ASC
   `;
-  return rows;
+  return rows.map((r) => ({ id: r.id, name: r.name, role: r.role, auditTypes: r.audit_types }));
 }
 
 export type ClientPickerRow = {

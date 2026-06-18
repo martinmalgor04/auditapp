@@ -3,6 +3,7 @@ import type { PageServerLoad } from './$types';
 import { requireUser } from '$lib/server/auth/guards';
 import { getReportByAuditVersion } from '$lib/server/db/informe-reports';
 import { getAuditForReport } from '$lib/server/informe/access';
+import { listAuditAssignments } from '$lib/server/db/audit-assignment';
 import { buildInformeRenderModel } from '$lib/server/informe/model';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -22,8 +23,18 @@ export const load: PageServerLoad = async ({ locals, params }) => {
   }
 
   // Admin: borrador o aprobado. Técnico asignado: solo aprobado (R1).
+  // #32 (R23): técnico asignado a algún tipo de la auditoría.
   const isAdmin = user.role === 'admin';
-  const isAssignedTech = user.role === 'tecnico' && audit.assignedTechId === user.id;
+  let isAssignedTech = false;
+  if (user.role === 'tecnico') {
+    const assignments = await listAuditAssignments(audit.id);
+    const assignedIds = new Set(
+      [audit.assignedTechId, ...assignments.map((a) => a.techId)].filter(
+        (id): id is string => id !== null
+      )
+    );
+    isAssignedTech = assignedIds.has(user.id);
+  }
   const allowed =
     (isAdmin && (report.status === 'borrador' || report.status === 'aprobado')) ||
     (isAssignedTech && report.status === 'aprobado');

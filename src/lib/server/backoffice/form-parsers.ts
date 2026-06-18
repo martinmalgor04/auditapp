@@ -1,4 +1,17 @@
+import { AUDIT_TYPES, type AuditType } from '$lib/audit-types';
 import type { CreateAuditInput } from './schemas';
+
+/** Lee inputs `techByType[<type>]` → Record<AuditType, string> (#32, R6). */
+export function parseTechByTypeFromForm(formData: FormData): Record<AuditType, string> {
+  const result: Partial<Record<AuditType, string>> = {};
+  for (const type of AUDIT_TYPES) {
+    const value = formData.get(`techByType[${type}]`);
+    if (typeof value === 'string' && value.trim() !== '') {
+      result[type] = value;
+    }
+  }
+  return result as Record<AuditType, string>;
+}
 
 export function parseCabResponses(formData: FormData): Record<string, unknown> {
   const cabResponses: Record<string, unknown> = {};
@@ -24,7 +37,7 @@ export function parseCreateAuditFromForm(formData: FormData): CreateAuditInput {
   const base = {
     types,
     segment: String(formData.get('segment')) as CreateAuditInput['segment'],
-    assignedTechId: String(formData.get('assignedTechId')),
+    techByType: parseTechByTypeFromForm(formData),
     scheduledAt: String(formData.get('scheduledAt')),
     cabResponses
   };

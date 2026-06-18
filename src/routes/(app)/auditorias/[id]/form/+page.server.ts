@@ -7,7 +7,8 @@ import {
 } from '$lib/server/form/errors';
 import { completeRelevamiento } from '$lib/server/form/complete';
 import { loadAuditForm } from '$lib/server/form/load-form';
-import { stampStartedAt } from '$lib/server/db/audit-form';
+import { confirmCab, getAuditFormHeader, stampStartedAt } from '$lib/server/db/audit-form';
+import { techIsAssigned } from '$lib/server/db/audit-assignment';
 import { countPendingProposalsByAudit } from '$lib/server/db/reunion-proposals';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -57,5 +58,24 @@ export const actions: Actions = {
       }
       return fail(500, { error: 'Error al completar relevamiento' });
     }
+  },
+
+  // #32 (R16, R17): confirmar el CAB compartido. Solo técnico asignado o admin.
+  confirmCab: async ({ locals, params }) => {
+    const user = requireStaff(locals);
+
+    const header = await getAuditFormHeader(params.id);
+    if (!header) {
+      return fail(404, { error: 'Auditoría no encontrada' });
+    }
+    if (user.role !== 'admin') {
+      const assigned = await techIsAssigned(params.id, user.id);
+      if (!assigned) {
+        return fail(403, { error: 'No tenés permiso para confirmar el CAB' });
+      }
+    }
+
+    await confirmCab(params.id, user.id);
+    redirect(303, `/auditorias/${params.id}/form`);
   }
 };

@@ -386,6 +386,24 @@
       {/if}
     </div>
 
+    {#if activeSection?.code === 'CAB'}
+      {#if data.cab.locked}
+        <div class="rounded-sys-app border border-sys-medio/20 bg-sys-medio/5 p-3 text-sm text-sys-medio" role="status">
+          El CAB ya fue confirmado por otro técnico. Lo ves en solo-lectura.
+        </div>
+      {:else if data.cab.confirmed}
+        <div class="rounded-sys-app border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800" role="status">
+          CAB confirmado. Podés reeditarlo.
+        </div>
+      {:else if data.cab.canConfirm}
+        <form method="POST" action="?/confirmCab" use:enhance class="pt-1">
+          <SysButton type="submit" variant="secondary" class="w-full">
+            Confirmar CAB
+          </SysButton>
+        </form>
+      {/if}
+    {/if}
+
     <div class="space-y-4">
       {#each activeSection?.items ?? [] as item (item.id)}
         <FieldRenderer

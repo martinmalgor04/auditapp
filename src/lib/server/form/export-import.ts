@@ -34,7 +34,7 @@ export async function importFormBackup(
     throw new FormImportValidationError('FORM_IMPORT_VALIDATION', 'Auditoría no encontrada');
   }
 
-  assertFormAccess(header, user);
+  await assertFormAccess(header, user);
 
   const items = await listFormItems(auditId);
   const itemMap = new Map(items.map((i) => [i.id, i]));

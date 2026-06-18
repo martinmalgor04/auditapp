@@ -70,7 +70,7 @@ describe('nueva auditoría — scope completo', () => {
         clientId: picked!.id,
         types: ['it'],
         segment: 'B',
-        assignedTechId: tecnicoId,
+        techByType: { it: tecnicoId },
         scheduledAt: '2026-07-01',
         cabResponses: {}
       },
@@ -105,7 +105,7 @@ describe('nueva auditoría — scope completo', () => {
         },
         types: ['it'],
         segment: 'A',
-        assignedTechId: tecnicoId,
+        techByType: { it: tecnicoId },
         scheduledAt: '2026-08-01',
         cabResponses: { [cabItemId]: 'Nombre CAB distinto SRL' }
       },

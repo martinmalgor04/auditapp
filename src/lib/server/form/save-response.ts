@@ -27,10 +27,22 @@ export async function saveFormResponse(
     throw new AuditFormNotAllowedError('Auditoría no encontrada');
   }
 
-  assertFormAccess(header, user);
+  await assertFormAccess(header, user);
 
   const item = await getFormItemForAudit(auditId, payload.itemId);
   if (!item) {
+    throw new FormItemNotAllowedError();
+  }
+
+  // #32 (R18, R20): el CAB compartido, una vez confirmado, es solo-lectura para
+  // cualquier técnico que no sea el confirmador ni admin. Las ediciones de ítems
+  // del CAB de un no-confirmador se rechazan; las secciones de área no se tocan.
+  if (
+    item.section_code === 'CAB' &&
+    header.cab_confirmed_at !== null &&
+    header.cab_confirmed_by !== user.id &&
+    user.role !== 'admin'
+  ) {
     throw new FormItemNotAllowedError();
   }
 

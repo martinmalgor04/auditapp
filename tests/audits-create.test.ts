@@ -73,7 +73,7 @@ describe('#23 Fase 3 — createAudit/picker sobre empresa (R27)', () => {
         clientId: emp.id,
         types: ['it'],
         segment: 'B',
-        assignedTechId: tecnicoId,
+        techByType: { it: tecnicoId },
         scheduledAt: '2026-07-01',
         cabResponses: {}
       },
@@ -108,7 +108,7 @@ describe('#23 Fase 3 — createAudit/picker sobre empresa (R27)', () => {
         },
         types: ['it'],
         segment: 'A',
-        assignedTechId: tecnicoId,
+        techByType: { it: tecnicoId },
         scheduledAt: '2026-08-01',
         cabResponses: {}
       },
@@ -152,7 +152,7 @@ describe('#23 Fase 3 — createAudit/picker sobre empresa (R27)', () => {
         },
         types: ['it'],
         segment: 'A',
-        assignedTechId: tecnicoId,
+        techByType: { it: tecnicoId },
         scheduledAt: '2026-09-01',
         cabResponses: { [cabItemId]: 'Empresa Sync Editada SRL' }
       },

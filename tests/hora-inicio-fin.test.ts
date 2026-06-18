@@ -129,6 +129,12 @@ describe('T11.4 / T11.5 — completeRelevamiento (R5, R7)', () => {
       FORM_EDITABLE_STATUSES: ['briefing_completo', 'en_relevamiento', 'en_cierre']
     }));
 
+    // #32: assertFormAccess ahora exige asignación efectiva (audit_assignment).
+    // El técnico u1 está asignado al tipo 'it' de la auditoría a1.
+    vi.doMock('../src/lib/server/db/audit-assignment', () => ({
+      techAssignedTypes: vi.fn().mockResolvedValue(['it'])
+    }));
+
     vi.doMock('../src/lib/server/scoring/persist', () => ({
       recalculateAndPersistScores: mockRecalculate
     }));
@@ -172,6 +178,12 @@ describe('T11.4 / T11.5 — completeRelevamiento (R5, R7)', () => {
       setAuditStatus: mockSetAuditStatus,
       stampFinishedAt: mockStampFinishedAt,
       FORM_EDITABLE_STATUSES: ['briefing_completo', 'en_relevamiento', 'en_cierre']
+    }));
+
+    // #32: assertFormAccess ahora exige asignación efectiva (audit_assignment).
+    // El técnico u1 está asignado al tipo 'it' de la auditoría a1.
+    vi.doMock('../src/lib/server/db/audit-assignment', () => ({
+      techAssignedTypes: vi.fn().mockResolvedValue(['it'])
     }));
 
     vi.doMock('../src/lib/server/scoring/persist', () => ({

@@ -27,6 +27,25 @@
     )
   );
 
+  // #32 (R6): asignación de un técnico por cada tipo seleccionado.
+  let selectedTypes = $state<AuditType[]>([]);
+  $effect(() => {
+    selectedTypes = [...defaultSelectedTypes];
+  });
+
+  function toggleType(type: AuditType, checked: boolean) {
+    selectedTypes = checked
+      ? [...selectedTypes.filter((t) => t !== type), type]
+      : selectedTypes.filter((t) => t !== type);
+  }
+
+  // Solo técnicos que pueden ese tipo (audit_types null/[] = sin restricción → todos).
+  function techniciansFor(type: AuditType) {
+    return data.technicians.filter(
+      (tech) => !tech.auditTypes || tech.auditTypes.length === 0 || tech.auditTypes.includes(type)
+    );
+  }
+
   function prefillCabFromClient(_clientId: string, client: ClientCabFields) {
     cabItems = applyCabDefaultsToItems(cabItems, client, scheduledAt || null);
   }
@@ -100,7 +119,8 @@
           type="checkbox"
           name="types"
           value={type}
-          checked={defaultSelectedTypes.includes(type)}
+          checked={selectedTypes.includes(type)}
+          onchange={(e) => toggleType(type, e.currentTarget.checked)}
         />
         {AUDIT_TYPE_LABELS[type]}
       </label>
@@ -116,18 +136,25 @@
     </select>
   </label>
 
-  <label class="block space-y-1">
-    <span class="text-sm font-medium text-slate-700">Técnico asignado</span>
-    <select
-      name="assignedTechId"
-      required
-      class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-    >
-      {#each data.technicians as tech}
-        <option value={tech.id}>{tech.name}</option>
-      {/each}
-    </select>
-  </label>
+  <fieldset class="space-y-3">
+    <legend class="text-sm font-semibold text-slate-800">Técnico por área</legend>
+    {#each selectedTypes as type (type)}
+      <label class="block space-y-1">
+        <span class="text-sm font-medium text-slate-700">
+          Técnico para {AUDIT_TYPE_LABELS[type]}
+        </span>
+        <select
+          name={`techByType[${type}]`}
+          required
+          class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+        >
+          {#each techniciansFor(type) as tech (tech.id)}
+            <option value={tech.id}>{tech.name}</option>
+          {/each}
+        </select>
+      </label>
+    {/each}
+  </fieldset>
 
   <label class="block space-y-1">
     <span class="text-sm font-medium text-slate-700">Fecha de visita</span>

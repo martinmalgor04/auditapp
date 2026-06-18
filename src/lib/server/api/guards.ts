@@ -27,12 +27,14 @@ export function requireSessionApi(locals: App.Locals): AppUser | Response {
 }
 
 /**
- * Lectura de informes (decisión puerta 3, R1): admin siempre; técnico asignado
- * a la auditoría solo lectura de informes `aprobado`.
+ * Lectura de informes (decisión puerta 3, R1; #32 R23): admin siempre; técnico
+ * asignado a **algún** tipo de la auditoría solo lectura de informes `aprobado`.
+ * El conjunto de técnicos asignados incluye, por compatibilidad, el
+ * `assignedTechId` líder (que el backfill #32 también deja en `audit_assignment`).
  */
 export function requireReportReadAccess(
   locals: App.Locals,
-  audit: { assignedTechId: string | null },
+  audit: { assignedTechId: string | null; assignedTechIds?: string[] },
   report: { status: string } | null
 ): AppUser | Response {
   const user = requireSessionApi(locals);
@@ -42,9 +44,14 @@ export function requireReportReadAccess(
   if (user.role === 'admin') {
     return user;
   }
+  const assignedIds = new Set(
+    [audit.assignedTechId, ...(audit.assignedTechIds ?? [])].filter(
+      (id): id is string => id !== null && id !== undefined
+    )
+  );
   if (
     user.role === 'tecnico' &&
-    audit.assignedTechId === user.id &&
+    assignedIds.has(user.id) &&
     report !== null &&
     report.status === 'aprobado'
   ) {

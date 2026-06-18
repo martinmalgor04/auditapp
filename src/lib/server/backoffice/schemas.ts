@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AUDIT_TYPES } from '$lib/audit-types';
+import { AUDIT_TYPES, type AuditType } from '$lib/audit-types';
 import { AUDIT_STATUSES } from '$lib/server/db/audit-status';
 
 export const auditTypeSchema = z.enum(AUDIT_TYPES);
@@ -38,13 +38,21 @@ export const createAuditSchema = z
     newClient: newClientSchema.optional(),
     types: z.array(auditTypeSchema).min(1),
     segment: auditSegmentSchema,
-    assignedTechId: z.string().uuid(),
+    // #32 (R6, R7): un técnico por tipo. Record<AuditType, uuid>.
+    techByType: z.record(auditTypeSchema, z.string().uuid()),
     scheduledAt: z.string().min(1),
     cabResponses: z.record(z.unknown()).optional().default({})
   })
   .refine((data) => Boolean(data.clientId) !== Boolean(data.newClient), {
     message: 'Indicá un cliente existente o datos de cliente nuevo'
-  });
+  })
+  // (R6/R7-shape) cada tipo seleccionado tiene técnico, y sin tipos sobrantes.
+  .refine(
+    (data) =>
+      data.types.every((t) => Boolean(data.techByType[t])) &&
+      Object.keys(data.techByType).every((t) => data.types.includes(t as AuditType)),
+    { message: 'Asigná un técnico por cada tipo seleccionado' }
+  );
 
 export type CreateAuditInput = z.infer<typeof createAuditSchema>;
 
