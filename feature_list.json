@@ -612,6 +612,96 @@
         "Tests: técnico asignado por área (no líder) puede ver/imprimir/descargar; técnico sin asignación efectiva recibe 403 en los tres; no-regresión de admin y del share público"
       ],
       "sdd": true,
+      "status": "spec_ready"
+    },
+    {
+      "id": 34,
+      "name": "34_briefing_opcional",
+      "title": "Briefing opcional — avanzar sin esperar al cliente",
+      "description": "Permite avanzar una auditoría directamente a en_relevamiento sin pasar por el briefing externo del cliente (borrador o briefing_enviado → en_relevamiento). Elimina el cuello de botella operativo cuando el cliente no responde el link. El link de briefing sigue funcionando como opción. Además amplía el form técnico para mostrar los ítems filled_by=cliente (razón social, CUIT, referentes, etc.) de modo que el técnico pueda cargarlos durante la visita cuando no hubo briefing previo.",
+      "source": "Necesidad operativa SyS (2026-06-20, Martín): en 2 auditorías consecutivas el flujo de briefing externo generó demoras. Decisiones: sin nuevo estado; transición directa borrador/briefing_enviado → en_relevamiento; ampliar filtro filled_by en audit-form.ts; scoring sin cambios.",
+      "acceptance": [
+        "Acción Avanzar sin briefing transiciona borrador → en_relevamiento sin borrar el public_token",
+        "Acción Avanzar sin briefing transiciona briefing_enviado → en_relevamiento",
+        "La acción falla con error descriptivo desde briefing_completo o estados posteriores",
+        "El form técnico muestra ítems filled_by=cliente junto con los del técnico y admin",
+        "El técnico puede guardar respuestas para ítems filled_by=cliente desde el form interno",
+        "El scoring no cambia: ítems filled_by=cliente no puntúan",
+        "El bloqueo del CAB (#32) aplica igual a los ítems filled_by=cliente del CAB",
+        "El briefing externo (/briefing/[token]) no se modifica",
+        "Tests: transición directa, rechazo desde estados inválidos, form con ítems cliente, save-response para ítem cliente, no-regresión scoring y briefing externo"
+      ],
+      "sdd": true,
+      "status": "spec_ready"
+    },
+    {
+      "id": 35,
+      "name": "35_paleta_consistente",
+      "title": "Paleta consistente: slate → sys + labels + títulos",
+      "description": "Reemplazar todas las clases Tailwind 'slate-*' y 'gray-*' en /auditorias/new, /usuarios y los field types del form por los tokens del design system sys-*. Además, agregar títulos de pestaña descriptivos con el nombre de la empresa en las vistas de auditoría.",
+      "source": "Informe UI-First 2026-06-20 — hallazgos 1.1 (paleta), 1.4 (títulos), 2.5 (labels fields)",
+      "acceptance": [
+        "grep de 'slate-' en auditorias/new, usuarios y form/fields no devuelve coincidencias en clases de color",
+        "Labels de text-field, number-field y demás fields usan sys-field-label",
+        "El <title> de /auditorias/[id]/form incluye el nombre de la empresa",
+        "El <title> de /auditorias/[id] y /cierre incluyen el nombre de la empresa",
+        "pnpm run check pasa sin errores nuevos"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 36,
+      "name": "36_bottom_nav_mobile",
+      "title": "Bottom navigation bar en mobile",
+      "description": "Agregar una barra de navegación inferior fija en viewports < md con íconos y estado activo, reemplazando el nav horizontal con scroll del header. Respeta safe-area-inset-bottom (notch/home indicator de iOS) y coexiste con el banner de InstallPWA.",
+      "source": "Informe UI-First 2026-06-20 — hallazgo 1.3 (bottom nav mobile)",
+      "acceptance": [
+        "En viewport < 768px existe un nav fijo bottom-0 con al menos Tablero, CRM, Nueva auditoría",
+        "Cada item tiene ícono SVG y label",
+        "El item activo se distingue visualmente con text-sys-electrico",
+        "El nav horizontal del header desaparece en mobile",
+        "El main tiene padding-bottom suficiente para no quedar tapado por la bottom nav",
+        "La bottom nav respeta env(safe-area-inset-bottom)",
+        "En desktop (>= md) la bottom nav no se renderiza",
+        "pnpm run check pasa sin errores nuevos"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 37,
+      "name": "37_ux_estado",
+      "title": "UX de estado: loading bar + empty states + tap targets",
+      "description": "Tres mejoras de experiencia agrupadas: (1) barra de progreso fina al navegar entre páginas usando el store navigating de SvelteKit; (2) empty states descriptivos en el tablero cuando no hay auditorías o no hay resultados con los filtros activos; (3) tap targets de 44px mínimo en los filtros del tablero.",
+      "source": "Informe UI-First 2026-06-20 — hallazgos 2.1 (empty state), 2.2 (loading bar), 2.4 (tap targets)",
+      "acceptance": [
+        "Durante la navegación SvelteKit, aparece una barra azul fina (h-0.5) fixed top-0",
+        "Cuando el tablero tiene 0 auditorías sin filtros, muestra mensaje y botón Nueva auditoría",
+        "Cuando el tablero tiene 0 resultados con filtros activos, muestra mensaje diferenciado con link a limpiar filtros",
+        "Los <select> e <input> de audit-filters tienen min-height de 44px (var(--sys-touch-min))",
+        "pnpm run check pasa sin errores nuevos"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 38,
+      "name": "38_toast_error_guardado",
+      "title": "Toast de error al guardar en el form técnico",
+      "description": "En el formulario de auditoría, cuando el autosave falla, mostrar un toast/banner visible con mensaje claro y botón Reintentar. Cuando hay ítems pendientes en la cola de reintentos (sin conexión), mostrar un banner persistente de 'guardado pendiente'. El SaveIndicator pequeño existente se mantiene.",
+      "source": "Informe UI-First 2026-06-20 — hallazgo 2.3 (toast error al guardar)",
+      "acceptance": [
+        "Con estado saveState === 'error', aparece un toast con texto de error y botón Reintentar",
+        "El botón Reintentar dispara el reintento del guardado",
+        "Con ítems en la retryQueue, aparece un banner persistente de 'guardado pendiente'",
+        "El banner desaparece cuando la cola se vacía",
+        "El SaveIndicator existente sigue visible",
+        "El toast respeta safe-area-inset-bottom y coexiste con la bottom nav",
+        "Solo aparece en /auditorias/[id]/form",
+        "pnpm run check pasa sin errores nuevos"
+      ],
+      "sdd": true,
       "status": "pending"
     }
   ]
