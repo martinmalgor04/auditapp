@@ -1,9 +1,5 @@
-/// <reference lib="webworker" />
-
-const CACHE_NAME = 'auditapp-shell-v2';
+const CACHE_NAME = 'auditapp-shell-v3';
 const PRECACHE_URLS = ['/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
-
-declare const self: ServiceWorkerGlobalScope;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -39,7 +35,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // SSR (adapter-node): las navegaciones siempre van al servidor para que F5 funcione en cualquier ruta.
+  // SSR: las navegaciones siempre van al servidor para que F5 funcione en cualquier ruta.
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
@@ -73,5 +69,3 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
-
-export {};
