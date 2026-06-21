@@ -17,6 +17,8 @@ Backlog activo: [`feature_list.json`](../feature_list.json). Mapa de trazabilida
 | 11 | [`10_deploy_dokploy/`](10_deploy_dokploy/requirements.md) | Deploy Docker + Dokploy | spec_ready |
 | 16 | [`16_presupuesto_psys/`](16_presupuesto_psys/requirements.md) | Presupuesto vía presupuestossys | ✅ done |
 | 24 | [`24_reunion_extraccion_precisa/`](24_reunion_extraccion_precisa/requirements.md) | Reunión: extracción precisa + análisis con Claude | spec_ready |
+| 33 | [`33_acceso_por_asignacion_unificado/`](33_acceso_por_asignacion_unificado/requirements.md) | Unificar acceso por asignación efectiva | spec_ready |
+| 34 | [`34_briefing_opcional/`](34_briefing_opcional/requirements.md) | Briefing opcional — avanzar sin esperar al cliente | spec_ready |
 
 Cada carpeta contiene:
 

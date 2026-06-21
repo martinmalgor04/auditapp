@@ -612,27 +612,26 @@
         "Tests: técnico asignado por área (no líder) puede ver/imprimir/descargar; técnico sin asignación efectiva recibe 403 en los tres; no-regresión de admin y del share público"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "blocked",
+      "_status_note": "Descartado 2026-06-21: con 2 auditorias separadas (IT + ERP) el bug no aplica. Retomar si se usan mixtas en el futuro."
     },
     {
       "id": 34,
       "name": "34_briefing_opcional",
-      "title": "Briefing opcional — avanzar sin esperar al cliente",
-      "description": "Permite avanzar una auditoría directamente a en_relevamiento sin pasar por el briefing externo del cliente (borrador o briefing_enviado → en_relevamiento). Elimina el cuello de botella operativo cuando el cliente no responde el link. El link de briefing sigue funcionando como opción. Además amplía el form técnico para mostrar los ítems filled_by=cliente (razón social, CUIT, referentes, etc.) de modo que el técnico pueda cargarlos durante la visita cuando no hubo briefing previo.",
-      "source": "Necesidad operativa SyS (2026-06-20, Martín): en 2 auditorías consecutivas el flujo de briefing externo generó demoras. Decisiones: sin nuevo estado; transición directa borrador/briefing_enviado → en_relevamiento; ampliar filtro filled_by en audit-form.ts; scoring sin cambios.",
+      "title": "Briefing opcional — completar internamente desde el backoffice",
+      "description": "La pagina de detalle ya muestra y guarda todos los items CAB (incluyendo filled_by=cliente). Solo falta un boton que transite la auditoria a briefing_completo desde el backoffice, sin requerir que el cliente responda el link externo. Nueva funcion completarBriefingInternamente() en briefing-link.ts + action en +page.server.ts + boton en +page.svelte. Sin cambios al schema, scoring ni render.",
+      "source": "Necesidad operativa SyS (2026-06-21, Martin): el briefing externo es un cuello de botella cuando el cliente no responde; la entrada de datos ya existe en el detalle de auditoria (CabSectionForm incluye filled_by=cliente); solo falta la transicion de estado.",
       "acceptance": [
-        "Acción Avanzar sin briefing transiciona borrador → en_relevamiento sin borrar el public_token",
-        "Acción Avanzar sin briefing transiciona briefing_enviado → en_relevamiento",
-        "La acción falla con error descriptivo desde briefing_completo o estados posteriores",
-        "El form técnico muestra ítems filled_by=cliente junto con los del técnico y admin",
-        "El técnico puede guardar respuestas para ítems filled_by=cliente desde el form interno",
-        "El scoring no cambia: ítems filled_by=cliente no puntúan",
-        "El bloqueo del CAB (#32) aplica igual a los ítems filled_by=cliente del CAB",
-        "El briefing externo (/briefing/[token]) no se modifica",
-        "Tests: transición directa, rechazo desde estados inválidos, form con ítems cliente, save-response para ítem cliente, no-regresión scoring y briefing externo"
+        "Boton Completar briefing internamente visible en detalle de auditoria cuando status=borrador o briefing_enviado",
+        "Accion desde borrador transiciona directo a briefing_completo sin modificar public_token",
+        "Accion desde briefing_enviado transiciona a briefing_completo sin invalidar el token existente",
+        "Accion desde cualquier otro estado falla con error descriptivo",
+        "Link externo /briefing/[token] sin cambios",
+        "Scoring, render de informe y cierre sin cambios",
+        "Tests: transiciones validas, rechazo desde estados invalidos, no-regresion briefing externo"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 35,

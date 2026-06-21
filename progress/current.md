@@ -1,5 +1,24 @@
 # Sesión actual
 
+## Feature implementada: #34 34_briefing_opcional (implementer, 2026-06-21) — COMPLETO, a espera de reviewer
+
+**Estado:** done. T1..T5 marcadas `[x]` en `specs/34_briefing_opcional/tasks.md`.
+Trazabilidad R1–R7 en `progress/impl_34_briefing_opcional.md`.
+
+**Qué se hizo:** función `completarBriefingInternamente()` en `briefing-link.ts` que transita
+`borrador`→`briefing_completo` (sin generar token) o `briefing_enviado`→`briefing_completo`
+(token intacto). Action homónima en `+page.server.ts` (requiere `requireStaff`). Botón "Completar
+briefing internamente" en `+page.svelte` visible en `borrador` y `briefing_enviado`. Sin cambios
+a schema, scoring, render, `/briefing/[token]`.
+
+**Tests:** `tests/backoffice/completar-briefing-internamente.test.ts` — 4/4 verde (T4a–T4d).
+Tests de briefing externo (`briefing-token`, `briefing-form`, `briefing-validation`) sin regresión.
+
+**Verificación:** `pnpm run check` 0 errores; `pnpm test` (suite nuevos) verde.
+NO commit/push.
+
+---
+
 ## Feature en curso: #31 31_descarga_html_informe (implementer, 2026-06-18)
 
 **Estado:** in_progress. Spec aprobado (puerta humana 2026-06-18). Plan T1..T13 (5 fases).

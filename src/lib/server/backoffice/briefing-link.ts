@@ -100,3 +100,14 @@ export function canShowBriefingLink(status: AuditStatus, publicToken: string | n
 export function getBriefingUrl(publicToken: string): string {
   return buildUrl(publicToken);
 }
+
+export async function completarBriefingInternamente(auditId: string): Promise<void> {
+  const audit = await getAuditForBriefing(auditId);
+  if (audit.status !== 'borrador' && audit.status !== 'briefing_enviado') {
+    throw new InvalidStateTransitionError(
+      'Solo se puede completar el briefing internamente desde borrador o briefing_enviado'
+    );
+  }
+  const sql = getSql();
+  await sql`UPDATE audit SET status = 'briefing_completo' WHERE id = ${auditId}`;
+}

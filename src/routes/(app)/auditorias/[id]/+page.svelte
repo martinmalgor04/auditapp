@@ -70,12 +70,24 @@
           Generar link de briefing
         </button>
       </form>
+      <form method="POST" action="?/completarBriefingInternamente" class="mt-2">
+        <button type="submit" class="text-sm text-sys-medio hover:text-sys-electrico hover:underline">
+          Completar briefing internamente
+        </button>
+      </form>
     {:else if data.audit.status === 'briefing_enviado' || data.audit.status === 'briefing_completo'}
       {#if data.briefingUrl}
         <CopyLinkButton url={data.briefingUrl} />
         <form method="POST" action="?/regenerateBriefingLink" class="mt-2">
           <button type="submit" class="text-sm text-[var(--sys-text-muted-light)] hover:text-sys-electrico hover:underline">
             Regenerar link
+          </button>
+        </form>
+      {/if}
+      {#if data.audit.status === 'briefing_enviado'}
+        <form method="POST" action="?/completarBriefingInternamente" class="mt-2">
+          <button type="submit" class="text-sm text-sys-medio hover:text-sys-electrico hover:underline">
+            Completar briefing internamente
           </button>
         </form>
       {/if}

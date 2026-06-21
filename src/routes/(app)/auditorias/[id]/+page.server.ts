@@ -8,6 +8,7 @@ import {
   updateAudit
 } from '$lib/server/backoffice/audits';
 import {
+  completarBriefingInternamente,
   generateBriefingLink,
   getBriefingUrl,
   regenerateBriefingLink
@@ -144,6 +145,16 @@ export const actions: Actions = {
     try {
       const result = await regenerateBriefingLink(params.id);
       return { success: true, url: result.url, token: result.token };
+    } catch (e) {
+      return failFromError(e);
+    }
+  },
+
+  completarBriefingInternamente: async ({ locals, params }) => {
+    requireStaff(locals);
+    try {
+      await completarBriefingInternamente(params.id);
+      return { success: true };
     } catch (e) {
       return failFromError(e);
     }
