@@ -29,18 +29,24 @@
   data-sys-shell={variant}
 >
   {#if showTopBar}
-    <div class="h-[var(--sys-top-bar)] bg-sys-electrico" aria-hidden="true"></div>
+    <div
+      class="bg-sys-electrico"
+      style="height: max(var(--sys-top-bar), env(safe-area-inset-top, 0px));"
+      aria-hidden="true"
+    ></div>
   {/if}
 
   {#if isDark}
-    <div class="flex min-h-[calc(100vh-var(--sys-top-bar))] flex-col items-center justify-center p-6">
+    <div class="flex min-h-[calc(100vh-var(--sys-top-bar))] flex-col items-center justify-center p-6"
+      style="padding-left: max(1.5rem, env(safe-area-inset-left, 1.5rem)); padding-right: max(1.5rem, env(safe-area-inset-right, 1.5rem));"
+    >
       <img src={logoSrc} alt="Servicios y Sistemas" class="mb-8 h-10 w-auto" />
       {@render children?.()}
     </div>
   {:else}
     <header
       class="sticky top-0 z-40 overflow-hidden bg-sys-blanco/95 backdrop-blur-sm"
-      style="box-shadow: var(--sys-shadow-header)"
+      style="box-shadow: var(--sys-shadow-header); padding-top: env(safe-area-inset-top, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);"
       data-sys-shell-header
     >
       <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6">
