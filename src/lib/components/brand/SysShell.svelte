@@ -45,7 +45,7 @@
     </div>
   {:else}
     <header
-      class="sticky top-0 z-40 overflow-hidden bg-sys-blanco/95 backdrop-blur-sm"
+      class="sticky top-0 z-40 bg-sys-blanco/95 backdrop-blur-sm"
       style="box-shadow: var(--sys-shadow-header); padding-top: env(safe-area-inset-top, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);"
       data-sys-shell-header
     >
