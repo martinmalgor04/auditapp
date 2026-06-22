@@ -1,19 +1,13 @@
 import type { AppUser } from '$lib/server/auth/types';
-
-function jsonError(message: string, status: number): Response {
-  return new Response(JSON.stringify({ error: message }), {
-    status,
-    headers: { 'Content-Type': 'application/json' }
-  });
-}
+import { apiError } from './envelope';
 
 /** 401 sin sesión, 403 si rol ≠ admin. Patrón extraído del export (R1). */
 export function requireAdminApi(locals: App.Locals): AppUser | Response {
   if (!locals.user) {
-    return jsonError('No autorizado', 401);
+    return apiError('No autorizado', 401);
   }
   if (locals.user.role !== 'admin') {
-    return jsonError('No tenés permiso para esta acción', 403);
+    return apiError('No tenés permiso para esta acción', 403);
   }
   return locals.user;
 }
@@ -21,7 +15,18 @@ export function requireAdminApi(locals: App.Locals): AppUser | Response {
 /** 401 sin sesión; devuelve el user con cualquier rol. */
 export function requireSessionApi(locals: App.Locals): AppUser | Response {
   if (!locals.user) {
-    return jsonError('No autorizado', 401);
+    return apiError('No autorizado', 401);
+  }
+  return locals.user;
+}
+
+/** 401 sin sesión, 403 si rol no es admin ni tecnico. */
+export function requireStaffApi(locals: App.Locals): AppUser | Response {
+  if (!locals.user) {
+    return apiError('No autorizado', 401);
+  }
+  if (locals.user.role !== 'admin' && locals.user.role !== 'tecnico') {
+    return apiError('No tenés permiso para esta acción', 403);
   }
   return locals.user;
 }
@@ -57,5 +62,5 @@ export function requireReportReadAccess(
   ) {
     return user;
   }
-  return jsonError('No tenés permiso para esta acción', 403);
+  return apiError('No tenés permiso para esta acción', 403);
 }

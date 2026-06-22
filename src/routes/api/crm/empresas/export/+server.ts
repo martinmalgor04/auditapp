@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { requireStaffApi } from '$lib/server/api/require-staff';
+import { requireStaffApi } from '$lib/server/api/guards';
 import { apiError } from '$lib/server/api/envelope';
 import { empresaListFiltersSchema } from '$lib/server/crm/schemas';
 import { listEmpresasForExport } from '$lib/server/db/empresa';

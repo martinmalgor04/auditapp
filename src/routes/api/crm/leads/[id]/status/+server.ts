@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { requireStaffApi } from '$lib/server/api/require-staff';
+import { requireStaffApi } from '$lib/server/api/guards';
 import { apiError, apiSuccess } from '$lib/server/api/envelope';
 import { crmStatusChangeSchema } from '$lib/server/crm/schemas';
 import { CrmInvalidTransitionError, CrmLeadNotFoundError } from '$lib/server/crm/errors';

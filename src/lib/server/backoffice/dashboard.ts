@@ -1,5 +1,6 @@
 import { getSql } from '$lib/server/db/client';
 import type { AuditStatus } from '$lib/server/db/audit-status';
+import type { AuditType } from '$lib/audit-types';
 import type { AppUser } from '$lib/server/auth/types';
 import { userAuditTypesScope } from '$lib/server/auth/audit-access';
 import type { DashboardAuditRow } from '$lib/backoffice/dashboard-types';
@@ -22,8 +23,8 @@ export type DashboardResult = {
 type RawRow = {
   id: string;
   name: string;
-  types: string[];
-  segment: string;
+  types: AuditType[];
+  segment: 'A' | 'B' | 'C';
   status: AuditStatus;
   scheduled_at: Date | null;
   razon_social: string;

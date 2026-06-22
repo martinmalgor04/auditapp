@@ -1,7 +1,7 @@
 import type { RequestHandler } from './$types';
-import { requireStaffApi } from '$lib/server/api/require-staff';
+import { requireStaffApi } from '$lib/server/api/guards';
 import { requireAdminApi } from '$lib/server/api/guards';
-import { apiError, apiSuccess } from '$lib/server/api/envelope';
+import { apiError, apiSuccess, parseJsonBody } from '$lib/server/api/envelope';
 import {
   crmLeadCreateSchema,
   crmListFiltersSchema
@@ -31,12 +31,8 @@ export const POST: RequestHandler = async ({ locals, request }) => {
     return user;
   }
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return apiError('JSON inválido', 400);
-  }
+  const body = await parseJsonBody<unknown>(request);
+  if (body instanceof Response) return body;
 
   const parsed = crmLeadCreateSchema.safeParse(body);
   if (!parsed.success) {

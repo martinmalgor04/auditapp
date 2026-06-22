@@ -1,5 +1,5 @@
 import { AuditNotFoundError } from '$lib/server/backoffice/errors';
-import { getInstanceId } from '$lib/env';
+import { getInstanceId } from '$lib/server/env';
 import {
   loadAttachmentsWithItemKeys,
   loadAuditForBundle,

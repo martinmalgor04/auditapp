@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { getSql } from '$lib/server/db/client';
-import { getServerEnv } from '$lib/env';
+import { getServerEnv } from '$lib/server/env';
 import { AuditNotFoundError, InvalidStateTransitionError } from './errors';
 import type { AuditStatus } from '$lib/server/db/audit-status';
 

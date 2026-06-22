@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { serverEnvSchema } from '../src/lib/env';
+import { serverEnvSchema } from '../src/lib/server/env';
 
 describe('smoke', () => {
   it('adds numbers correctly', () => {

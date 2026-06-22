@@ -1,6 +1,6 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { apiError, apiSuccess } from '$lib/server/api/envelope';
-import { requireStaffApi } from '$lib/server/api/require-staff';
+import { requireStaffApi } from '$lib/server/api/guards';
 import { getReunionSessionById, updateReunionSessionStatus } from '$lib/server/db/reunion-sessions';
 import { upsertReunionTranscript } from '$lib/server/db/reunion-transcripts';
 import { assertReunionAccess, assertReunionEditableStatus } from '$lib/server/reunion/guards';

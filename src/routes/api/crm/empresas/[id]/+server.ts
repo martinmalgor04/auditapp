@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
-import { requireStaffApi } from '$lib/server/api/require-staff';
-import { apiError, apiSuccess } from '$lib/server/api/envelope';
+import { requireStaffApi } from '$lib/server/api/guards';
+import { apiError, apiSuccess, parseJsonBody } from '$lib/server/api/envelope';
 import { empresaUpdateSchema } from '$lib/server/crm/schemas';
 import { EmpresaNotFoundError } from '$lib/server/crm/errors';
 import { updateEmpresa } from '$lib/server/db/empresa';
@@ -18,12 +18,8 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
     return user;
   }
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return apiError('JSON inválido', 400);
-  }
+  const body = await parseJsonBody<unknown>(request);
+  if (body instanceof Response) return body;
 
   const parsed = empresaUpdateSchema.safeParse(body);
   if (!parsed.success) {

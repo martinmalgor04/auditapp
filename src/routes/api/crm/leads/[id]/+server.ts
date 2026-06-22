@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 import { requireAdminApi } from '$lib/server/api/guards';
-import { apiError, apiSuccess } from '$lib/server/api/envelope';
+import { apiError, apiSuccess, parseJsonBody } from '$lib/server/api/envelope';
 import { crmLeadUpdateSchema } from '$lib/server/crm/schemas';
 import {
   CrmLeadDiscardedError,
@@ -21,12 +21,8 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
     return user;
   }
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return apiError('JSON inválido', 400);
-  }
+  const body = await parseJsonBody<unknown>(request);
+  if (body instanceof Response) return body;
 
   if (body && typeof body === 'object') {
     const forbidden = ['email', 'source'] as const;

@@ -1,6 +1,6 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { apiError, apiSuccess } from '$lib/server/api/envelope';
-import { requireStaffApi } from '$lib/server/api/require-staff';
+import { apiError, apiSuccess, parseJsonBody } from '$lib/server/api/envelope';
+import { requireStaffApi } from '$lib/server/api/guards';
 import {
   AttachmentNotFoundError,
   AuditNotFoundError,
@@ -21,12 +21,8 @@ export const DELETE: RequestHandler = async ({ params, request, locals }) => {
     return apiError('auditId y attachmentId requeridos', 400);
   }
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return apiError('JSON inválido', 400);
-  }
+  const body = await parseJsonBody<unknown>(request);
+  if (body instanceof Response) return body;
 
   const parsed = deleteAttachmentSchema.safeParse(body);
   if (!parsed.success) {

@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { getServerEnv } from '$lib/env';
+import { getServerEnv } from '$lib/server/env';
 import { logger } from '$lib/server/logger';
 import {
   createShareRevokingPrevious,

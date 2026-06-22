@@ -1,7 +1,7 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { ZodError } from 'zod';
-import { apiError, apiSuccess } from '$lib/server/api/envelope';
-import { requireStaffApi } from '$lib/server/api/require-staff';
+import { apiError, apiSuccess, parseJsonBody } from '$lib/server/api/envelope';
+import { requireStaffApi } from '$lib/server/api/guards';
 import {
   AuditFormNotAllowedError,
   AuditFormNotEditableError,
@@ -20,12 +20,8 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
     return apiError('auditId requerido', 400);
   }
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return apiError('JSON inválido', 400);
-  }
+  const body = await parseJsonBody<unknown>(request);
+  if (body instanceof Response) return body;
 
   try {
     const result = await importFormBackup(auditId, userOrResponse, body);

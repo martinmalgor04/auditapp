@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 import { requireCrmToken } from '$lib/server/api/require-crm-token';
-import { apiError, apiSuccess } from '$lib/server/api/envelope';
+import { apiError, apiSuccess, parseJsonBody } from '$lib/server/api/envelope';
 import { crmLeadBatchSchema } from '$lib/server/crm/schemas';
 import { upsertLeadsBatch } from '$lib/server/db/crm-leads';
 
@@ -10,12 +10,8 @@ export const POST: RequestHandler = async ({ request }) => {
     return authError;
   }
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return apiError('JSON inválido', 400);
-  }
+  const body = await parseJsonBody<unknown>(request);
+  if (body instanceof Response) return body;
 
   const parsed = crmLeadBatchSchema.safeParse(body);
   if (!parsed.success) {

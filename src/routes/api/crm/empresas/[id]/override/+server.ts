@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { requireStaffApi } from '$lib/server/api/require-staff';
+import { requireStaffApi } from '$lib/server/api/guards';
 import { apiError, apiSuccess } from '$lib/server/api/envelope';
 import { empresaOverrideSchema } from '$lib/server/crm/schemas';
 import { EmpresaNotFoundError } from '$lib/server/crm/errors';

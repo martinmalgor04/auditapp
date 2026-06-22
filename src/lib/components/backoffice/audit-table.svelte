@@ -4,13 +4,9 @@
   import AuditProgressBar from './audit-progress-bar.svelte';
   import CopyLinkButton from './copy-link-button.svelte';
   import AuditRowActions from './audit-row-actions.svelte';
+  import { formatDate } from '$lib/utils/format';
 
   let { rows }: { rows: DashboardAuditRow[] } = $props();
-
-  function formatDate(d: Date | null): string {
-    if (!d) return '—';
-    return new Date(d).toLocaleDateString('es-AR');
-  }
 </script>
 
 <div class="sys-card hidden overflow-hidden md:block" data-testid="audit-table-desktop">
