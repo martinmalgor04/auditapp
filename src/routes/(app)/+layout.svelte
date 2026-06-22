@@ -21,7 +21,7 @@
 
 <SysShell variant="light">
   {#snippet nav()}
-    <nav class="flex items-center gap-1 whitespace-nowrap text-sm font-medium">
+    <nav class="flex flex-col gap-0.5 text-sm font-medium md:flex-row md:items-center md:gap-1 md:whitespace-nowrap">
       <a href="/tablero" class={navClass('/tablero')}>Tablero</a>
       <a href="/crm" class={navClass('/crm')}>CRM</a>
       <a href="/auditorias/new" class={navClass('/auditorias/new')}>Nueva auditoría</a>

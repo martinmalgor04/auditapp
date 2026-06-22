@@ -20,6 +20,16 @@
   const isDark = $derived(variant === 'dark');
   const logoSrc = $derived(isDark ? '/brand/sys-horizontal-w.png' : '/brand/sys-horizontal-b.png');
   const logoHref = $derived(isDark ? undefined : '/tablero');
+
+  let menuOpen = $state(false);
+
+  function toggleMenu() {
+    menuOpen = !menuOpen;
+  }
+
+  function closeMenu() {
+    menuOpen = false;
+  }
 </script>
 
 <div
@@ -53,25 +63,46 @@
         <div class="flex min-w-0 items-center justify-between gap-4">
           <div class="flex min-w-0 items-center gap-6">
             {#if logoHref}
-              <a href={logoHref} class="shrink-0">
+              <a href={logoHref} class="shrink-0" onclick={closeMenu}>
                 <img src={logoSrc} alt="Servicios y Sistemas" class="h-8 w-auto" />
               </a>
             {:else}
               <img src={logoSrc} alt="Servicios y Sistemas" class="h-8 w-auto shrink-0" />
             {/if}
+            <!-- Nav desktop -->
             <div class="hidden min-w-0 md:block">
               {@render nav?.()}
             </div>
           </div>
-          <div class="shrink-0">
+
+          <div class="flex shrink-0 items-center gap-2">
             {@render headerActions?.()}
+            <!-- Hamburger mobile -->
+            <button
+              class="flex h-10 w-10 flex-col items-center justify-center gap-[5px] rounded-sys md:hidden"
+              onclick={toggleMenu}
+              aria-label="Menú"
+              aria-expanded={menuOpen}
+            >
+              <span class="h-0.5 w-5 rounded-full bg-sys-profundo transition-all duration-200 {menuOpen ? 'translate-y-[7px] rotate-45' : ''}"></span>
+              <span class="h-0.5 w-5 rounded-full bg-sys-profundo transition-all duration-200 {menuOpen ? 'opacity-0' : ''}"></span>
+              <span class="h-0.5 w-5 rounded-full bg-sys-profundo transition-all duration-200 {menuOpen ? '-translate-y-[7px] -rotate-45' : ''}"></span>
+            </button>
           </div>
         </div>
-        <div class="-mx-4 mt-2 overflow-x-auto px-4 pb-0.5 md:hidden">
-          {@render nav?.()}
-        </div>
       </div>
+
+      <!-- Menú desplegable mobile -->
+      {#if menuOpen}
+        <div class="border-t border-[var(--sys-border-subtle)] bg-sys-blanco px-4 pb-3 pt-2 md:hidden">
+          <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+          <div onclick={closeMenu}>
+            {@render nav?.()}
+          </div>
+        </div>
+      {/if}
     </header>
+
     <main class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
       {@render children?.()}
     </main>
