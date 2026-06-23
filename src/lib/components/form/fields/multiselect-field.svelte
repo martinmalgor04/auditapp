@@ -26,9 +26,9 @@
 </script>
 
 <div class="space-y-2">
-  <span id="{id}-label" class="block text-sm font-medium text-slate-800">{label}</span>
+  <span id="{id}-label" class="block text-sm font-medium text-sys-profundo">{label}</span>
   {#if helpText}
-    <p class="text-xs text-slate-500">{helpText}</p>
+    <p class="text-xs text-[var(--sys-text-muted-light)]">{helpText}</p>
   {/if}
   <div class="space-y-2" role="group" aria-labelledby="{id}-label">
     {#each choices as choice}
@@ -36,7 +36,7 @@
         <input
           type="checkbox"
           checked={value.includes(choice)}
-          class="h-5 w-5 rounded border-slate-300"
+          class="h-5 w-5 rounded border-[var(--sys-border-subtle)]"
           onchange={() => toggle(choice)}
         />
         <span class="text-sm">{choice}</span>

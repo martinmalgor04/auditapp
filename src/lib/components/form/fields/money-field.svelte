@@ -22,5 +22,5 @@
 
 <div class="relative">
   <NumberField {id} {label} {helpText} bind:value {required} {onchange} />
-  <span class="absolute right-3 top-[2.6rem] text-xs text-slate-500">{currency}</span>
+  <span class="absolute right-3 top-[2.6rem] text-xs text-[var(--sys-text-muted-light)]">{currency}</span>
 </div>

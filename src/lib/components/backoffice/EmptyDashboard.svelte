@@ -1,46 +1,31 @@
 <script lang="ts">
   interface Props {
-    hasFilters: boolean;
+    hasFilters?: boolean;
   }
 
-  let { hasFilters }: Props = $props();
+  let { hasFilters = false }: Props = $props();
 </script>
 
-<div class="sys-card-pad flex flex-col items-center justify-center gap-6 py-12 text-center">
+<div class="flex flex-col items-center justify-center py-12 px-4 text-center">
   <svg
-    class="h-16 w-16 text-[var(--sys-text-muted-light)]"
-    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
     fill="none"
+    viewBox="0 0 24 24"
     stroke="currentColor"
-    stroke-width="1.5"
+    class="w-16 h-16 text-sys-medio mb-4"
   >
-    <path d="M22 19a2 2 0 0 1-2.414-1.802l-.796-4.374A1 1 0 0 0 17.838 12H.05a1 1 0 0 0-.998 1.041l.541 5.477A2 2 0 0 0 1.594 19" />
-    <path d="M2.049 5H21.95a2 2 0 0 0 1.974-2.41l-.35-1.921A2 2 0 0 0 20.618 0H3.382a2 2 0 0 0-1.956 1.669l-.35 1.921A2 2 0 0 0 2.05 5Z" />
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
   </svg>
-
+  
   {#if hasFilters}
-    <div class="flex flex-col gap-3">
-      <p class="text-sm text-sys-profundo font-medium">
-        No hay auditorías con estos filtros
-      </p>
-      <p class="text-xs text-[var(--sys-text-muted-light)]">
-        Intenta cambiar los filtros o crear una nueva auditoría
-      </p>
-      <a href="/tablero" class="sys-btn-secondary sys-btn-sm inline-block">
-        Limpiar filtros
-      </a>
-    </div>
+    <h3 class="text-lg font-semibold text-sys-profundo mb-2">Sin resultados</h3>
+    <p class="text-sm text-sys-medio mb-4">No hay auditorías que coincidan con los filtros aplicados.</p>
+    <a href="?" class="text-sm font-medium text-sys-electrico hover:underline">Limpiar filtros</a>
   {:else}
-    <div class="flex flex-col gap-3">
-      <p class="text-sm text-sys-profundo font-medium">
-        Todavía no hay auditorías
-      </p>
-      <p class="text-xs text-[var(--sys-text-muted-light)]">
-        Crea una nueva para comenzar
-      </p>
-      <a href="/auditorias/new" class="sys-btn-primary sys-btn-sm inline-block">
-        Nueva auditoría
-      </a>
-    </div>
+    <h3 class="text-lg font-semibold text-sys-profundo mb-2">Todavía no hay auditorías</h3>
+    <p class="text-sm text-sys-medio mb-4">Crea tu primera auditoría para comenzar.</p>
+    <a href="/auditorias/new" class="inline-block px-4 py-2 rounded bg-sys-electrico text-white text-sm font-medium hover:opacity-90">
+      Nueva auditoría
+    </a>
   {/if}
 </div>

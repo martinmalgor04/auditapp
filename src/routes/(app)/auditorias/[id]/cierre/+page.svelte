@@ -41,6 +41,7 @@
   <div class="flex items-start justify-between gap-4">
     <div>
       <h1 class="text-2xl font-bold text-slate-900">Cierre de auditoría</h1>
+      <p class="font-mono text-sm text-slate-700">{data.audit.refCode}</p>
       <p class="text-sm text-slate-600">{data.audit.razonSocial}</p>
     </div>
     <a href="/auditorias/{data.audit.id}" class="text-sm text-blue-700 underline">Volver</a>

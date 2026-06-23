@@ -45,6 +45,7 @@
   <div class="flex items-start justify-between gap-4">
     <div class="space-y-1">
       <h1 class="sys-page-title">{data.audit.razonSocial}</h1>
+      <p class="font-mono text-sm text-sys-electrico">{data.audit.refCode}</p>
       <p class="sys-muted">{data.audit.types.join(', ')} · Seg. {data.audit.segment}</p>
     </div>
     <AuditStatusBadge status={data.audit.status} />

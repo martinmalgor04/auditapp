@@ -28,9 +28,9 @@
 </script>
 
 <div class="space-y-2">
-  <span id="{id}-label" class="block text-sm font-medium text-slate-800">{label}</span>
+  <span id="{id}-label" class="block text-sm font-medium text-sys-profundo">{label}</span>
   {#if helpText}
-    <p class="text-xs text-slate-500">{helpText}</p>
+    <p class="text-xs text-[var(--sys-text-muted-light)]">{helpText}</p>
   {/if}
   <div class="space-y-2" aria-labelledby="{id}-label">
     {#each value as row, i}
@@ -38,13 +38,13 @@
         <input
           type="text"
           bind:value={value[i]}
-          class="flex-1 min-h-[var(--sys-touch-min)] rounded-[var(--sys-radius)] border border-slate-300 px-3 py-2 text-base"
+          class="flex-1 min-h-[var(--sys-touch-min)] rounded-[var(--sys-radius)] border border-[var(--sys-border-subtle)] px-3 py-2 text-base"
           oninput={onchange}
         />
         {#if value.length > 1}
           <button
             type="button"
-            class="min-h-[var(--sys-touch-min)] px-3 text-sm text-slate-500"
+            class="min-h-[var(--sys-touch-min)] px-3 text-sm text-[var(--sys-text-muted-light)]"
             onclick={() => removeRow(i)}
           >
             Quitar

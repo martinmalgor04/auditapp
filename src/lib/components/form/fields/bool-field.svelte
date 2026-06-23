@@ -36,9 +36,9 @@
 </script>
 
 <div class="space-y-2">
-  <span id="{id}-label" class="block text-sm font-medium text-slate-800">{label}</span>
+  <span id="{id}-label" class="block text-sm font-medium text-sys-profundo">{label}</span>
   {#if helpText}
-    <p class="text-xs text-slate-500">{helpText}</p>
+    <p class="text-xs text-[var(--sys-text-muted-light)]">{helpText}</p>
   {/if}
   <div class="flex flex-wrap gap-2" role="radiogroup" aria-labelledby="{id}-label">
     {#each options as opt}

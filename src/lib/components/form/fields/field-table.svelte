@@ -123,9 +123,9 @@
 
 <div class="space-y-2" data-field-type="table">
   <div>
-    <span class="block text-sm font-medium text-slate-800">{label}</span>
+    <span class="block text-sm font-medium text-sys-profundo">{label}</span>
     {#if helpText}
-      <p class="text-xs text-slate-500">{helpText}</p>
+      <p class="text-xs text-[var(--sys-text-muted-light)]">{helpText}</p>
     {/if}
   </div>
 
@@ -139,7 +139,7 @@
       {@const fb = effectiveFeedback(row.row_id)}
       <!-- T5 — Flash y error en la fila (R6, R7, R8) -->
       <div
-        class="rounded-lg border border-slate-200 p-3 space-y-2 row-shell"
+        class="rounded-lg border border-[var(--sys-border-subtle)] p-3 space-y-2 row-shell"
         class:row-flash={rowShowsFlash(fb)}
         class:row-error={rowShowsError(fb)}
         data-row-id={row.row_id}
@@ -148,10 +148,10 @@
         <div class="grid gap-2">
           {#each columns as col (col.key)}
             <label class="block space-y-1">
-              <span class="text-xs text-slate-600">{col.label}</span>
+              <span class="text-xs text-sys-medio">{col.label}</span>
               <input
                 type={col.type === 'number' ? 'number' : col.type === 'date' ? 'date' : 'text'}
-                class="w-full min-h-[var(--sys-touch-min)] rounded border border-slate-300 px-2 py-1 text-sm"
+                class="w-full min-h-[var(--sys-touch-min)] rounded border border-[var(--sys-border-subtle)] px-2 py-1 text-sm"
                 value={String(row.cells[col.key] ?? '')}
                 oninput={(e) => updateCell(row.row_id, col.key, e.currentTarget.value)}
               />
@@ -175,7 +175,7 @@
           </button>
           <button
             type="button"
-            class="min-h-[var(--sys-touch-min)] min-w-[var(--sys-touch-min)] rounded border border-slate-300 px-3 text-sm"
+            class="min-h-[var(--sys-touch-min)] min-w-[var(--sys-touch-min)] rounded border border-[var(--sys-border-subtle)] px-3 text-sm"
             aria-label="Tomar foto de fila"
             onclick={() => void oncamera?.(row.row_id)}
           >
@@ -210,7 +210,7 @@
 
   <button
     type="button"
-    class="w-full min-h-[var(--sys-touch-min)] rounded-[var(--sys-radius)] border border-dashed border-slate-300 text-sm"
+    class="w-full min-h-[var(--sys-touch-min)] rounded-[var(--sys-radius)] border border-dashed border-[var(--sys-border-subtle)] text-sm"
     onclick={addRow}
   >
     + Agregar fila

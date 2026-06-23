@@ -22,9 +22,9 @@
 
 <div class="space-y-2" data-field-type="file_ref">
   <div>
-    <span class="block text-sm font-medium text-slate-800">{label}</span>
+    <span class="block text-sm font-medium text-sys-profundo">{label}</span>
     {#if helpText}
-      <p class="text-xs text-slate-500">{helpText}</p>
+      <p class="text-xs text-[var(--sys-text-muted-light)]">{helpText}</p>
     {/if}
   </div>
 
@@ -40,7 +40,7 @@
     <button
       type="button"
       id="{id}-gallery"
-      class="flex-1 min-h-[var(--sys-touch-min)] rounded-[var(--sys-radius)] border border-slate-300 text-sm font-medium"
+      class="flex-1 min-h-[var(--sys-touch-min)] rounded-[var(--sys-radius)] border border-[var(--sys-border-subtle)] text-sm font-medium"
       onclick={() => ongallery?.()}
     >
       Galería
