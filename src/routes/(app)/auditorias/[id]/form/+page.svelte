@@ -5,6 +5,8 @@
   import ExportImportPanel from '$lib/components/form/export-import-panel.svelte';
   import LiveSectionScore from '$lib/components/form/live-section-score.svelte';
   import SaveIndicator, { type SaveIndicatorState } from '$lib/components/form/save-indicator.svelte';
+  import SaveErrorToast from '$lib/components/form/SaveErrorToast.svelte';
+  import QueuePendingIndicator from '$lib/components/form/QueuePendingIndicator.svelte';
   import SectionNav from '$lib/components/form/section-nav.svelte';
   import SysButton from '$lib/components/brand/SysButton.svelte';
   import { createAutosave } from '$lib/client/form/autosave';
@@ -20,7 +22,7 @@
   import { prepareImageForUpload } from '$lib/client/form/image-pipeline';
   import { uploadPhotoFlow, type PhotoTableRow } from '$lib/client/form/photo-upload';
   import { deleteAttachmentFlow } from '$lib/client/form/attachment-delete';
-  import { enqueueSave, flushQueue, listQueued, registerOnlineFlush } from '$lib/client/form/retry-queue';
+  import { enqueueSave, flushQueue, listQueued, registerOnlineFlush, type QueuedSave } from '$lib/client/form/retry-queue';
   import type { PageData } from './$types';
 
   let { data, form }: { data: PageData; form?: { error?: string; warnings?: Array<{ label: string }> } } =
@@ -30,6 +32,8 @@
   let saveState = $state<SaveIndicatorState>('idle');
   let savingItemId = $state<string | null>(null);
   let saveErrorMessage = $state<string | null>(null);
+  let retryQueue = $state<QueuedSave[]>([]);
+  let toastOpen = $state(false);
   let sectionScores = $state(
     new Map(data.sections.map((s) => [s.id, { sectionId: s.id, score: s.liveScore, band: s.scoreBand }]))
   );
@@ -93,6 +97,7 @@
     onStateChange: (s, message) => {
       saveState = s;
       saveErrorMessage = s === 'error' ? (message ?? 'Error al guardar') : null;
+      toastOpen = s === 'error';
       // Limpiar savingItemId cuando el estado vuelve a idle (R1, R10)
       if (s === 'idle') savingItemId = null;
     },
@@ -111,8 +116,22 @@
       saveState = 'saved';
     });
     void flushQueue(data.auditId, autosave.patch);
+    // Cargar la cola de reintentos
+    void (async () => {
+      const queued = await listQueued(data.auditId);
+      retryQueue = queued;
+    })();
     return cleanup;
   });
+
+  // Función para reintentar cuando el usuario hace click en el botón Reintentar del toast
+  async function handleRetry() {
+    saveState = 'saving';
+    toastOpen = false;
+    await flushQueue(data.auditId, autosave.patch);
+    const queued = await listQueued(data.auditId);
+    retryQueue = queued;
+  }
 
   async function saveItem(
     itemId: string,
@@ -459,3 +478,14 @@
     </form>
   </div>
 </div>
+
+<!-- Toast de error al guardar -->
+<SaveErrorToast
+  saveState={saveState}
+  errorMessage={saveErrorMessage}
+  onretry={handleRetry}
+  onclose={() => (toastOpen = false)}
+/>
+
+<!-- Indicador de guardado pendiente -->
+<QueuePendingIndicator {retryQueue} />
