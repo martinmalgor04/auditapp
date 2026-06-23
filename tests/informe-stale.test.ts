@@ -46,7 +46,7 @@ describe('markReportsStale (#39 R13)', () => {
     for (let i = 1; i <= count; i++) {
       const [row] = await sql<{ id: string }[]>`
         INSERT INTO audit_report (audit_id, version, status, canonical_json, schema_version, requested_by)
-        VALUES (${auditId}, ${i}, 'aprobado', '{}'::jsonb, '1.0', ${admin!.id})
+        VALUES (${auditId}, ${i}, 'borrador', '{}'::jsonb, '1.0', ${admin!.id})
         RETURNING id
       `;
       reportIds.push(row.id);
@@ -129,12 +129,12 @@ describe('clearReportStale (#39 R15)', () => {
 
     const [row1] = await sql<{ id: string }[]>`
       INSERT INTO audit_report (audit_id, version, status, canonical_json, schema_version, requested_by)
-      VALUES (${auditId}, 1, 'aprobado', '{}'::jsonb, '1.0', ${admin!.id})
+      VALUES (${auditId}, 1, 'borrador', '{}'::jsonb, '1.0', ${admin!.id})
       RETURNING id
     `;
     const [row2] = await sql<{ id: string }[]>`
       INSERT INTO audit_report (audit_id, version, status, canonical_json, schema_version, requested_by)
-      VALUES (${auditId}, 2, 'aprobado', '{}'::jsonb, '1.0', ${admin!.id})
+      VALUES (${auditId}, 2, 'borrador', '{}'::jsonb, '1.0', ${admin!.id})
       RETURNING id
     `;
 
@@ -171,7 +171,7 @@ describe('clearReportStale (#39 R15)', () => {
 
     const [row] = await sql<{ id: string }[]>`
       INSERT INTO audit_report (audit_id, version, status, canonical_json, schema_version, requested_by)
-      VALUES (${auditId}, 1, 'aprobado', '{}'::jsonb, '1.0', ${admin!.id})
+      VALUES (${auditId}, 1, 'borrador', '{}'::jsonb, '1.0', ${admin!.id})
       RETURNING id
     `;
 

@@ -23,10 +23,14 @@ describe('closure reopen', () => {
     await teardownTestDb();
   });
 
-  it('admin reopen to en_cierre clears closed fields; tecnico gets 403', async () => {
+  it('admin reopen to en_cierre clears closed fields; tecnico no asignado gets 403', async () => {
     const { auditId } = await seedClosureAuditFixture(sql, { status: 'cerrada', publicToken: token });
+    const { auditId: unassignedAuditId } = await seedClosureAuditFixture(sql, {
+      status: 'cerrada',
+      publicToken: 'reopen-unassigned-token'
+    });
     const admin = await findUserByEmail(sql, 'admin@serviciosysistemas.com.ar');
-    const tech = await findUserByEmail(sql, 'facu@serviciosysistemas.com.ar');
+    const unassignedTech = await findUserByEmail(sql, 'simon@serviciosysistemas.com.ar');
 
     await reopenAudit(auditId, admin!);
 
@@ -42,6 +46,6 @@ describe('closure reopen', () => {
     expect(closure.closed_at).toBeNull();
     expect(closure.closed_by).toBeNull();
 
-    await expect(reopenAudit(auditId, tech!)).rejects.toThrow(ForbiddenError);
+    await expect(reopenAudit(unassignedAuditId, unassignedTech!)).rejects.toThrow(ForbiddenError);
   });
 });

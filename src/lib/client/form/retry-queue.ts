@@ -3,9 +3,12 @@ import type { PatchOutcome, SavePayload } from './autosave';
 /** Acepta boolean legado (true=saved, false=offline) o el PatchOutcome nuevo. */
 export type PatchFn = (payload: SavePayload) => Promise<boolean | PatchOutcome>;
 
-const DB_NAME = 'auditapp_form';
-const STORE_NAME = 'form_retry_queue';
-const DB_VERSION = 1;
+export const DB_NAME = 'auditapp_form';
+export const DB_VERSION = 2;
+export const RETRY_STORE_NAME = 'form_retry_queue';
+export const DRAFT_STORE_NAME = 'form_draft';
+
+const STORE_NAME = RETRY_STORE_NAME;
 
 export type QueuedSave = SavePayload & {
   auditId: string;
@@ -13,18 +16,28 @@ export type QueuedSave = SavePayload & {
   attempts: number;
 };
 
-function openDb(): Promise<IDBDatabase> {
+export function upgradeFormDb(db: IDBDatabase, oldVersion: number): void {
+  if (!db.objectStoreNames.contains(RETRY_STORE_NAME)) {
+    db.createObjectStore(RETRY_STORE_NAME, { keyPath: ['auditId', 'itemId'] });
+  }
+  if (oldVersion < 2 && !db.objectStoreNames.contains(DRAFT_STORE_NAME)) {
+    db.createObjectStore(DRAFT_STORE_NAME, { keyPath: 'auditId' });
+  }
+}
+
+export function openFormDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: ['auditId', 'itemId'] });
-      }
+    req.onupgradeneeded = (event) => {
+      upgradeFormDb(req.result, (event as IDBVersionChangeEvent).oldVersion);
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
   });
+}
+
+function openDb(): Promise<IDBDatabase> {
+  return openFormDb();
 }
 
 export async function enqueueSave(entry: QueuedSave): Promise<void> {

@@ -13,7 +13,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type postgres from 'postgres';
 import { setSqlForTests } from '../src/lib/server/db/client';
 import { setupTestDb, teardownTestDb } from './helpers/db';
-import { findUserByEmail, findUserIdByEmail } from './helpers/auth';
+import { findUserByEmail } from './helpers/auth';
 import { insertTestAuditRow } from './helpers/backoffice';
 import { reopenAudit } from '../src/lib/server/scoring/persist';
 import {
@@ -78,7 +78,7 @@ describe('reopenAudit (#39 R8-R12)', () => {
     await sql`
       INSERT INTO audit_report (audit_id, version, status, canonical_json, schema_version, requested_by)
       VALUES (
-        ${auditId}, 1, 'aprobado', '{}'::jsonb, '1.0',
+        ${auditId}, 1, 'borrador', '{}'::jsonb, '1.0',
         ${admin!.id}
       )
     `;
@@ -93,24 +93,15 @@ describe('reopenAudit (#39 R8-R12)', () => {
 
   it('técnico no asignado recibe ForbiddenError (R10)', async () => {
     const { auditId } = await seedWithStatus('cerrada');
+    const unassignedTech = await findUserByEmail(sql, 'simon@serviciosysistemas.com.ar');
 
-    // Crear un AppUser fake de técnico que no está asignado
-    const fakeUnassignedTech: AppUser = {
-      id: 'fake-unassigned-id',
-      email: 'otro@test.com',
-      name: 'Otro Técnico',
-      role: 'tecnico',
-      active: true,
-      auditTypes: ['it']
-    };
-
-    await expect(reopenAudit(auditId, fakeUnassignedTech)).rejects.toThrow(ForbiddenError);
+    await expect(reopenAudit(auditId, unassignedTech!)).rejects.toThrow(ForbiddenError);
   });
 
   it('rol cliente recibe ForbiddenError (R11)', async () => {
     const { auditId } = await seedWithStatus('cerrada');
     const clienteUser: AppUser = {
-      id: 'some-id',
+      id: '00000000-0000-4000-8000-000000000099',
       email: 'cliente@test.com',
       name: 'Cliente',
       role: 'cliente' as never,

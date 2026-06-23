@@ -11,7 +11,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type postgres from 'postgres';
 import { setSqlForTests } from '../src/lib/server/db/client';
 import { setupTestDb, teardownTestDb } from './helpers/db';
-import { findUserByEmail, findUserIdByEmail } from './helpers/auth';
+import { findUserByEmail } from './helpers/auth';
 import { insertTestAuditRow } from './helpers/backoffice';
 import {
   assertFormReadonlyAccess,
@@ -60,19 +60,9 @@ describe('assertFormReadonlyAccess (#39 R5-R7)', () => {
   });
 
   it('técnico no asignado recibe AuditFormNotAllowedError (R7)', async () => {
-    // Crear auditoría asignada a facu, intentar acceder con otro técnico
     const { header } = await seedClosedAudit('facu@serviciosysistemas.com.ar');
-    const otroTechId = await findUserIdByEmail(sql, 'admin@serviciosysistemas.com.ar');
-    // Usamos un usuario tecnico no asignado: creamos un stub de AppUser
-    const unassignedTech = {
-      id: otroTechId + '-fake',
-      email: 'other@test.com',
-      name: 'Other',
-      role: 'tecnico' as const,
-      active: true,
-      auditTypes: ['it' as const]
-    };
-    await expect(assertFormReadonlyAccess(header, unassignedTech)).rejects.toThrow(
+    const unassignedTech = await findUserByEmail(sql, 'simon@serviciosysistemas.com.ar');
+    await expect(assertFormReadonlyAccess(header, unassignedTech!)).rejects.toThrow(
       AuditFormNotAllowedError
     );
   });

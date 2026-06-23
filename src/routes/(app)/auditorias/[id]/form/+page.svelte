@@ -1,12 +1,14 @@
 <script lang="ts">
   import { invalidateAll } from '$app/navigation';
   import { enhance } from '$app/forms';
+  import { onMount } from 'svelte';
   import FieldRenderer from '$lib/components/form/field-renderer.svelte';
   import ExportImportPanel from '$lib/components/form/export-import-panel.svelte';
   import LiveSectionScore from '$lib/components/form/live-section-score.svelte';
   import SaveIndicator, { type SaveIndicatorState } from '$lib/components/form/save-indicator.svelte';
   import SaveErrorToast from '$lib/components/form/SaveErrorToast.svelte';
   import QueuePendingIndicator from '$lib/components/form/QueuePendingIndicator.svelte';
+  import DraftRecoveryBanner from '$lib/components/form/DraftRecoveryBanner.svelte';
   import SectionNav from '$lib/components/form/section-nav.svelte';
   import SysButton from '$lib/components/brand/SysButton.svelte';
   import { createAutosave } from '$lib/client/form/autosave';
@@ -16,6 +18,13 @@
     mergeResponsesForExport,
     validateBackupJson
   } from '$lib/client/form/backup';
+  import {
+    deleteDraft,
+    loadDraft,
+    saveDraft,
+    type FormDraft
+  } from '$lib/client/form/draft-store';
+  import { restoreDraft, buildDraftPayload, maybeDeleteDraftWhenSynced, discardPendingDraft, resolvePendingDraftOnMount } from '$lib/client/form/draft-recovery';
   import { updateScoreFromApi } from '$lib/client/form/live-score';
   import { itemStatus, sectionProgress } from '$lib/client/form/item-status';
   import { nextPending } from '$lib/client/form/next-pending';
@@ -34,6 +43,7 @@
   let saveErrorMessage = $state<string | null>(null);
   let retryQueue = $state<QueuedSave[]>([]);
   let toastOpen = $state(false);
+  let pendingDraft = $state<FormDraft | null>(null);
   let sectionScores = $state(
     new Map(data.sections.map((s) => [s.id, { sectionId: s.id, score: s.liveScore, band: s.scoreBand }]))
   );
@@ -111,11 +121,65 @@
     }
   });
 
-  $effect(() => {
-    const cleanup = registerOnlineFlush(data.auditId, autosave.patch, () => {
-      saveState = 'saved';
+  const itemFieldTypes = new Map(
+    data.sections.flatMap((s) => s.items.map((it) => [it.id, it.fieldType]))
+  );
+
+  function getFieldType(itemId: string): string {
+    return itemFieldTypes.get(itemId) ?? 'text';
+  }
+
+  function persistDraftSnapshot() {
+    void saveDraft(buildDraftPayload(data.auditId, itemLocalState));
+  }
+
+  async function syncDraftCleanup(outcome: string) {
+    const result = await maybeDeleteDraftWhenSynced(
+      data.auditId,
+      outcome,
+      listQueued,
+      deleteDraft
+    );
+    retryQueue = await listQueued(data.auditId);
+    return result;
+  }
+
+  onMount(async () => {
+    pendingDraft = resolvePendingDraftOnMount(await loadDraft(data.auditId));
+  });
+
+  function handleRestore() {
+    if (!pendingDraft) return;
+    itemLocalState = restoreDraft({
+      draft: pendingDraft,
+      itemLocalState,
+      getFieldType,
+      scheduleSave: autosave.scheduleSave
     });
-    void flushQueue(data.auditId, autosave.patch);
+    pendingDraft = null;
+  }
+
+  async function handleDiscard() {
+    await discardPendingDraft(data.auditId, deleteDraft);
+    pendingDraft = null;
+  }
+
+  $effect(() => {
+    const cleanup = registerOnlineFlush(data.auditId, autosave.patch, async () => {
+      saveState = 'saved';
+      const queued = await listQueued(data.auditId);
+      retryQueue = queued;
+      if (queued.length === 0) {
+        void deleteDraft(data.auditId);
+      }
+    });
+    void flushQueue(data.auditId, autosave.patch).then(async () => {
+      const queued = await listQueued(data.auditId);
+      retryQueue = queued;
+      if (queued.length === 0) {
+        void deleteDraft(data.auditId);
+      }
+    });
     // Cargar la cola de reintentos
     void (async () => {
       const queued = await listQueued(data.auditId);
@@ -131,6 +195,9 @@
     await flushQueue(data.auditId, autosave.patch);
     const queued = await listQueued(data.auditId);
     retryQueue = queued;
+    if (queued.length === 0) {
+      void deleteDraft(data.auditId);
+    }
   }
 
   async function saveItem(
@@ -144,6 +211,7 @@
     savingItemId = itemId;
     // T8 — Actualizar estado local inmediatamente para chip reactivo (R6)
     itemLocalState = new Map(itemLocalState).set(itemId, { value, na, notes: notes ?? null });
+    persistDraftSnapshot();
     const payload = { itemId, value, na, notes };
     const outcome = await autosave.patch(payload);
     if (outcome === 'offline') {
@@ -157,6 +225,7 @@
       });
       saveState = 'offline';
     }
+    await syncDraftCleanup(outcome);
     return outcome;
   }
 
@@ -357,6 +426,13 @@
   <div class="space-y-4">
     {#if form?.error}
       <p class="text-sm text-red-600" role="alert">{form.error}</p>
+    {/if}
+    {#if pendingDraft}
+      <DraftRecoveryBanner
+        savedAt={pendingDraft.savedAt}
+        onrestore={handleRestore}
+        ondiscard={() => void handleDiscard()}
+      />
     {/if}
     {#if data.pendingProposalCount > 0}
       <div class="rounded-sys-app border border-sys-naranja/30 bg-sys-naranja/10 p-3 text-sm text-sys-naranja flex items-center justify-between gap-3">
