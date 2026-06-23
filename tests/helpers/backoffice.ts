@@ -1,6 +1,7 @@
 import type postgres from 'postgres';
 import type { AuditStatus } from '../../src/lib/server/db/audit-status';
 import { setSqlForTests } from '../../src/lib/server/db/client';
+import { insertTestEmpresa } from './empresa';
 import { findUserIdByEmail } from './auth';
 
 export async function getTemplateIdByCode(
@@ -40,11 +41,7 @@ export async function insertTestAuditRow(
     templateIds.push(await getTemplateIdByCode(sql, t));
   }
 
-  const [client] = await sql<{ id: string }[]>`
-    INSERT INTO client (razon_social)
-    VALUES (${opts.razonSocial})
-    RETURNING id
-  `;
+  const clientId = await insertTestEmpresa(sql, { razonSocial: opts.razonSocial });
 
   const [audit] = await sql<{ id: string }[]>`
     INSERT INTO audit (
@@ -52,7 +49,7 @@ export async function insertTestAuditRow(
       assigned_tech_id, scheduled_at, public_token, archived_at
     )
     VALUES (
-      ${client.id},
+      ${clientId},
       ${'Auditoría ' + opts.razonSocial},
       ${types},
       ${templateIds}::uuid[],
@@ -89,7 +86,88 @@ export async function insertTestAuditRow(
     }
   }
 
-  return { auditId: audit.id, clientId: client.id };
+  return { auditId: audit.id, clientId };
+}
+
+/** Auditoría legacy multi-tipo (IT+ERP) vía INSERT directo (#32, #41). */
+export async function insertTestMixedAudit(
+  sql: postgres.Sql,
+  opts: {
+    razonSocial: string;
+    itTechEmail?: string;
+    erpTechEmail?: string;
+    status?: AuditStatus;
+  }
+): Promise<string> {
+  const itTechEmail = opts.itTechEmail ?? 'facu@serviciosysistemas.com.ar';
+  const erpTechEmail = opts.erpTechEmail ?? 'simon@serviciosysistemas.com.ar';
+  const itTechId = await findUserIdByEmail(sql, itTechEmail);
+  const erpTechId = await findUserIdByEmail(sql, erpTechEmail);
+
+  const { auditId } = await insertTestAuditRow(sql, {
+    razonSocial: opts.razonSocial,
+    types: ['it', 'erp-tango'],
+    assignedTechEmail: itTechEmail,
+    status: opts.status ?? 'borrador'
+  });
+
+  await sql`
+    UPDATE audit_assignment
+    SET tech_id = ${erpTechId}
+    WHERE audit_id = ${auditId} AND audit_type = 'erp-tango'
+  `;
+  await sql`UPDATE audit SET assigned_tech_id = ${itTechId} WHERE id = ${auditId}`;
+
+  return auditId;
+}
+
+/** Legacy multi-tipo con ambos templates y created_by (#32). */
+export async function insertLegacyMixedAuditRow(
+  sql: postgres.Sql,
+  opts: {
+    razonSocial: string;
+    itTechId: string;
+    erpTechId: string;
+    createdBy: string;
+    status?: AuditStatus;
+  }
+): Promise<{ auditId: string; clientId: string }> {
+  setSqlForTests(sql);
+  const tplIt = await getTemplateIdByCode(sql, 'it');
+  const tplErp = await getTemplateIdByCode(sql, 'erp-tango');
+  const clientId = await insertTestEmpresa(sql, { razonSocial: opts.razonSocial });
+
+  const [audit] = await sql<{ id: string }[]>`
+    INSERT INTO audit (
+      empresa_id, name, types, template_ids, segment, status,
+      assigned_tech_id, scheduled_at, created_by
+    )
+    VALUES (
+      ${clientId},
+      ${'Auditoría ' + opts.razonSocial},
+      ${['it', 'erp-tango']},
+      ${[tplIt, tplErp]}::uuid[],
+      'A',
+      ${opts.status ?? 'borrador'},
+      ${opts.itTechId},
+      ${new Date('2026-06-15')},
+      ${opts.createdBy}
+    )
+    RETURNING id
+  `;
+
+  for (const [auditType, techId] of [
+    ['it', opts.itTechId],
+    ['erp-tango', opts.erpTechId]
+  ] as const) {
+    await sql`
+      INSERT INTO audit_assignment (audit_id, audit_type, tech_id)
+      VALUES (${audit.id}, ${auditType}, ${techId})
+      ON CONFLICT (audit_id, audit_type) DO UPDATE SET tech_id = EXCLUDED.tech_id
+    `;
+  }
+
+  return { auditId: audit.id, clientId };
 }
 
 export async function insertAuditResponse(

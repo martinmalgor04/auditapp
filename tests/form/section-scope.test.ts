@@ -6,6 +6,7 @@ import { loadAuditForm } from '../../src/lib/server/form/load-form';
 import { AuditFormNotAllowedError } from '../../src/lib/server/form/errors';
 import { setupTestDb, teardownTestDb } from '../helpers/db';
 import { findUserByEmail, findUserIdByEmail } from '../helpers/auth';
+import { insertLegacyMixedAuditRow } from '../helpers/backoffice';
 
 // #32 — filtrado de secciones por especialidad asignada. Cubre R11–R15.
 describe('#32 form — filtrado de secciones por área asignada', () => {
@@ -30,23 +31,14 @@ describe('#32 form — filtrado de secciones por área asignada', () => {
   });
 
   async function createMixedAudit(): Promise<string> {
-    const [c] = await sql<{ id: string }[]>`
-      INSERT INTO empresa (razon_social, relacion) VALUES ('Mixta Form SA', 'cliente') RETURNING id
-    `;
-    const { id } = await createAudit(
-      {
-        clientId: c.id,
-        types: ['it', 'erp-tango'],
-        segment: 'B',
-        techByType: { it: itTechId, 'erp-tango': erpTechId },
-        scheduledAt: '2026-07-01',
-        cabResponses: {}
-      },
-      adminId
-    );
-    // El form solo es editable en estos estados.
-    await sql`UPDATE audit SET status = 'en_relevamiento' WHERE id = ${id}`;
-    return id;
+    const { auditId } = await insertLegacyMixedAuditRow(sql, {
+      razonSocial: 'Mixta Form SA',
+      itTechId,
+      erpTechId,
+      status: 'en_relevamiento',
+      createdBy: adminId
+    });
+    return auditId;
   }
 
   it('(R11, R12, R15) técnico IT en mixta → CAB + secciones IT, sin secciones ERP', async () => {

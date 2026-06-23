@@ -3,6 +3,7 @@ import type postgres from 'postgres';
 import { setSqlForTests } from '../../src/lib/server/db/client';
 import { findUserIdByEmail } from '../helpers/auth';
 import { getTemplateIdByCode } from '../helpers/backoffice';
+import { insertTestEmpresa } from '../helpers/empresa';
 
 export type BundleFixtureResult = {
   auditId: string;
@@ -55,10 +56,9 @@ export async function seedBundleAuditFixture(
     `;
   }
 
-  const [client] = await sql<{ id: string }[]>`
-    INSERT INTO client (razon_social, cuit, rubro, provincia)
-    VALUES (${razonSocial}, ${cuit}, 'agro', 'Chaco')
-    RETURNING id
+  const clientId = await insertTestEmpresa(sql, { razonSocial, cuit });
+  await sql`
+    UPDATE client SET rubro = 'agro', provincia = 'Chaco' WHERE id = ${clientId}::uuid
   `;
 
   const closedAt =
@@ -70,7 +70,7 @@ export async function seedBundleAuditFixture(
       assigned_tech_id, created_by, scheduled_at, public_token, closed_at
     )
     VALUES (
-      ${client.id},
+      ${clientId},
       ${'Auditoría ' + razonSocial},
       ARRAY['it']::text[],
       ARRAY[${templateId}]::uuid[],
@@ -207,7 +207,7 @@ export async function seedBundleAuditFixture(
 
   return {
     auditId,
-    clientId: client.id,
+    clientId,
     fileRefItemId: fileRefItem.id,
     fileRefAttachmentId: fileRefAtt.id,
     tableItemId,

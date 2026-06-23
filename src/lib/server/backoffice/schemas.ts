@@ -25,6 +25,7 @@ export const dashboardFiltersSchema = z.object({
 });
 
 export type DashboardFilters = z.infer<typeof dashboardFiltersSchema>;
+export type DashboardFiltersInput = z.input<typeof dashboardFiltersSchema>;
 
 const newClientSchema = z.object({
   razonSocial: z.string().trim().min(1).max(300),
@@ -36,12 +37,13 @@ export const createAuditSchema = z
   .object({
     clientId: z.string().uuid().optional(),
     newClient: newClientSchema.optional(),
-    types: z.array(auditTypeSchema).min(1),
+    types: z.array(auditTypeSchema).length(1, 'Seleccioná un solo tipo'),
     segment: auditSegmentSchema,
     // #32 (R6, R7): un técnico por tipo. Record<AuditType, uuid>.
     techByType: z.record(auditTypeSchema, z.string().uuid()),
     scheduledAt: z.string().min(1),
-    cabResponses: z.record(z.unknown()).optional().default({})
+    cabResponses: z.record(z.unknown()).optional().default({}),
+    confirmDuplicate: z.coerce.boolean().optional().default(false)
   })
   .refine((data) => Boolean(data.clientId) !== Boolean(data.newClient), {
     message: 'Indicá un cliente existente o datos de cliente nuevo'
@@ -54,7 +56,7 @@ export const createAuditSchema = z
     { message: 'Asigná un técnico por cada tipo seleccionado' }
   );
 
-export type CreateAuditInput = z.infer<typeof createAuditSchema>;
+export type CreateAuditInput = z.input<typeof createAuditSchema>;
 
 export const updateAuditSchema = z
   .object({

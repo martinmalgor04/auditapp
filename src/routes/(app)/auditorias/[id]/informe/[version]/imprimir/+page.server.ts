@@ -43,7 +43,11 @@ export const load: PageServerLoad = async ({ locals, params }) => {
   }
 
   return {
-    model: buildInformeRenderModel(report),
+    model: buildInformeRenderModel(report, {
+      startedAt: audit.startedAt,
+      finishedAt: audit.finishedAt,
+      refCode: audit.refCode
+    }),
     status: report.status
   };
 };

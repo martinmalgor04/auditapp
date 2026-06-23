@@ -75,7 +75,7 @@
   <BriefingConfirm />
 {:else}
   <div class="space-y-6">
-    <BriefingHeader razonSocial={data.client.razonSocial} />
+    <BriefingHeader razonSocial={data.client.razonSocial} refCode={data.client.refCode} />
     <BriefingWizard
       items={data.items}
       stepCount={data.stepCount}

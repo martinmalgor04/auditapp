@@ -211,7 +211,7 @@ function renderHero(model: InformeRenderModel): string {
       ${model.cliente.cuit ? `<div class="cuit">CUIT ${e(model.cliente.cuit)}</div>` : ''}
     </div>
     ${renderGauge(model)}
-    <div class="meta">Relevamiento presencial · ${e(model.fechaInforme)} · Sistema auditado: ${e(model.sistema)}</div>${model.visita ? `\n    <div class="visita-meta">Visita: ${e(model.visita.inicio)}–${e(model.visita.fin)} · ${e(formatDuracion(model.visita.duracionMin))}</div>` : ''}
+    <div class="meta">Relevamiento presencial · ${e(model.fechaInforme)} · Sistema auditado: ${e(model.sistema)}${model.refCode && model.refCode !== '—' ? ` · Ref: ${e(model.refCode)}` : ''}</div>${model.visita ? `\n    <div class="visita-meta">Visita: ${e(model.visita.inicio)}–${e(model.visita.fin)} · ${e(formatDuracion(model.visita.duracionMin))}</div>` : ''}
   </div>
   <div class="scroll-cue" aria-hidden="true"></div>
 </section>`;

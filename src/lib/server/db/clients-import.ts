@@ -1,6 +1,21 @@
 import { getSql } from './client';
 import type { ImportPlan, RowError } from '$lib/server/clients/import';
 import type { EmpresaImportRelacion } from '$lib/server/crm/schemas';
+import { buildEmpresaCode } from '$lib/server/clients/normalize';
+import type postgres from 'postgres';
+
+type DbExecutor = postgres.Sql | postgres.TransactionSql;
+
+async function resolveUniqueCodigo(tx: DbExecutor, razonSocial: string): Promise<string> {
+  const base = buildEmpresaCode(razonSocial);
+  for (let n = 0; ; n++) {
+    const candidate = n === 0 ? base : `${base}${n + 1}`;
+    const [exists] = await tx<{ id: string }[]>`
+      SELECT id FROM empresa WHERE codigo = ${candidate} LIMIT 1
+    `;
+    if (!exists) return candidate;
+  }
+}
 
 export type ImportResult = {
   total: number;
@@ -33,9 +48,10 @@ export async function applyClientImport(
 
   await sql.begin(async (tx) => {
     for (const row of plan.valid) {
+      const codigo = await resolveUniqueCodigo(tx, row.razon_social);
       const result = await tx<{ inserted: boolean }[]>`
         INSERT INTO empresa (
-          razon_social, cuit, direccion, cp, provincia, telefono, email, origen, relacion
+          razon_social, cuit, direccion, cp, provincia, telefono, email, origen, relacion, codigo
         )
         VALUES (
           ${row.razon_social},
@@ -46,7 +62,8 @@ export async function applyClientImport(
           ${row.telefono},
           ${row.email},
           'presupuestos',
-          ${relacion}
+          ${relacion},
+          ${codigo}
         )
         ON CONFLICT (cuit) WHERE cuit IS NOT NULL DO UPDATE SET
           razon_social = EXCLUDED.razon_social,

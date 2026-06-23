@@ -64,7 +64,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
       report.clientDraft && (report.status === 'borrador' || report.status === 'aprobado')
         ? buildInformeRenderModel(report, {
             startedAt: audit.startedAt,
-            finishedAt: audit.finishedAt
+            finishedAt: audit.finishedAt,
+            refCode: audit.refCode
           })
         : null
   };

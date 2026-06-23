@@ -36,7 +36,7 @@ Criterio rector: lo más simple que sea seguro. Nada de OAuth, magic links ni MF
 | Rol | Alcance |
 |---|---|
 | `admin` | Todo: tablero, CRUD auditorías, plantillas, usuarios, cierre, reabrir |
-| `tecnico` | Solo sus auditorías asignadas (`audit.assigned_tech_id = user.id`), carga en campo y cierre técnico |
+| `tecnico` | Solo sus auditorías asignadas (`audit.assigned_tech_id = user.id`), carga en campo, cierre técnico y reapertura de cerradas (feature #39) |
 
 La autorización se chequea **en el servidor** (load functions / actions), no solo en el UI. Un técnico que pide una auditoría ajena por URL recibe 403.
 
@@ -62,7 +62,7 @@ La autorización se chequea **en el servidor** (load functions / actions), no so
 | Cargar relevamiento | ✅ | ✅ (asignadas) | ❌ | ❌ |
 | Completar briefing | ✅ | ✅ | ✅ (la suya) | ❌ |
 | Cerrar auditoría | ✅ | ✅ (asignadas) | ❌ | ❌ |
-| Reabrir auditoría cerrada | ✅ | ❌ | ❌ | ❌ |
+| Reabrir auditoría cerrada | ✅ | ✅ (asignadas) | ❌ | ❌ |
 | Editar plantillas | ✅ | ❌ | ❌ | ❌ |
 | Gestionar usuarios | ✅ | ❌ | ❌ | ❌ |
 

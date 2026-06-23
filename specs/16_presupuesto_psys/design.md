@@ -48,7 +48,7 @@ admin ─ GET /api/audits/[id]/proposal (detalle / botón Actualizar)
 | number_display | text | ej. `0000100000123` |
 | proposal_url | text | `https://presupuestos.serviciosysistemas.com.ar/presupuestos/<slug>` |
 | psys_status | text | enum presupuestossys (R11); NULL si error |
-| contract_version | text NOT NULL | `'1.0'` |
+| contract_version | text NOT NULL | `'1.1'` |
 | sent_payload | jsonb NOT NULL | snapshot exacto enviado (auditable) |
 | error_message | text | no vacío cuando `status='error'` |
 | created_by | uuid NOT NULL FK → app_user | |
@@ -68,10 +68,14 @@ CREATE INDEX audit_proposal_link_audit_idx ON audit_proposal_link (audit_id);
 Las filas `error` no son únicas (cada intento fallido queda registrado); el early-return de
 R6 consulta solo filas `activo`.
 
-## Contrato de integración — v1.0 (R15)
+## Contrato de integración — v1.1 (R15)
 
-Versionado por `PSYS_CONTRACT_VERSION = '1.0'`. Cambios incompatibles ⇒ bump minor/major
+Versionado por `PSYS_CONTRACT_VERSION = '1.1'`. Cambios incompatibles ⇒ bump minor/major
 acordado en ambos backlogs.
+
+> **Historial de versión:** se inició en `'1.0'` (spec original). El bump a `'1.1'` refleja
+> ajustes de campo acordados con presupuestossys antes del primer deploy a producción; no hay
+> clientes en producción con v1.0.
 
 ### Request: `POST {PSYS_API_URL}/api/m2m/proposals`
 
@@ -79,7 +83,7 @@ Headers: `Authorization: Bearer <PSYS_API_KEY>` · `Idempotency-Key: audit:<audi
 
 ```jsonc
 {
-  "contract_version": "1.0",
+  "contract_version": "1.1",
   "source": { "system": "auditapp", "audit_id": "<uuid>", "report_version": 2 },
   "template_slug": "propuesta-comercial-mixta",     // default; ver Open Questions
   "cliente": {                                      // match/alta por CUIT lo hace psys
@@ -127,7 +131,7 @@ Headers: `Authorization: Bearer <PSYS_API_KEY>` · `Idempotency-Key: audit:<audi
 ### Firmas clave
 
 ```typescript
-export const PSYS_CONTRACT_VERSION = '1.0';
+export const PSYS_CONTRACT_VERSION = '1.1';
 export type PsysProposalPayload = z.infer<typeof psysProposalPayloadSchema>;
 
 export function buildPsysPayload(args: {
@@ -170,7 +174,7 @@ nuevos: `PsysConfigError` (→ 503), `PsysRemoteError` (→ 502), `PsysPayloadEr
      (comparación timing-safe). Sin NextAuth. 401 si falta/difiere.
    - Middleware: agregar `pathname.startsWith('/api/m2m')` a las rutas públicas de
      `src/middleware.ts` (la autenticación la hace la propia route por API key).
-   - Validar body contra el contrato v1.0 (§Contrato). `422` con issues si no valida.
+   - Validar body contra el contrato v1.1 (§Contrato). `422` con issues si no valida.
    - **Idempotencia:** nueva columna `external_ref text` en `proposals` (migración Drizzle)
      con UNIQUE parcial (`where external_ref is not null`); guardar la `Idempotency-Key`.
      Si ya existe → `200` con el proposal existente.

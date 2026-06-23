@@ -49,6 +49,7 @@ export type RenderClientDraft = {
 };
 
 export type InformeRenderModel = {
+  refCode: string;
   cliente: { razonSocial: string; cuit: string | null; rubro: string | null };
   periodo: string;
   fechaInforme: string;
@@ -67,6 +68,10 @@ export type InformeRenderModel = {
   loomUrl: string | null;
   visita?: { inicio: string; fin: string; duracionMin: number };
 };
+
+export function refCodeMetaSuffix(refCode: string): string {
+  return refCode && refCode !== '—' ? `<br>Ref: ${escapeHtml(refCode)}` : '';
+}
 
 export function escapeHtml(value: string): string {
   return value

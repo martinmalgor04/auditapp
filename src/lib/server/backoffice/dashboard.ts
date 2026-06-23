@@ -6,7 +6,8 @@ import { userAuditTypesScope } from '$lib/server/auth/audit-access';
 import type { DashboardAuditRow } from '$lib/backoffice/dashboard-types';
 import { computeAuditProgress, type AuditProgress } from './progress';
 import { canShowBriefingLink, getBriefingUrl } from './briefing-link';
-import type { DashboardFilters } from './schemas';
+import type { DashboardFilters, DashboardFiltersInput } from './schemas';
+import { dashboardFiltersSchema } from './schemas';
 
 export const DASHBOARD_PAGE_SIZE = 50;
 
@@ -23,6 +24,7 @@ export type DashboardResult = {
 type RawRow = {
   id: string;
   name: string;
+  ref_code: string;
   types: AuditType[];
   segment: 'A' | 'B' | 'C';
   status: AuditStatus;
@@ -104,18 +106,19 @@ async function fetchProgressForAudits(
 }
 
 export async function listDashboardAudits(
-  filters: DashboardFilters,
+  filters: DashboardFiltersInput,
   viewer?: AppUser | null
 ): Promise<DashboardResult> {
+  const parsed = dashboardFiltersSchema.parse(filters);
   const sql = getSql();
-  const page = filters.page ?? 1;
+  const page = parsed.page ?? 1;
   const offset = (page - 1) * DASHBOARD_PAGE_SIZE;
-  const order = orderClause(filters.sort ?? 'last_activity_desc');
+  const order = orderClause(parsed.sort ?? 'last_activity_desc');
 
-  const typeFilter = filters.type ?? null;
-  const statusFilter = filters.status ?? null;
-  const clientFilter = filters.clientId ?? null;
-  const qFilter = filters.q?.trim() ? `%${filters.q.trim()}%` : null;
+  const typeFilter = parsed.type ?? null;
+  const statusFilter = parsed.status ?? null;
+  const clientFilter = parsed.clientId ?? null;
+  const qFilter = parsed.q?.trim() ? `%${parsed.q.trim()}%` : null;
   const scopeTypes = viewer ? userAuditTypesScope(viewer) : null;
 
   const [countRow] = await sql<{ count: string }[]>`
@@ -136,6 +139,7 @@ export async function listDashboardAudits(
     SELECT
       a.id,
       a.name,
+      a.ref_code,
       a.types,
       a.segment,
       a.status,
@@ -174,6 +178,7 @@ export async function listDashboardAudits(
   const rows: DashboardAuditRow[] = rawRows.map((r) => ({
     id: r.id,
     name: r.name,
+    refCode: r.ref_code,
     types: r.types,
     segment: r.segment,
     status: r.status,

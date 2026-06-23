@@ -121,7 +121,7 @@ describe('psys proposal API — POST', () => {
       WHERE audit_id = ${fixture.auditId} AND status = 'activo'
     `;
     expect(row.proposal_id).toBe(proposalId);
-    expect(row.sent_payload.contract_version).toBe('1.0');
+    expect(row.sent_payload.contract_version).toBe('1.1');
   });
 
   it('segundo POST idempotente: 200 y una sola llamada remota (R6)', async () => {

@@ -9,6 +9,7 @@ import {
   renderGaugeIt,
   renderHallazgosScoreRows,
   renderStatCircuitos,
+  refCodeMetaSuffix,
   tipoLabel,
   tituloPortada,
   type InformeRenderModel,
@@ -111,7 +112,7 @@ export function renderPortadaMixta(model: InformeRenderModel): string {
     <div class="client">${e(model.cliente.razonSocial)}</div>
     <div class="cuit">${model.cliente.cuit ? `CUIT ${e(model.cliente.cuit)}` : ''}</div>
     ${renderGaugeCover(model)}
-    <div class="meta">Módulos relevados: ${e(modulosLista)}<br>${e(model.fechaInforme)} · Sistema: ${e(model.sistema)}</div>
+    <div class="meta">Módulos relevados: ${e(modulosLista)}<br>${e(model.fechaInforme)} · Sistema: ${e(model.sistema)}${refCodeMetaSuffix(model.refCode)}</div>
   </div>
 </section>`;
 }

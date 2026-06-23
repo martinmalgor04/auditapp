@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parse } from 'csv-parse/sync';
 import type postgres from 'postgres';
+import { createSeedCodigoAllocator } from './clients';
 
 type DbExecutor = postgres.Sql | postgres.TransactionSql;
 
@@ -52,13 +53,20 @@ export async function seedClientesTango(sql: DbExecutor): Promise<number> {
     skip_empty_lines: true
   }) as Record<string, string>[];
 
+  const existingRows = await sql<{ id: string; codigo: string }[]>`
+    SELECT id::text, codigo FROM empresa
+  `;
+  const codigoById = new Map(existingRows.map((r) => [r.id, r.codigo]));
+  const nextCodigo = createSeedCodigoAllocator(existingRows.map((r) => r.codigo));
+
   let count = 0;
   for (const row of records) {
     const tipo = emptyToNull(row.tipo);
+    const codigo = codigoById.get(row.id) ?? nextCodigo(row.razon_social);
     await sql`
-      INSERT INTO client (
-        id, razon_social, referente_nombre, telefono, email, erp_actual, origen,
-        tango_tipo, tango_terminales, tango_version, tango_version_detectada,
+      INSERT INTO empresa (
+        id, razon_social, referente_nombre, telefono, email, erp_actual, origen, relacion,
+        codigo, tango_tipo, tango_terminales, tango_version, tango_version_detectada,
         tango_lic_categoria, tango_sueldos, tango_venc_escala, tango_motivo
       )
       VALUES (
@@ -69,6 +77,8 @@ export async function seedClientesTango(sql: DbExecutor): Promise<number> {
         ${emptyToNull(row.email)},
         ${tipo ? (ERP_BY_TIPO[tipo] ?? 'Tango') : null},
         'tango',
+        'cliente',
+        ${codigo},
         ${tipo},
         ${parseIntOrNull(row.terminales)},
         ${emptyToNull(row.version)},
@@ -79,10 +89,10 @@ export async function seedClientesTango(sql: DbExecutor): Promise<number> {
         ${emptyToNull(row.motivo)}
       )
       ON CONFLICT (id) DO UPDATE SET
-        referente_nombre = COALESCE(EXCLUDED.referente_nombre, client.referente_nombre),
-        telefono = COALESCE(EXCLUDED.telefono, client.telefono),
-        email = COALESCE(EXCLUDED.email, client.email),
-        erp_actual = COALESCE(EXCLUDED.erp_actual, client.erp_actual),
+        referente_nombre = COALESCE(EXCLUDED.referente_nombre, empresa.referente_nombre),
+        telefono = COALESCE(EXCLUDED.telefono, empresa.telefono),
+        email = COALESCE(EXCLUDED.email, empresa.email),
+        erp_actual = COALESCE(EXCLUDED.erp_actual, empresa.erp_actual),
         origen = 'tango',
         tango_tipo = EXCLUDED.tango_tipo,
         tango_terminales = EXCLUDED.tango_terminales,

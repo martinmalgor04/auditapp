@@ -1,13 +1,13 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type postgres from 'postgres';
 import { setSqlForTests } from '../../src/lib/server/db/client';
-import { createAudit } from '../../src/lib/server/backoffice/audits';
 import { loadAuditForm } from '../../src/lib/server/form/load-form';
 import { saveFormResponse } from '../../src/lib/server/form/save-response';
 import { confirmCab } from '../../src/lib/server/db/audit-form';
 import { FormItemNotAllowedError } from '../../src/lib/server/form/errors';
 import { setupTestDb, teardownTestDb } from '../helpers/db';
 import { findUserByEmail, findUserIdByEmail } from '../helpers/auth';
+import { insertLegacyMixedAuditRow } from '../helpers/backoffice';
 
 // #32 — CAB compartido único con bloqueo. Cubre R16, R17, R18, R19, R20.
 describe('#32 form — bloqueo del CAB compartido', () => {
@@ -32,22 +32,14 @@ describe('#32 form — bloqueo del CAB compartido', () => {
   });
 
   async function createMixedAudit(): Promise<string> {
-    const [c] = await sql<{ id: string }[]>`
-      INSERT INTO empresa (razon_social, relacion) VALUES ('CAB Lock SA', 'cliente') RETURNING id
-    `;
-    const { id } = await createAudit(
-      {
-        clientId: c.id,
-        types: ['it', 'erp-tango'],
-        segment: 'B',
-        techByType: { it: itTechId, 'erp-tango': erpTechId },
-        scheduledAt: '2026-07-01',
-        cabResponses: {}
-      },
-      adminId
-    );
-    await sql`UPDATE audit SET status = 'en_relevamiento' WHERE id = ${id}`;
-    return id;
+    const { auditId } = await insertLegacyMixedAuditRow(sql, {
+      razonSocial: 'CAB Lock SA',
+      itTechId,
+      erpTechId,
+      status: 'en_relevamiento',
+      createdBy: adminId
+    });
+    return auditId;
   }
 
   async function getCabTextItemId(auditId: string): Promise<string> {

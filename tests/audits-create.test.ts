@@ -8,7 +8,8 @@ import {
 } from '../src/lib/server/backoffice/audits';
 import { setupTestDb, teardownTestDb } from './helpers/db';
 import { findUserIdByEmail } from './helpers/auth';
-import { getCabItemId } from './helpers/backoffice';
+import { getTemplateIdByCode } from './helpers/backoffice';
+import { insertTestEmpresa } from './helpers/empresa';
 
 /**
  * Fase 3 #23 (T12, R27): el ClientPicker y createAudit del form de nueva auditoría
@@ -34,6 +35,28 @@ describe('#23 Fase 3 — createAudit/picker sobre empresa (R27)', () => {
     await teardownTestDb();
   });
 
+  async function deleteEmpresaByCuit(cuit: string) {
+    await sql`DELETE FROM audit_ref_counter WHERE empresa_id IN (SELECT id FROM empresa WHERE cuit = ${cuit})`;
+    await sql`DELETE FROM audit WHERE empresa_id IN (SELECT id FROM empresa WHERE cuit = ${cuit})`;
+    await sql`DELETE FROM empresa_evento WHERE empresa_id IN (SELECT id FROM empresa WHERE cuit = ${cuit})`;
+    await sql`DELETE FROM empresa WHERE cuit = ${cuit}`;
+  }
+
+  async function getCabRazonSocialItemId(): Promise<string> {
+    const templateId = await getTemplateIdByCode(sql, 'it');
+    const [row] = await sql<{ id: string }[]>`
+      SELECT ti.id
+      FROM template_item ti
+      JOIN section s ON s.id = ti.section_id
+      WHERE s.template_id = ${templateId}
+        AND s.code = 'CAB'
+        AND ti.label = 'Razón social'
+      LIMIT 1
+    `;
+    if (!row) throw new Error('CAB Razón social no encontrado');
+    return row.id;
+  }
+
   it('searchClientsForPicker resuelve filas desde la tabla base empresa (relkind r)', async () => {
     // empresa es tabla base ('r'); client es vista ('v') tras la migración 015.
     const [{ relkind }] = await sql<{ relkind: string }[]>`
@@ -42,35 +65,36 @@ describe('#23 Fase 3 — createAudit/picker sobre empresa (R27)', () => {
     expect(relkind).toBe('r');
 
     const cuit = '30-71111111-3';
-    await sql`DELETE FROM empresa WHERE cuit = ${cuit}`;
-    const [emp] = await sql<{ id: string }[]>`
-      INSERT INTO empresa (razon_social, cuit, relacion, rubro)
-      VALUES ('Picker Empresa Base SRL', ${cuit}, 'cliente', 'Industria')
-      RETURNING id
-    `;
+    await deleteEmpresaByCuit(cuit);
+    const empId = await insertTestEmpresa(sql, {
+      razonSocial: 'Picker Empresa Base SRL',
+      cuit,
+      relacion: 'cliente'
+    });
+    await sql`UPDATE empresa SET rubro = 'Industria' WHERE id = ${empId}`;
 
     const byName = await searchClientsForPicker('Picker Empresa Base');
-    const hit = byName.find((r) => r.id === emp.id);
+    const hit = byName.find((r) => r.id === empId);
     expect(hit).toBeTruthy();
     expect(hit!.razonSocial).toBe('Picker Empresa Base SRL');
     expect(hit!.cabFields.rubro).toBe('Industria');
 
     const byCuit = await searchClientsForPicker(cuit);
-    expect(byCuit.some((r) => r.id === emp.id)).toBe(true);
+    expect(byCuit.some((r) => r.id === empId)).toBe(true);
   });
 
   it('empresa existente: createAudit vincula la FK a empresa y precarga CAB', async () => {
     const cuit = '30-72222222-4';
-    await sql`DELETE FROM empresa WHERE cuit = ${cuit}`;
-    const [emp] = await sql<{ id: string }[]>`
-      INSERT INTO empresa (razon_social, cuit, relacion)
-      VALUES ('Empresa Existente CAB SA', ${cuit}, 'cliente')
-      RETURNING id
-    `;
+    await deleteEmpresaByCuit(cuit);
+    const empId = await insertTestEmpresa(sql, {
+      razonSocial: 'Empresa Existente CAB SA',
+      cuit,
+      relacion: 'cliente'
+    });
 
     const { id } = await createAudit(
       {
-        clientId: emp.id,
+        clientId: empId,
         types: ['it'],
         segment: 'B',
         techByType: { it: tecnicoId },
@@ -84,11 +108,11 @@ describe('#23 Fase 3 — createAudit/picker sobre empresa (R27)', () => {
     const [audit] = await sql<{ empresa_id: string }[]>`
       SELECT empresa_id FROM audit WHERE id = ${id}
     `;
-    expect(audit.empresa_id).toBe(emp.id);
+    expect(audit.empresa_id).toBe(empId);
 
     const detail = await getAuditById(id);
     expect(detail?.status).toBe('borrador');
-    expect(detail?.clientId).toBe(emp.id);
+    expect(detail?.clientId).toBe(empId);
     const byLabel = new Map(detail!.cabItems.map((i) => [i.label, i.value]));
     expect(byLabel.get('Razón social')).toBe('Empresa Existente CAB SA');
     expect(byLabel.get('CUIT')).toBe(cuit);
@@ -97,7 +121,7 @@ describe('#23 Fase 3 — createAudit/picker sobre empresa (R27)', () => {
 
   it("empresa nueva: createAudit la crea en empresa con relacion='prospecto' y FK válida", async () => {
     const cuit = '30-73333333-5';
-    await sql`DELETE FROM empresa WHERE cuit = ${cuit}`;
+    await deleteEmpresaByCuit(cuit);
 
     const { id } = await createAudit(
       {
@@ -139,9 +163,9 @@ describe('#23 Fase 3 — createAudit/picker sobre empresa (R27)', () => {
   });
 
   it('CAB explícita sincroniza la empresa (no la vista) vía syncClientFromCab', async () => {
-    const cabItemId = await getCabItemId(sql, 'it');
+    const cabItemId = await getCabRazonSocialItemId();
     const cuit = '30-74444444-6';
-    await sql`DELETE FROM empresa WHERE cuit = ${cuit}`;
+    await deleteEmpresaByCuit(cuit);
 
     const { id } = await createAudit(
       {

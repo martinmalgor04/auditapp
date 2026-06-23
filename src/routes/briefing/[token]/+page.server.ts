@@ -31,7 +31,7 @@ export const load: PageServerLoad = async ({ params }) => {
         status: result.audit.status,
         publicToken: result.audit.publicToken
       },
-      client: { razonSocial: ctx.client.razonSocial },
+      client: { razonSocial: ctx.client.razonSocial, refCode: ctx.audit.refCode },
       items: form.items,
       stepCount: form.stepCount,
       token: params.token

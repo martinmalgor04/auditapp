@@ -13,6 +13,7 @@ import {
   renderPlanPage,
   renderRiesgosPage,
   renderStatCircuitos,
+  refCodeMetaSuffix,
   tipoLabel,
   tituloPortada,
   wrapInforme,
@@ -36,7 +37,7 @@ export function renderInformeErp(model: InformeRenderModel, opts: RenderOptions 
     <div class="client">${e(model.cliente.razonSocial)}</div>
     <div class="cuit">${model.cliente.cuit ? `CUIT ${e(model.cliente.cuit)}` : ''}</div>
     ${renderGaugeCover(model)}
-    <div class="meta">Módulos relevados: ${e(modulosLista)}<br>${e(model.fechaInforme)} · Sistema: ${e(model.sistema)}</div>${model.visita ? `\n    <p class="visita">${e(model.visita.inicio)}–${e(model.visita.fin)} · ${e(formatDuracion(model.visita.duracionMin))}</p>` : ''}
+    <div class="meta">Módulos relevados: ${e(modulosLista)}<br>${e(model.fechaInforme)} · Sistema: ${e(model.sistema)}${refCodeMetaSuffix(model.refCode)}</div>${model.visita ? `\n    <p class="visita">${e(model.visita.inicio)}–${e(model.visita.fin)} · ${e(formatDuracion(model.visita.duracionMin))}</p>` : ''}
   </div>
 </section>`;
 

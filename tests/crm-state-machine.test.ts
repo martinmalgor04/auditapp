@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { setSqlForTests } from '../src/lib/server/db/client';
 import { setupTestDb, teardownTestDb } from './helpers/db';
 import { findUserIdByEmail } from './helpers/auth';
+import { insertTestEmpresa } from './helpers/empresa';
 import {
   canTransition,
   assertTransition,
@@ -78,12 +79,10 @@ describe('crm state machine — DB', () => {
   }
 
   async function insertAudit() {
-    const [client] = await sql<{ id: string }[]>`
-      INSERT INTO client (razon_social) VALUES ('Cliente CRM') RETURNING id
-    `;
+    const clientId = await insertTestEmpresa(sql, { razonSocial: 'Cliente CRM' });
     const [audit] = await sql<{ id: string }[]>`
       INSERT INTO audit (empresa_id, name, types, template_ids, segment, status, public_token)
-      VALUES (${client.id}, 'Audit CRM', ARRAY['it']::text[], ARRAY[]::uuid[], 'A', 'borrador', ${randomUUID()})
+      VALUES (${clientId}, 'Audit CRM', ARRAY['it']::text[], ARRAY[]::uuid[], 'A', 'borrador', ${randomUUID()})
       RETURNING id
     `;
     return audit.id;

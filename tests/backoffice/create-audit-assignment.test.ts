@@ -6,6 +6,8 @@ import { listAuditAssignments } from '../../src/lib/server/db/audit-assignment';
 import { ValidationError } from '../../src/lib/server/backoffice/errors';
 import { setupTestDb, teardownTestDb } from '../helpers/db';
 import { findUserIdByEmail } from '../helpers/auth';
+import { insertLegacyMixedAuditRow } from '../helpers/backoffice';
+import { insertTestEmpresa } from '../helpers/empresa';
 
 // #32 — alta de auditoría con asignación por área. Cubre R7, R8, R9, R10, R25.
 describe('#32 createAudit — asignación por área', () => {
@@ -30,25 +32,16 @@ describe('#32 createAudit — asignación por área', () => {
   });
 
   async function newClient(razon: string): Promise<string> {
-    const [c] = await sql<{ id: string }[]>`
-      INSERT INTO empresa (razon_social, relacion) VALUES (${razon}, 'cliente') RETURNING id
-    `;
-    return c.id;
+    return insertTestEmpresa(sql, { razonSocial: razon });
   }
 
   it('(R8, R9, R10) mixta IT+ERP con dos técnicos distintos → 2 asignaciones + lead determinístico', async () => {
-    const clientId = await newClient('Mixta Dos Tecnicos SA');
-    const { id } = await createAudit(
-      {
-        clientId,
-        types: ['it', 'erp-tango'],
-        segment: 'B',
-        techByType: { it: itTech, 'erp-tango': erpTech },
-        scheduledAt: '2026-07-01',
-        cabResponses: {}
-      },
-      adminId
-    );
+    const { auditId: id } = await insertLegacyMixedAuditRow(sql, {
+      razonSocial: 'Mixta Dos Tecnicos SA',
+      itTechId: itTech,
+      erpTechId: erpTech,
+      createdBy: adminId
+    });
 
     const assignments = await listAuditAssignments(id);
     expect(assignments).toEqual(

@@ -8,11 +8,23 @@ import {
   updateProposalLinkSync
 } from '$lib/server/db/psys-links';
 import { getLatestApprovedReport } from '$lib/server/db/informe-reports';
+import { getSql } from '$lib/server/db/client';
 import { createPsysProposal, getPsysProposal } from './client';
 import { PsysLinkNotFoundError, PsysNoApprovedReportError, PsysRemoteError } from './errors';
 import { logger } from '$lib/server/logger';
 import { buildPsysIdempotencyKey, buildPsysPayload } from './payload';
 import { PSYS_CONTRACT_VERSION, isKnownPsysStatus } from './schemas';
+
+async function fetchAuditRefCode(auditId: string): Promise<string> {
+  const sql = getSql();
+  const [row] = await sql<{ ref_code: string }[]>`
+    SELECT ref_code FROM audit WHERE id = ${auditId} LIMIT 1
+  `;
+  if (!row) {
+    throw new PsysNoApprovedReportError();
+  }
+  return row.ref_code;
+}
 
 export async function createAuditProposal(input: {
   auditId: string;
@@ -33,6 +45,7 @@ export async function createAuditProposal(input: {
 
   const payload = buildPsysPayload({
     auditId: input.auditId,
+    refCode: await fetchAuditRefCode(input.auditId),
     report,
     canonical: report.canonicalJson
   });

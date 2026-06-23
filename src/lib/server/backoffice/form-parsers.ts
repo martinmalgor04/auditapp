@@ -39,7 +39,8 @@ export function parseCreateAuditFromForm(formData: FormData): CreateAuditInput {
     segment: String(formData.get('segment')) as CreateAuditInput['segment'],
     techByType: parseTechByTypeFromForm(formData),
     scheduledAt: String(formData.get('scheduledAt')),
-    cabResponses
+    cabResponses,
+    confirmDuplicate: formData.get('confirmDuplicate') === 'true'
   };
 
   if (clientMode === 'new') {

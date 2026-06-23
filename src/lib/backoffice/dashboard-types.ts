@@ -5,6 +5,7 @@ import type { AuditProgress } from '$lib/backoffice/progress-types';
 export type DashboardAuditRow = {
   id: string;
   name: string;
+  refCode: string;
   types: AuditType[];
   segment: 'A' | 'B' | 'C';
   status: AuditStatus;

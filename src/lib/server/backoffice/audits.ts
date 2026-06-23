@@ -16,11 +16,14 @@ import type { AppUser } from '$lib/server/auth/types';
 import { auditMatchesUserScope, userCanUseAuditTypes } from '$lib/server/auth/audit-access';
 import { insertAuditAssignments } from '$lib/server/db/audit-assignment';
 import { AUDIT_TYPES, type AuditType } from '$lib/audit-types';
+import { buildEmpresaCode, formatRefCode } from '$lib/server/clients/normalize';
 import {
   AuditClosedError,
   AuditNotFoundError,
+  DuplicateAuditWarning,
   ForbiddenError,
-  ValidationError
+  ValidationError,
+  type ActiveAuditConflict
 } from './errors';
 import { createAuditSchema, updateAuditSchema, type CreateAuditInput, type UpdateAuditInput } from './schemas';
 import { computeAuditProgress, type AuditProgress } from './progress';
@@ -46,6 +49,7 @@ function leadAuditType(types: AuditType[]): AuditType {
 export type AuditDetail = {
   id: string;
   name: string;
+  refCode: string;
   clientId: string;
   razonSocial: string;
   types: string[];
@@ -75,6 +79,7 @@ export type AuditDetail = {
 type AuditRow = {
   id: string;
   name: string;
+  ref_code: string;
   client_id: string;
   razon_social: string;
   types: string[];
@@ -116,6 +121,68 @@ export async function resolveTemplateIdsForTypes(types: string[]): Promise<strin
   }
 
   return ids;
+}
+
+/** Resuelve codigo único para empresa (#41, R1–R2). */
+export async function ensureEmpresaCodigo(
+  tx: DbExecutor,
+  empresaId: string | null,
+  razonSocial: string
+): Promise<string> {
+  const base = buildEmpresaCode(razonSocial);
+  for (let n = 0; ; n++) {
+    const candidate = n === 0 ? base : `${base}${n + 1}`;
+    const [exists] = await tx<{ id: string }[]>`
+      SELECT id FROM empresa
+      WHERE codigo = ${candidate}
+        AND (${empresaId}::uuid IS NULL OR id <> ${empresaId})
+      LIMIT 1
+    `;
+    if (!exists) return candidate;
+  }
+}
+
+/** Asigna correlativo atómico y compone ref_code (#41, R8). */
+export async function allocateRefCode(
+  tx: DbExecutor,
+  empresaId: string,
+  auditType: AuditType,
+  empresaCodigo: string
+): Promise<string> {
+  const [row] = await tx<{ last_seq: number }[]>`
+    INSERT INTO audit_ref_counter (empresa_id, audit_type, last_seq)
+    VALUES (${empresaId}, ${auditType}, 1)
+    ON CONFLICT (empresa_id, audit_type)
+    DO UPDATE SET last_seq = audit_ref_counter.last_seq + 1
+    RETURNING last_seq
+  `;
+  return formatRefCode(empresaCodigo, auditType, row.last_seq);
+}
+
+/** Auditorías activas del mismo tipo para guard anti-duplicado (#41, R21). */
+export async function findActiveSameTypeAudits(
+  empresaId: string,
+  auditType: AuditType
+): Promise<ActiveAuditConflict[]> {
+  const sql = getSql();
+  const rows = await sql<
+    { id: string; ref_code: string; status: AuditStatus; encargada: string | null }[]
+  >`
+    SELECT a.id, a.ref_code, a.status, u.name AS encargada
+    FROM audit a
+    LEFT JOIN app_user u ON u.id = a.assigned_tech_id
+    WHERE a.empresa_id = ${empresaId}
+      AND a.archived_at IS NULL
+      AND a.status <> 'cerrada'
+      AND ${auditType} = ANY(a.types)
+    ORDER BY a.created_at ASC
+  `;
+  return rows.map((r) => ({
+    id: r.id,
+    refCode: r.ref_code,
+    status: r.status,
+    encargada: r.encargada
+  }));
 }
 
 type ClientCabRow = {
@@ -253,7 +320,21 @@ export async function createAudit(
   if (actor && !userCanUseAuditTypes(data.types as AuditType[], actor)) {
     throw new ForbiddenError('No tenés permiso para crear auditorías con esos tipos');
   }
+
+  const auditType = data.types[0] as AuditType;
   const sql = getSql();
+
+  let clientIdForGuard = data.clientId;
+  if (!clientIdForGuard && data.newClient) {
+    // Empresa nueva: no hay conflictos previos.
+    clientIdForGuard = undefined;
+  }
+  if (clientIdForGuard && !data.confirmDuplicate) {
+    const conflicts = await findActiveSameTypeAudits(clientIdForGuard, auditType);
+    if (conflicts.length > 0) {
+      throw new DuplicateAuditWarning(conflicts);
+    }
+  }
 
   // #32 (R7): validar especialidad de cada técnico para el tipo que se le asigna.
   // Un técnico solo puede ser asignado a un tipo que esté en su scope de especialidad.
@@ -299,18 +380,15 @@ export async function createAudit(
     let clientFields: ClientCabFields | null = null;
 
     if (data.newClient) {
-      // Empresa nueva creada desde el form clásico de auditoría: se clasifica como
-      // 'prospecto' (R27/R2). Default conservador: iniciar una auditoría no implica que la
-      // empresa ya sea cliente; ascender a 'cliente' es una decisión manual desde la ficha
-      // del CRM (Fase 4+). Coherente con el default del selector de import (Fase 2) y
-      // no-destructivo (nunca eleva a 'cliente' por error).
+      const codigo = await ensureEmpresaCodigo(tx, null, data.newClient.razonSocial);
       const [client] = await tx<{ id: string }[]>`
-        INSERT INTO empresa (razon_social, cuit, rubro, relacion)
+        INSERT INTO empresa (razon_social, cuit, rubro, relacion, codigo)
         VALUES (
           ${data.newClient.razonSocial},
           ${data.newClient.cuit || null},
           ${data.newClient.rubro || null},
-          'prospecto'
+          'prospecto',
+          ${codigo}
         )
         RETURNING id
       `;
@@ -340,16 +418,23 @@ export async function createAudit(
       : {};
     const mergedCabResponses = mergeCabResponses(cabDefaults, data.cabResponses);
 
-    const [clientRow] = await tx<{ razon_social: string }[]>`
-      SELECT razon_social FROM empresa WHERE id = ${clientId}
+    const [clientRow] = await tx<{ razon_social: string; codigo: string | null }[]>`
+      SELECT razon_social, codigo FROM empresa WHERE id = ${clientId}
     `;
 
-    const name = `Auditoría ${clientRow.razon_social}`;
+    let empresaCodigo = clientRow?.codigo ?? null;
+    if (!empresaCodigo) {
+      empresaCodigo = await ensureEmpresaCodigo(tx, clientId, clientRow!.razon_social);
+      await tx`UPDATE empresa SET codigo = ${empresaCodigo} WHERE id = ${clientId} AND codigo IS NULL`;
+    }
+
+    const refCode = await allocateRefCode(tx, clientId, auditType, empresaCodigo);
+    const name = `Auditoría ${clientRow!.razon_social}`;
 
     const [audit] = await tx<{ id: string }[]>`
       INSERT INTO audit (
         empresa_id, name, types, template_ids, segment, status,
-        assigned_tech_id, created_by, scheduled_at
+        assigned_tech_id, created_by, scheduled_at, ref_code
       )
       VALUES (
         ${clientId},
@@ -360,7 +445,8 @@ export async function createAudit(
         'borrador',
         ${leadTechId},
         ${createdBy},
-        ${scheduledAt}
+        ${scheduledAt},
+        ${refCode}
       )
       RETURNING id
     `;
@@ -380,7 +466,7 @@ export async function getAuditById(auditId: string, viewer?: AppUser): Promise<A
 
   const [row] = await sql<AuditRow[]>`
     SELECT
-      a.id, a.name, a.empresa_id AS client_id, c.razon_social, a.types, a.segment, a.status,
+      a.id, a.name, a.ref_code, a.empresa_id AS client_id, c.razon_social, a.types, a.segment, a.status,
       a.assigned_tech_id, u.name AS tech_name, a.scheduled_at, a.started_at, a.finished_at,
       a.public_token, a.template_ids, a.archived_at
     FROM audit a
@@ -465,6 +551,7 @@ export async function getAuditById(auditId: string, viewer?: AppUser): Promise<A
   return {
     id: row.id,
     name: row.name,
+    refCode: row.ref_code,
     clientId: row.client_id,
     razonSocial: row.razon_social,
     types: row.types,

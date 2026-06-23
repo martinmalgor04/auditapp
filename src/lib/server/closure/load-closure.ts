@@ -23,6 +23,7 @@ export type ClosureSectionView = {
 export type ClosureLoadResult = {
   audit: {
     id: string;
+    refCode: string;
     razonSocial: string;
     status: string;
     types: string[];
@@ -60,13 +61,14 @@ export async function loadClosurePage(auditId: string, user: AppUser): Promise<C
   const [audit] = await sql<
     {
       id: string;
+      ref_code: string;
       razon_social: string;
       status: string;
       types: string[];
       assigned_tech_id: string | null;
     }[]
   >`
-    SELECT a.id, c.razon_social, a.status, a.types, a.assigned_tech_id
+    SELECT a.id, a.ref_code, c.razon_social, a.status, a.types, a.assigned_tech_id
     FROM audit a
     JOIN client c ON c.id = a.empresa_id
     WHERE a.id = ${auditId}
@@ -107,6 +109,7 @@ export async function loadClosurePage(auditId: string, user: AppUser): Promise<C
   return {
     audit: {
       id: audit.id,
+      refCode: audit.ref_code,
       razonSocial: audit.razon_social,
       status: audit.status,
       types: audit.types

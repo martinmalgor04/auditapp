@@ -81,6 +81,7 @@ export async function seedActiveProposalLink(
   const golden = loadInformeCanonicalGolden();
   const payload = buildPsysPayload({
     auditId: fixture.auditId,
+    refCode: 'TEST-IT-0001',
     report: {
       id: row.id,
       auditId: fixture.auditId,

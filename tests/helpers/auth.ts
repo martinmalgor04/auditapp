@@ -2,6 +2,7 @@ import type postgres from 'postgres';
 import { seedUsers } from '../../src/lib/server/db/seed/users';
 import type { AuditStatus } from '../../src/lib/server/db/audit-status';
 import type { AppUser } from '../../src/lib/server/auth/types';
+import { insertTestEmpresa } from './empresa';
 
 export async function findUserByEmail(sql: postgres.Sql, email: string): Promise<AppUser | null> {
   const [row] = await sql<
@@ -46,18 +47,14 @@ export async function insertTestAudit(
   sql: postgres.Sql,
   opts: { status: AuditStatus; publicToken: string }
 ): Promise<{ auditId: string; clientId: string }> {
-  const [client] = await sql<{ id: string }[]>`
-    INSERT INTO client (razon_social)
-    VALUES ('Cliente Test Auth')
-    RETURNING id
-  `;
+  const clientId = await insertTestEmpresa(sql, { razonSocial: 'Cliente Test Auth' });
 
   const [audit] = await sql<{ id: string }[]>`
     INSERT INTO audit (
       empresa_id, name, types, template_ids, segment, status, public_token
     )
     VALUES (
-      ${client.id},
+      ${clientId},
       'Auditoría test',
       ARRAY['it']::text[],
       ARRAY[]::uuid[],
@@ -68,5 +65,5 @@ export async function insertTestAudit(
     RETURNING id
   `;
 
-  return { auditId: audit.id, clientId: client.id };
+  return { auditId: audit.id, clientId };
 }

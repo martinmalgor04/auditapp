@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { setSqlForTests } from '../../src/lib/server/db/client';
 import { setupTestDb, teardownTestDb } from '../helpers/db';
 import { findUserByEmail } from '../helpers/auth';
+import { insertTestEmpresa } from '../helpers/empresa';
 import { GET as listGet, POST as listPost } from '../../src/routes/api/crm/leads/+server';
 import { PATCH as leadPatch } from '../../src/routes/api/crm/leads/[id]/+server';
 import { POST as statusPost } from '../../src/routes/api/crm/leads/[id]/status/+server';
@@ -240,12 +241,10 @@ describe('crm leads API', () => {
     const [lead] = await sql<{ id: string }[]>`
       SELECT id FROM crm_lead WHERE email = 'desc@lead.com'
     `;
-    const [client] = await sql<{ id: string }[]>`
-      INSERT INTO client (razon_social) VALUES ('Tmp') RETURNING id
-    `;
+    const clientId = await insertTestEmpresa(sql, { razonSocial: 'Tmp' });
     const [audit] = await sql<{ id: string }[]>`
       INSERT INTO audit (empresa_id, name, types, template_ids, segment, status, public_token)
-      VALUES (${client.id}, 'A', ARRAY['it']::text[], ARRAY[]::uuid[], 'A', 'borrador', ${randomUUID()})
+      VALUES (${clientId}, 'A', ARRAY['it']::text[], ARRAY[]::uuid[], 'A', 'borrador', ${randomUUID()})
       RETURNING id
     `;
     const res = await leadPatch({

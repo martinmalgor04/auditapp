@@ -6,6 +6,7 @@ import { setSqlForTests } from '../../src/lib/server/db/client';
 import { setupTestDb, teardownTestDb, columnNames, tableExists, indexNames } from '../helpers/db';
 import { findUserIdByEmail } from '../helpers/auth';
 import { getTemplateIdByCode } from '../helpers/backoffice';
+import { insertTestEmpresa } from '../helpers/empresa';
 
 const MIGRATION_SQL = readFileSync(
   join(process.cwd(), 'migrations/020_audit_assignment.sql'),
@@ -80,14 +81,12 @@ describe('migración 020 — audit_assignment + CAB (#32)', () => {
     const itTpl = await getTemplateIdByCode(sql, 'it');
     const erpTpl = await getTemplateIdByCode(sql, 'erp-tango');
 
-    const [client] = await sql<{ id: string }[]>`
-      INSERT INTO client (razon_social) VALUES ('Backfill Mixta SA') RETURNING id
-    `;
+    const clientId = await insertTestEmpresa(sql, { razonSocial: 'Backfill Mixta SA' });
     // Insertamos la auditoría SIN filas de audit_assignment (estado pre-#32).
     const [audit] = await sql<{ id: string }[]>`
       INSERT INTO audit (empresa_id, name, types, template_ids, segment, status, assigned_tech_id)
       VALUES (
-        ${client.id}, 'Auditoría Backfill', ${['it', 'erp-tango']},
+        ${clientId}, 'Auditoría Backfill', ${['it', 'erp-tango']},
         ${[itTpl, erpTpl]}::uuid[], 'A', 'borrador', ${techId}
       )
       RETURNING id
@@ -133,12 +132,10 @@ describe('migración 020 — audit_assignment + CAB (#32)', () => {
 
   it('(R3) re-aplicar la migración dos veces no falla ni duplica filas', async () => {
     const itTpl = await getTemplateIdByCode(sql, 'it');
-    const [client] = await sql<{ id: string }[]>`
-      INSERT INTO client (razon_social) VALUES ('Idempotente SA') RETURNING id
-    `;
+    const clientId = await insertTestEmpresa(sql, { razonSocial: 'Idempotente SA' });
     const [audit] = await sql<{ id: string }[]>`
       INSERT INTO audit (empresa_id, name, types, template_ids, segment, status, assigned_tech_id)
-      VALUES (${client.id}, 'Idempotente', ${['it']}, ${[itTpl]}::uuid[], 'A', 'borrador', ${techId})
+      VALUES (${clientId}, 'Idempotente', ${['it']}, ${[itTpl]}::uuid[], 'A', 'borrador', ${techId})
       RETURNING id
     `;
     await sql`DELETE FROM audit_assignment WHERE audit_id = ${audit.id}`;

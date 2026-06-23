@@ -87,6 +87,20 @@
 - **Próximo paso:** Backlog completo — commit + push cuando el humano lo pida
 
 
+## 2026-06-23 — 41_referencia_auditoria (#41) done
+
+- **Agente:** implementer → reviewer (CHANGES_REQUESTED R2/R22) → implementer (fixes) → reviewer
+- **Resultado:** Referencia legible `ref_code` (`<EMP>-<TIPO>-<NNNN>`) + `empresa.codigo` autogenerado con desambiguación, tipo único al crear, guard anti-duplicado con `confirmDuplicate`, visualización en tablero/detalle/cierre/informe/briefing/psys v1.1. Migraciones `022`–`024`, triggers de inmutabilidad, test de concurrencia. Fixes reviewer: `empresa-codigo-collision.test.ts` (R2), asserts sobre `conflicts[]` en duplicate-guard (R22). `./init.sh` verde — 1107 passed | 2 skipped.
+- **Veredicto:** APPROVED (`progress/review_41_referencia_auditoria.md`)
+- **Próximo paso:** commit + push cuando el humano lo pida
+
+## 2026-06-23 — 40_offline_snapshot (#40) done
+
+- **Agente:** implementer → reviewer (CHANGES_REQUESTED) → implementer (re-trabajo) → reviewer
+- **Resultado:** Snapshot local del form en IndexedDB (`form_draft`, IDB v2): `draft-store.ts`, helpers en `draft-recovery.ts`, banner `DraftRecoveryBanner.svelte`, integración en `+page.svelte`. Draft actualizado en cada guardado, limpieza post-sync, restore/discard con banner al montar. Lógica extraída y testeable; discard contra IDB real (no tautológico). Tests #39 reparados (empresa.codigo NOT NULL). 21 tests nuevos (`draft-store` 8, `draft-recovery` 13). `./init.sh` verde — 1106 passed | 2 skipped.
+- **Veredicto:** APPROVED (`progress/review_40_offline_snapshot.md`)
+- **Próximo paso:** reviewer #41 `41_referencia_auditoria`
+
 ## 2026-06-16 — 24_reunion_extraccion_precisa (#24) done
 
 - **Agente:** leader → spec_author → (puerta humana, 4 decisiones) → implementer → reviewer → implementer (swap fixture)

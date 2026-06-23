@@ -2,8 +2,9 @@
   import type { PageData } from './$types';
   import ClientPicker from '$lib/components/backoffice/client-picker.svelte';
   import CabSectionForm from '$lib/components/backoffice/cab-section-form.svelte';
-  import AuditTypeCheckboxes from '$lib/components/backoffice/audit-type-checkboxes.svelte';
+  import AuditStatusBadge from '$lib/components/backoffice/audit-status-badge.svelte';
   import { AUDIT_TYPE_LABELS, type AuditType } from '$lib/audit-types';
+  import type { AuditStatus } from '$lib/audit-status';
   import {
     applyCabDefaultsToItems,
     clientToCabValues,
@@ -11,7 +12,18 @@
     type ClientCabFields
   } from '$lib/backoffice/cab-client-map';
 
-  let { data, form }: { data: PageData; form?: { error?: string } } = $props();
+  type FormState = {
+    error?: string;
+    duplicateWarning?: boolean;
+    conflicts?: Array<{
+      id: string;
+      refCode: string;
+      status: AuditStatus;
+      encargada: string | null;
+    }>;
+  };
+
+  let { data, form }: { data: PageData; form?: FormState } = $props();
 
   type CabItem = PageData['cabItems'][number] & { value?: unknown };
 
@@ -21,25 +33,17 @@
   const selectableTypes = $derived(
     data.allowedTypes ?? (Object.keys(AUDIT_TYPE_LABELS) as AuditType[])
   );
-  const defaultSelectedTypes = $derived(
-    data.defaultTypes.filter((type): type is AuditType =>
+  const defaultType = $derived(
+    (data.defaultTypes.find((type): type is AuditType =>
       selectableTypes.includes(type as AuditType)
-    )
+    ) ?? selectableTypes[0]) as AuditType
   );
 
-  // #32 (R6): asignación de un técnico por cada tipo seleccionado.
-  let selectedTypes = $state<AuditType[]>([]);
+  let selectedType = $state<AuditType>('it');
   $effect(() => {
-    selectedTypes = [...defaultSelectedTypes];
+    selectedType = defaultType;
   });
 
-  function toggleType(type: AuditType, checked: boolean) {
-    selectedTypes = checked
-      ? [...selectedTypes.filter((t) => t !== type), type]
-      : selectedTypes.filter((t) => t !== type);
-  }
-
-  // Solo técnicos que pueden ese tipo (audit_types null/[] = sin restricción → todos).
   function techniciansFor(type: AuditType) {
     return data.technicians.filter(
       (tech) => !tech.auditTypes || tech.auditTypes.length === 0 || tech.auditTypes.includes(type)
@@ -91,13 +95,50 @@
   <title>Nueva auditoría — auditapp</title>
 </svelte:head>
 
-<h1 class="text-2xl font-bold text-slate-900 mb-6">Nueva auditoría</h1>
+<h1 class="text-2xl font-bold text-sys-profundo mb-6">Nueva auditoría</h1>
 
-{#if form?.error}
+{#if form?.error && !form.duplicateWarning}
   <p class="mb-4 text-sm text-red-600" role="alert">{form.error}</p>
 {/if}
 
+{#if form?.duplicateWarning && form.conflicts}
+  <div
+    class="mb-6 rounded border border-sys-naranja/40 bg-sys-naranja/10 p-4 space-y-3"
+    role="alert"
+    data-testid="duplicate-warning"
+  >
+    <p class="text-sm font-medium text-sys-profundo">
+      Esta empresa ya tiene auditorías activas del mismo tipo:
+    </p>
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-[var(--sys-text-muted-light)]">
+          <th class="pb-2 pr-3">Referencia</th>
+          <th class="pb-2 pr-3">Estado</th>
+          <th class="pb-2">Encargada</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each form.conflicts as conflict}
+          <tr>
+            <td class="py-1 pr-3 font-mono">{conflict.refCode}</td>
+            <td class="py-1 pr-3"><AuditStatusBadge status={conflict.status} /></td>
+            <td class="py-1">{conflict.encargada ?? '—'}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+    <p class="text-xs text-[var(--sys-text-muted-light)]">
+      Podés crear igualmente; se asignará el siguiente número correlativo.
+    </p>
+  </div>
+{/if}
+
 <form method="POST" action="?/create" class="space-y-6 max-w-2xl">
+  {#if form?.duplicateWarning}
+    <input type="hidden" name="confirmDuplicate" value="true" />
+  {/if}
+
   <ClientPicker
     initialClient={data.preselectedEmpresa
       ? {
@@ -112,15 +153,16 @@
   />
 
   <fieldset class="space-y-2">
-    <legend class="text-sm font-semibold text-slate-800">Tipos</legend>
+    <legend class="text-sm font-semibold text-sys-profundo">Tipo de auditoría</legend>
     {#each selectableTypes as type}
       <label class="flex items-center gap-2 text-sm">
         <input
-          type="checkbox"
+          type="radio"
           name="types"
           value={type}
-          checked={selectedTypes.includes(type)}
-          onchange={(e) => toggleType(type, e.currentTarget.checked)}
+          checked={selectedType === type}
+          onchange={() => (selectedType = type)}
+          required
         />
         {AUDIT_TYPE_LABELS[type]}
       </label>
@@ -128,43 +170,36 @@
   </fieldset>
 
   <label class="block space-y-1">
-    <span class="text-sm font-medium text-slate-700">Segmento</span>
-    <select name="segment" required class="w-full rounded border border-slate-300 px-3 py-2 text-sm">
+    <span class="text-sm font-medium text-sys-medio">Segmento</span>
+    <select name="segment" required class="w-full rounded border border-[var(--sys-border-subtle)] px-3 py-2 text-sm">
       <option value="A">A</option>
       <option value="B">B</option>
       <option value="C">C</option>
     </select>
   </label>
 
-  <fieldset class="space-y-3">
-    <legend class="text-sm font-semibold text-slate-800">Técnico por área</legend>
-    {#each selectedTypes as type (type)}
-      <label class="block space-y-1">
-        <span class="text-sm font-medium text-slate-700">
-          Técnico para {AUDIT_TYPE_LABELS[type]}
-        </span>
-        <select
-          name={`techByType[${type}]`}
-          required
-          class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-        >
-          {#each techniciansFor(type) as tech (tech.id)}
-            <option value={tech.id}>{tech.name}</option>
-          {/each}
-        </select>
-      </label>
-    {/each}
-  </fieldset>
+  <label class="block space-y-1">
+    <span class="text-sm font-medium text-sys-medio">Técnico encargado</span>
+    <select
+      name={`techByType[${selectedType}]`}
+      required
+      class="w-full rounded border border-[var(--sys-border-subtle)] px-3 py-2 text-sm"
+    >
+      {#each techniciansFor(selectedType) as tech (tech.id)}
+        <option value={tech.id}>{tech.name}</option>
+      {/each}
+    </select>
+  </label>
 
   <label class="block space-y-1">
-    <span class="text-sm font-medium text-slate-700">Fecha de visita</span>
+    <span class="text-sm font-medium text-sys-medio">Fecha de visita</span>
     <input
       type="date"
       name="scheduledAt"
       bind:value={scheduledAt}
       onchange={syncScheduledAtToCab}
       required
-      class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+      class="w-full rounded border border-[var(--sys-border-subtle)] px-3 py-2 text-sm"
     />
   </label>
 
@@ -172,8 +207,8 @@
 
   <button
     type="submit"
-    class="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+    class="rounded bg-sys-profundo px-4 py-2 text-sm font-medium text-white hover:bg-sys-medio"
   >
-    Crear auditoría
+    {form?.duplicateWarning ? 'Crear igualmente' : 'Crear auditoría'}
   </button>
 </form>

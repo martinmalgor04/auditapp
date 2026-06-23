@@ -146,7 +146,8 @@ describe('descarga HTML del informe (#31)', () => {
     const expected = renderInformeHtml(
       buildInformeRenderModel(report, {
         startedAt: audit.startedAt,
-        finishedAt: audit.finishedAt
+        finishedAt: audit.finishedAt,
+        refCode: audit.refCode
       })
     );
     expect(body).toBe(expected);
@@ -192,7 +193,8 @@ describe('descarga HTML del informe (#31)', () => {
     const expected = renderInformeHtml(
       buildInformeRenderModel(report, {
         startedAt: audit.startedAt,
-        finishedAt: audit.finishedAt
+        finishedAt: audit.finishedAt,
+        refCode: audit.refCode
       })
     );
     expect(body).toBe(expected);

@@ -8,6 +8,7 @@ import {
   listTechnicians,
   searchClientsForPicker
 } from '$lib/server/backoffice/audits';
+import { DuplicateAuditWarning } from '$lib/server/backoffice/errors';
 import { parseCreateAuditFromForm } from '$lib/server/backoffice/form-parsers';
 import { failFromError } from '$lib/server/backoffice/route-helpers';
 import { getEmpresaCabFields } from '$lib/server/db/empresa';
@@ -48,12 +49,20 @@ export const actions: Actions = {
   create: async ({ request, locals }) => {
     const user = requireStaff(locals);
 
+    const formData = await request.formData();
+    const input = parseCreateAuditFromForm(formData);
+
     try {
-      const formData = await request.formData();
-      const input = parseCreateAuditFromForm(formData);
       const { id } = await createAudit(input, user.id, user);
       redirect(303, `/auditorias/${id}`);
     } catch (e) {
+      if (e instanceof DuplicateAuditWarning) {
+        return fail(409, {
+          duplicateWarning: true,
+          conflicts: e.conflicts,
+          error: e.message
+        });
+      }
       return failFromError(e);
     }
   },

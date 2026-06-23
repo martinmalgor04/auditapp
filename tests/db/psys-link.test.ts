@@ -31,6 +31,7 @@ describe('audit_proposal_link schema', () => {
     const golden = loadInformeCanonicalGolden();
     return buildPsysPayload({
       auditId,
+      refCode: 'TEST-IT-0001',
       report: {
         id: reportId,
         auditId,

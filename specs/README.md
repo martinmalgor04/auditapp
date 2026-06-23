@@ -20,6 +20,8 @@ Backlog activo: [`feature_list.json`](../feature_list.json). Mapa de trazabilida
 | 33 | [`33_acceso_por_asignacion_unificado/`](33_acceso_por_asignacion_unificado/requirements.md) | Unificar acceso por asignación efectiva | spec_ready |
 | 34 | [`34_briefing_opcional/`](34_briefing_opcional/requirements.md) | Briefing opcional — avanzar sin esperar al cliente | spec_ready |
 | 39 | [`39_relevamiento_visible_reapertura/`](39_relevamiento_visible_reapertura/requirements.md) | Ver relevamiento de auditorías cerradas + reapertura accesible | spec_ready |
+| 40 | [`40_offline_snapshot/`](40_offline_snapshot/requirements.md) | Snapshot local del relevamiento (recuperación offline) | in_progress |
+| 41 | [`41_referencia_auditoria/`](41_referencia_auditoria/requirements.md) | Referencia legible y anti-duplicado de auditorías | in_progress |
 
 Cada carpeta contiene:
 

@@ -33,8 +33,12 @@ export const GET: RequestHandler = async ({ params, locals }): Promise<Response>
   // 3. Render reutilizado, idéntico al panel (con timestamps de visita, sin editMode).
   let html: string;
   try {
-    const timestamps = { startedAt: audit.startedAt, finishedAt: audit.finishedAt }; // R18
-    const model = buildInformeRenderModel(report, timestamps); // R2, R3, R18
+    const timestamps = {
+      startedAt: audit.startedAt,
+      finishedAt: audit.finishedAt,
+      refCode: audit.refCode
+    };
+    const model = buildInformeRenderModel(report, timestamps);
     html = renderInformeHtml(model); // R2, R3, R4
   } catch (err) {
     logger.error('informe_html_download_failed', { auditId: audit.id, version }, err);

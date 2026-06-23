@@ -17,6 +17,7 @@ function buildInformeUrl(auditId: string, version: number): string {
 /** Arma el payload M2M desde informe aprobado + canónico (R4, R14). */
 export function buildPsysPayload(args: {
   auditId: string;
+  refCode: string;
   report: AuditReportRow;
   canonical: CanonicalAudit;
 }): PsysProposalPayload {
@@ -32,7 +33,8 @@ export function buildPsysPayload(args: {
     source: {
       system: 'auditapp',
       audit_id: args.auditId,
-      report_version: args.report.version
+      report_version: args.report.version,
+      ref_code: args.refCode
     },
     template_slug: DEFAULT_TEMPLATE_SLUG,
     cliente: {

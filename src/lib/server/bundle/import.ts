@@ -12,6 +12,8 @@ import { AuditBundleResolutionError, AuditBundleValidationError } from './errors
 import { itemKeyString } from './item-key';
 import { resolveBundle, type ImportMode, type ResolutionReport } from './resolve';
 import { auditBundleSchema, type AuditBundle, type ItemKey } from './schema';
+import { ensureEmpresaCodigo, allocateRefCode } from '$lib/server/backoffice/audits';
+import type { AuditType } from '$lib/audit-types';
 
 export type ImportResult =
   | { mode: 'dry-run'; report: ResolutionReport }
@@ -24,6 +26,12 @@ export type ImportResult =
 
 /** Status que requieren regenerar public_token en destino (OQ-3). */
 const TOKEN_STATUSES = new Set(['briefing_enviado', 'briefing_completo']);
+
+function leadBundleAuditType(types: string[]): AuditType {
+  if (types.includes('it')) return 'it';
+  if (types.includes('erp-tango')) return 'erp-tango';
+  return 'erp-estandar';
+}
 
 function parseBundle(raw: unknown): AuditBundle {
   const parsed = auditBundleSchema.safeParse(raw);
@@ -159,14 +167,16 @@ export async function importAuditBundle(
     if (clientMatch) {
       clientId = clientMatch.id;
     } else if (mode === 'permissive') {
+      const codigo = await ensureEmpresaCodigo(tx, null, bundle.header.client.razon_social);
       const [created] = await tx<{ id: string }[]>`
-        INSERT INTO client (razon_social, cuit, rubro, provincia, origen)
+        INSERT INTO client (razon_social, cuit, rubro, provincia, origen, codigo)
         VALUES (
           ${bundle.header.client.razon_social},
           ${bundle.header.client.cuit},
           ${bundle.header.client.rubro ?? null},
           ${bundle.header.client.provincia ?? null},
-          'prospecto'
+          'prospecto',
+          ${codigo}
         )
         RETURNING id
       `;
@@ -187,11 +197,22 @@ export async function importAuditBundle(
       ? `import-${randomUUID()}`
       : null;
 
+    const [empresaRow] = await tx<{ codigo: string | null }[]>`
+      SELECT codigo FROM empresa WHERE id = ${clientId}
+    `;
+    let empresaCodigo = empresaRow?.codigo ?? null;
+    if (!empresaCodigo) {
+      empresaCodigo = await ensureEmpresaCodigo(tx, clientId, bundle.header.client.razon_social);
+      await tx`UPDATE empresa SET codigo = ${empresaCodigo} WHERE id = ${clientId} AND codigo IS NULL`;
+    }
+    const auditType = leadBundleAuditType(bundle.header.types);
+    const refCode = await allocateRefCode(tx, clientId, auditType, empresaCodigo);
+
     // 1. audit (id nuevo local)
     const [audit] = await tx<{ id: string }[]>`
       INSERT INTO audit (
         empresa_id, name, types, template_ids, segment, status,
-        assigned_tech_id, created_by, scheduled_at, public_token, closed_at
+        assigned_tech_id, created_by, scheduled_at, public_token, closed_at, ref_code
       )
       VALUES (
         ${clientId},
@@ -204,7 +225,8 @@ export async function importAuditBundle(
         ${createdById},
         ${bundle.header.scheduled_at},
         ${publicToken},
-        ${bundle.header.closed_at}
+        ${bundle.header.closed_at},
+        ${refCode}
       )
       RETURNING id
     `;

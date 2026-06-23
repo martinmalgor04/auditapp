@@ -231,7 +231,8 @@
         "Tests de flujo feliz, permisos y validación Zod de propuestas pasan"
       ],
       "sdd": true,
-      "status": "in_progress"
+      "status": "spec_ready",
+      "_status_note": "Pausado 2026-06-23: prioridad features #40/#41; retomar tras cierre offline snapshot."
     },
     {
       "id": 13,
@@ -637,7 +638,7 @@
         "pnpm run check pasa sin errores nuevos"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": 36,
@@ -656,7 +657,7 @@
         "pnpm run check pasa sin errores nuevos"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": 37,
@@ -672,7 +673,7 @@
         "pnpm run check pasa sin errores nuevos"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": 38,
@@ -691,7 +692,7 @@
         "pnpm run check pasa sin errores nuevos"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": 39,
@@ -709,6 +710,47 @@
         "Al re-cerrar una auditoría reabierta se puede regenerar el informe en una versión nueva sin perder la anterior",
         "El form editable sigue funcionando igual en los estados editables actuales (briefing_completo/en_relevamiento/en_cierre); no hay regresión en el flujo normal",
         "Tests: vista solo-lectura no permite edición ni cambia estado, guards de reapertura (admin y técnico asignado vs técnico no asignado), marca de informe desactualizado al reabrir, y no-regresión del form editable"
+      ],
+      "sdd": true,
+      "status": "done"
+    },
+    {
+      "id": 40,
+      "name": "40_offline_snapshot",
+      "title": "Snapshot local del relevamiento (recuperación offline)",
+      "description": "Mantener en IndexedDB un snapshot del estado completo del form (todas las respuestas actuales, incluyendo las pendientes en la retry-queue) actualizado cada vez que el técnico modifica un campo, de forma que si cierra el tab o el server cae pueda recuperar su trabajo al volver.",
+      "source": "Solicitud operativa (2026-06-23): guardar en el navegador el estado completo del form para recuperación cuando falla conexión o server antes de que el técnico cierre el tab.",
+      "acceptance": [
+        "Existe el object store form_draft en la IDB auditapp_form (versión 2) con clave auditId",
+        "Cada vez que scheduleSave es invocado, el draft se actualiza con el mapa completo de respuestas del form",
+        "El draft se elimina cuando el último save es exitoso y la retry-queue queda vacía",
+        "Al montar el form, si existe un draft se muestra un banner con fecha/hora del draft y botones Restaurar borrador y Descartar",
+        "Restaurar aplica los valores del draft sobre el estado del form y los marca dirty para autosave; no dispara PATCH",
+        "Descartar elimina el draft de IDB y el form carga con los datos del servidor sin modificación",
+        "El draft no contiene binarios de fotos (file_ref); solo el valor serializable del campo",
+        "Si saveDraft falla (cuota excedida), el autosave no se interrumpe y el error se loguea en console.warn",
+        "Tests de draft-store (fake-indexeddb) y de lógica de restauración/descarte pasan sin romper tests existentes"
+      ],
+      "sdd": true,
+      "status": "done"
+    },
+    {
+      "id": 41,
+      "name": "41_referencia_auditoria",
+      "title": "Referencia legible y anti-duplicado de auditorías",
+      "description": "Dar a cada auditoría un código de referencia humano, único e inmutable, con formato <EMPRESA>-<TIPO>-<NNNN> (correlativo por empresa y por tipo, ej. ISX-ERP-0002). Iniciales de empresa autogeneradas y únicas. Obligar a un solo tipo por auditoría, mostrar el código en todas las vistas (tablero, detalle, informe, presupuesto, briefing) y avisar al crear si la empresa ya tiene una auditoría activa del mismo tipo.",
+      "source": "Incidente operativo (2026-06-23, INGENIERIA SIGLO XXI): se crearon dos auditorías ERP duplicadas indistinguibles (solo razón social en el tablero); el relevamiento quedó disperso entre auditorías gemelas y se percibió como pérdida de datos. Auditorías referenciadas solo por UUID, sin número legible.",
+      "acceptance": [
+        "Cada empresa tiene codigo único NOT NULL, autogenerado de la razón social (iniciales, sin formas societarias) con desambiguación por colisión",
+        "Cada auditoría tiene ref_code único NOT NULL con formato <EMPRESA>-<TIPO>-<NNNN> (TIPO: IT/ERP/ERPE), correlativo por empresa+tipo desde 0001",
+        "El ref_code se asigna de forma atómica en la creación (sin colisiones bajo concurrencia) y es inmutable; empresa.codigo también es inmutable",
+        "La migración backfillea empresa.codigo y ref_code de lo existente (legacy multi-tipo usa el tipo líder it<erp-tango<erp-estandar)",
+        "El formulario de creación obliga a un solo tipo por auditoría; las auditorías legacy multi-tipo se siguen leyendo sin romper",
+        "El ref_code se muestra en tablero, detalle, cierre/informe, payload a presupuestossys y briefing externo",
+        "Al crear una auditoría para una empresa con otra activa (no archivada, no cerrada) del mismo tipo, el sistema avisa y lista los conflictos (ref_code, estado, encargada) en vez de crear",
+        "Con confirmación explícita (confirmDuplicate) la auditoría se crea con el correlativo siguiente; sin conflicto se crea sin aviso",
+        "Las rutas y FKs siguen usando audit.id (uuid); el ref_code es solo de presentación",
+        "Tests: codigo de empresa, formato/unicidad/backfill del ref_code, atomicidad bajo concurrencia, inmutabilidad, tipo único, guard anti-duplicado y render en las vistas"
       ],
       "sdd": true,
       "status": "done"

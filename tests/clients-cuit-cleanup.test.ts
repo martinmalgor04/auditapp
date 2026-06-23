@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { setSqlForTests } from '../src/lib/server/db/client';
 import { indexNames, setupTestDb, teardownTestDb } from './helpers/db';
 import { findUserIdByEmail } from './helpers/auth';
+import { insertTestEmpresa } from './helpers/empresa';
 
 const MIGRATION_013_RAW = readFileSync(
   join(process.cwd(), 'migrations', '013_client_cuit_index.sql'),
@@ -71,12 +72,9 @@ describe('client cuit cleanup + índice único (R17, R18)', () => {
     const idLow = '00000000-0000-0000-0000-000000000001';
     const idMid = '00000000-0000-0000-0000-000000000002';
     const idHigh = '00000000-0000-0000-0000-000000000003';
-    await sql`
-      INSERT INTO client (id, razon_social, cuit, origen) VALUES
-        (${idLow}::uuid,  'Dup Low',  ${cuit}, 'presupuestos'),
-        (${idMid}::uuid,  'Dup Mid',  ${cuit}, 'presupuestos'),
-        (${idHigh}::uuid, 'Dup High', ${cuit}, 'presupuestos')
-    `;
+    await insertTestEmpresa(sql, { id: idLow, razonSocial: 'Dup Low', cuit, origen: 'presupuestos' });
+    await insertTestEmpresa(sql, { id: idMid, razonSocial: 'Dup Mid', cuit, origen: 'presupuestos' });
+    await insertTestEmpresa(sql, { id: idHigh, razonSocial: 'Dup High', cuit, origen: 'presupuestos' });
 
     // Detección previa (R17): hay duplicados antes de limpiar.
     const before = await sql<{ cuit: string; count: string }[]>`
@@ -102,7 +100,7 @@ describe('client cuit cleanup + índice único (R17, R18)', () => {
 
     // Y rechaza un insert duplicado.
     await expect(
-      sql`INSERT INTO client (razon_social, cuit, origen) VALUES ('Otro', ${cuit}, 'presupuestos')`
+      insertTestEmpresa(sql, { razonSocial: 'Otro', cuit, origen: 'presupuestos' })
     ).rejects.toMatchObject({ code: '23505' });
 
     await sql`DELETE FROM client WHERE cuit = ${cuit}`;
@@ -115,11 +113,8 @@ describe('client cuit cleanup + índice único (R17, R18)', () => {
 
     const idLow = '00000000-0000-0000-0000-0000000000a1';
     const idHigh = '00000000-0000-0000-0000-0000000000a2';
-    await sql`
-      INSERT INTO client (id, razon_social, cuit, origen) VALUES
-        (${idLow}::uuid,  'Keep',  ${cuit}, 'presupuestos'),
-        (${idHigh}::uuid, 'Drop',  ${cuit}, 'presupuestos')
-    `;
+    await insertTestEmpresa(sql, { id: idLow, razonSocial: 'Keep', cuit, origen: 'presupuestos' });
+    await insertTestEmpresa(sql, { id: idHigh, razonSocial: 'Drop', cuit, origen: 'presupuestos' });
 
     const adminId = await findUserIdByEmail(sql, 'admin@serviciosysistemas.com.ar');
 

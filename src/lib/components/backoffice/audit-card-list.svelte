@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { DashboardAuditRow } from '$lib/backoffice/dashboard-types';
+  import { AUDIT_TYPE_LABELS, type AuditType } from '$lib/audit-types';
   import AuditStatusBadge from './audit-status-badge.svelte';
   import AuditProgressBar from './audit-progress-bar.svelte';
   import CopyLinkButton from './copy-link-button.svelte';
@@ -18,7 +19,10 @@
         </a>
         <AuditStatusBadge status={row.status} />
       </div>
-      <p class="sys-muted">{row.types.join(', ')} · Seg. {row.segment}</p>
+      <p class="font-mono text-xs text-sys-electrico">{row.refCode}</p>
+      <p class="sys-muted">
+        {row.types.map((t) => AUDIT_TYPE_LABELS[t as AuditType] ?? t).join(', ')} · Seg. {row.segment}
+      </p>
       <AuditProgressBar progress={row.progress} />
       <dl class="grid grid-cols-2 gap-2 text-xs text-[var(--sys-text-muted-light)]">
         <div><dt class="inline">Técnico: </dt><dd class="inline">{row.techName}</dd></div>

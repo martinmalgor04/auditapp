@@ -9,7 +9,7 @@ import {
 
 export { PSYS_PROPOSAL_STATUSES, type PsysProposalStatus, isKnownPsysStatus };
 
-export const PSYS_CONTRACT_VERSION = '1.0';
+export const PSYS_CONTRACT_VERSION = '1.1';
 
 const psysClienteSchema = z
   .object({
@@ -43,7 +43,8 @@ export const psysProposalPayloadSchema = z
       .object({
         system: z.literal('auditapp'),
         audit_id: z.string().uuid(),
-        report_version: z.number().int().min(1)
+        report_version: z.number().int().min(1),
+        ref_code: z.string().min(1)
       })
       .strict(),
     template_slug: z.string().min(1),

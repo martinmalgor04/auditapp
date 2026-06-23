@@ -2,6 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type postgres from 'postgres';
 import { setSqlForTests } from '../src/lib/server/db/client';
 import { setupTestDb, teardownTestDb } from './helpers/db';
+import { insertTestEmpresa } from './helpers/empresa';
 
 /**
  * #23 Fase 1 — compatibilidad hacia atrás (R30). Mientras el rollout está en curso, `client`
@@ -54,11 +55,13 @@ describe('compat vista client (#23 Fase 1 — R30)', () => {
     const razon = 'Compat Insert ' + Date.now();
     await sql`DELETE FROM empresa WHERE razon_social = ${razon}`;
 
-    // Escritor legacy: INSERT a `client` SIN informar relacion (usa el DEFAULT 'prospecto').
-    await sql`
-      INSERT INTO client (razon_social, cuit, origen)
-      VALUES (${razon}, NULL, 'presupuestos')
-    `;
+    // Escritor legacy: INSERT sin informar relacion (DEFAULT 'prospecto' en la vista client).
+    await insertTestEmpresa(sql, {
+      razonSocial: razon,
+      cuit: null,
+      origen: 'presupuestos',
+      relacion: 'prospecto'
+    });
     const [base] = await sql<{ relacion: string }[]>`
       SELECT relacion FROM empresa WHERE razon_social = ${razon}
     `;

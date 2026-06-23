@@ -10,9 +10,10 @@ describe('psys payload contract', () => {
   const golden = loadInformeCanonicalGolden();
 
   it('PSYS_CONTRACT_VERSION vale 1.0 y aparece en payloads generados (R15)', () => {
-    expect(PSYS_CONTRACT_VERSION).toBe('1.0');
+    expect(PSYS_CONTRACT_VERSION).toBe('1.1');
     const payload = buildPsysPayload({
       auditId: golden.audit_id,
+      refCode: 'TEST-ERP-0001',
       report: {
         id: '00000000-0000-4000-8000-000000000001',
         auditId: golden.audit_id,
@@ -38,13 +39,14 @@ describe('psys payload contract', () => {
       },
       canonical: golden
     });
-    expect(payload.contract_version).toBe('1.0');
+    expect(payload.contract_version).toBe('1.1');
     expect(psysProposalPayloadSchema.safeParse(payload).success).toBe(true);
   });
 
   it('rechaza payload sin linea o sin contract_version (R4)', () => {
     const valid = buildPsysPayload({
       auditId: golden.audit_id,
+      refCode: 'TEST-ERP-0001',
       report: {
         id: '00000000-0000-4000-8000-000000000001',
         auditId: golden.audit_id,
@@ -84,6 +86,7 @@ describe('psys payload contract', () => {
   it('recomendaciones y upsell solo bajo internal_notes, no en inputs (R14)', () => {
     const payload = buildPsysPayload({
       auditId: golden.audit_id,
+      refCode: 'TEST-ERP-0001',
       report: {
         id: '00000000-0000-4000-8000-000000000001',
         auditId: golden.audit_id,

@@ -60,16 +60,17 @@ La columna **Cómo** (`method` O/E/C/X) se muestra como íconos/etiqueta de ayud
 - **Sin pérdida:** recargar la página recupera todo desde el server (las respuestas ya guardadas) + la cola pendiente.
 - `source='tecnico'`, `updated_by=user.id`, `updated_at` en cada upsert.
 
-> Alcance v1 = **autosave online con cola de reintentos**, no offline-first completo. Si el técnico no tiene nada de señal por largo rato, la cola aguanta y sincroniza al volver; no se garantiza trabajo 100% offline prolongado (eso es v2).
+> Alcance v1 = **autosave online con cola de reintentos**, no offline-first completo. Si el técnico no tiene nada de señal por largo rato, la cola aguanta y sincroniza al volver; no se garantiza trabajo 100% offline prolongado.
+> **Actualización:** el snapshot local de recuperación (draft en IndexedDB para recuperar tras cierre accidental del tab) se implementó en feature **#40 `40_offline_snapshot`**.
 
 ---
 
 ## 5. Scoring por sección
 
-- Al terminar una sección, el técnico carga el **score 0–100** y una observación → `audit_section_score`.
+- El score por sección se calcula **automáticamente** desde la rúbrica de ítems (feature #7, decisión de implementación).
 - Semáforo visual: 🟢 70–100 · 🟠 40–69 · 🔴 0–39 (de [SPEC-04 §3](../../../specs/04-plantillas-auditoria/spec.md)).
 - Secciones marcadas N/A completas no puntúan.
-- v1: score **manual** (criterio del técnico). Autocálculo desde los ítems queda para v2 ([07f §8](../08-cierre-auditoria/spec.md)).
+- ~~v1: score manual. Autocálculo v2.~~ **Descartado:** se implementó autocálculo determinístico desde el inicio (feature #7). El técnico no puede editar el score manualmente.
 
 ---
 

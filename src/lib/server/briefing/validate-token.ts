@@ -8,6 +8,7 @@ import { BriefingUnavailableError } from './errors';
 export type BriefingContext = {
   audit: {
     id: string;
+    refCode: string;
     status: 'briefing_enviado' | 'briefing_completo';
     tokenExpiresAt: Date | null;
   };
@@ -18,6 +19,7 @@ function toContext(row: AuditByTokenRow): BriefingContext {
   return {
     audit: {
       id: row.id,
+      refCode: row.ref_code,
       status: row.status as 'briefing_enviado' | 'briefing_completo',
       tokenExpiresAt: null
     },

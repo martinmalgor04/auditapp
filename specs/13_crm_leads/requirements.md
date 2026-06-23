@@ -12,9 +12,11 @@
 
 ## R1 — Migración crea tabla crm_lead
 
-CUANDO se ejecuta la migración `006_crm_leads.sql` sobre una base con schema v5, el sistema DEBE crear la tabla `crm_lead` con columnas: `id` (uuid PK), `email` (text NOT NULL, único case-insensitive), `empresa` (text NOT NULL), `contacto` (text), `telefono` (text), `source` (text NOT NULL, CHECK en `firecrawl|referido|manual|otro`), `status` (text NOT NULL DEFAULT `'lead'`, CHECK en los 7 estados de R2), `notas` (text), `proxima_accion` (text), `proxima_accion_fecha` (date), `client_id` (uuid NULL FK → `client`), `audit_id` (uuid NULL FK → `audit`), `presupuesto_ref` (text), `descartado_at` (timestamptz), `created_at` y `updated_at` (timestamptz NOT NULL DEFAULT now()).
+CUANDO se ejecuta la migración `006_crm_leads.sql` sobre una base con schema v5, el sistema DEBE crear la tabla `crm_lead` con columnas: `id` (uuid PK), `email` (text NULL, único case-insensitive cuando no es NULL), `empresa` (text NOT NULL), `contacto` (text), `telefono` (text), `source` (text NOT NULL, CHECK en `firecrawl|referido|manual|otro`), `status` (text NOT NULL DEFAULT `'lead'`, CHECK en los 7 estados de R2), `notas` (text), `proxima_accion` (text), `proxima_accion_fecha` (date), `client_id` (uuid NULL FK → `client`), `audit_id` (uuid NULL FK → `audit`), `presupuesto_ref` (text), `descartado_at` (timestamptz), `created_at` y `updated_at` (timestamptz NOT NULL DEFAULT now()).
 
-**Verificación:** `tests/crm-schema.test.ts` — la tabla existe con esas columnas; INSERT con `source = 'spam'` o `status = 'ganado'` viola CHECK; segundo INSERT con `EMAIL@x.com` vs `email@x.com` viola unicidad.
+**Verificación:** `tests/crm-schema.test.ts` — la tabla existe con esas columnas; INSERT con `source = 'spam'` o `status = 'ganado'` viola CHECK; segundo INSERT con email no-NULL `EMAIL@x.com` vs `email@x.com` viola unicidad.
+
+> **Nota (migración):** `email` fue cambiado a nullable en la migración aplicada para aceptar leads sin email conocido (Firecrawl puede no detectar el email). La unicidad aplica solo entre filas con email no-NULL.
 
 ## R2 — Máquina de estados del funnel
 

@@ -44,3 +44,21 @@ export class ValidationError extends BackofficeError {
     this.name = 'ValidationError';
   }
 }
+
+export type ActiveAuditConflict = {
+  id: string;
+  refCode: string;
+  status: import('$lib/server/db/audit-status').AuditStatus;
+  encargada: string | null;
+};
+
+/** Aviso anti-duplicado al crear auditoría (#41, R21). */
+export class DuplicateAuditWarning extends BackofficeError {
+  readonly conflicts: ActiveAuditConflict[];
+
+  constructor(conflicts: ActiveAuditConflict[]) {
+    super('DUPLICATE_AUDIT_WARNING', 'Ya existe una auditoría activa del mismo tipo', 409);
+    this.name = 'DuplicateAuditWarning';
+    this.conflicts = conflicts;
+  }
+}

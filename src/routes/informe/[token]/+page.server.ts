@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { registerShareView } from '$lib/server/db/informe-shares';
+import { getAuditForReport } from '$lib/server/informe/access';
 import { buildInformeRenderModel } from '$lib/server/informe/model';
 import { isInformeShareRateLimited } from '$lib/server/informe/rate-limit';
 import {
@@ -22,8 +23,12 @@ export const load: PageServerLoad = async ({ params, setHeaders, getClientAddres
   await registerShareView(resolution.share.id);
   setHeaders({ 'X-Robots-Tag': 'noindex, nofollow' });
 
+  const audit = await getAuditForReport(resolution.report.auditId);
+
   return {
-    model: buildInformeRenderModel(resolution.report),
+    model: buildInformeRenderModel(resolution.report, {
+      refCode: audit?.refCode
+    }),
     token: params.token
   };
 };

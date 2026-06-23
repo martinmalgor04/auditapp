@@ -2,6 +2,7 @@ import type postgres from 'postgres';
 import { setSqlForTests } from '../../src/lib/server/db/client';
 import { findUserByEmail } from '../helpers/auth';
 import { getTemplateIdByCode, insertAuditResponse } from '../helpers/backoffice';
+import { insertTestEmpresa } from '../helpers/empresa';
 
 export type MercadoSeedAudit = {
   razonSocial: string;
@@ -49,18 +50,17 @@ export async function insertMercadoAudit(
     await sql`DELETE FROM client WHERE cuit = ${audit.cuit}`;
   }
 
-  const [client] = await sql<{ id: string }[]>`
-    INSERT INTO client (
-      razon_social, cuit, rubro, erp_actual, referente_nombre
-    )
-    VALUES (
-      ${audit.razonSocial},
-      ${audit.cuit ?? null},
-      ${audit.rubro ?? null},
-      ${audit.erpActual ?? null},
-      ${audit.referenteNombre ?? null}
-    )
-    RETURNING id
+  const clientId = await insertTestEmpresa(sql, {
+    razonSocial: audit.razonSocial,
+    cuit: audit.cuit ?? null
+  });
+  await sql`
+    UPDATE client
+    SET
+      rubro = ${audit.rubro ?? null},
+      erp_actual = ${audit.erpActual ?? null},
+      referente_nombre = ${audit.referenteNombre ?? null}
+    WHERE id = ${clientId}::uuid
   `;
 
   const [row] = await sql<{ id: string }[]>`
@@ -69,7 +69,7 @@ export async function insertMercadoAudit(
       assigned_tech_id, closed_at
     )
     VALUES (
-      ${client.id},
+      ${clientId},
       ${'Auditoría ' + audit.razonSocial},
       ${types},
       ${templateIds}::uuid[],
@@ -106,7 +106,7 @@ export async function insertMercadoAudit(
     }
   }
 
-  return { auditId: row.id, clientId: client.id };
+  return { auditId: row.id, clientId };
 }
 
 export async function seedMercadoDashboardFixtures(sql: postgres.Sql): Promise<{

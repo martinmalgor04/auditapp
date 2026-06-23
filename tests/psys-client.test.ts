@@ -40,6 +40,7 @@ describe('psys HTTP client', () => {
     const golden = loadInformeCanonicalGolden();
     const payload = buildPsysPayload({
       auditId: golden.audit_id,
+      refCode: 'TEST-IT-0001',
       report: {
         id: randomUUID(),
         auditId: golden.audit_id,
@@ -79,6 +80,7 @@ describe('psys HTTP client', () => {
     const golden = loadInformeCanonicalGolden();
     const payload = buildPsysPayload({
       auditId: golden.audit_id,
+      refCode: 'TEST-IT-0001',
       report: {
         id: randomUUID(),
         auditId: golden.audit_id,
@@ -115,6 +117,7 @@ describe('psys HTTP client', () => {
     const golden = loadInformeCanonicalGolden();
     const payload = buildPsysPayload({
       auditId: golden.audit_id,
+      refCode: 'TEST-IT-0001',
       report: {
         id: randomUUID(),
         auditId: golden.audit_id,
@@ -160,6 +163,7 @@ describe('psys HTTP client', () => {
     const golden = loadInformeCanonicalGolden();
     const payload = buildPsysPayload({
       auditId: golden.audit_id,
+      refCode: 'TEST-IT-0001',
       report: {
         id: randomUUID(),
         auditId: golden.audit_id,
@@ -209,6 +213,7 @@ describe('psys HTTP client', () => {
     const golden = loadInformeCanonicalGolden();
     const payload = buildPsysPayload({
       auditId: golden.audit_id,
+      refCode: 'TEST-IT-0001',
       report: {
         id: randomUUID(),
         auditId: golden.audit_id,

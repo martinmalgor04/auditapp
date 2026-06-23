@@ -37,12 +37,15 @@ function fechaLarga(closedAt: string | null): string {
  * View-model del render imprimible (R26): datos públicos del snapshot canónico
  * (vía stripInternalFindings, R16) + client_draft. Nunca recibe internal_draft.
  *
- * @param timestamps Opcional: started_at y finished_at de la tabla audit (R16).
- *   Se leen frescos (no del canonical JSON). Si se omiten, `visita` no se incluye.
+ * @param options Opcional: timestamps de visita y ref_code de audit (#41).
  */
 export function buildInformeRenderModel(
   report: AuditReportRow,
-  timestamps?: { startedAt: Date | null; finishedAt: Date | null }
+  options?: {
+    startedAt?: Date | null;
+    finishedAt?: Date | null;
+    refCode?: string;
+  }
 ): InformeRenderModel {
   if (!report.clientDraft) {
     throw new Error('El informe no tiene borrador para renderizar');
@@ -51,14 +54,18 @@ export function buildInformeRenderModel(
   const auditTipo = tipoAuditoria(canonical.types);
 
   let visita: InformeRenderModel['visita'] = undefined;
-  if (timestamps) {
-    const v = formatVisita({ startedAt: timestamps.startedAt, finishedAt: timestamps.finishedAt });
+  if (options) {
+    const v = formatVisita({
+      startedAt: options.startedAt ?? null,
+      finishedAt: options.finishedAt ?? null
+    });
     if (v && v.finStr) {
       visita = { inicio: v.inicioStr, fin: v.finStr, duracionMin: v.duracionMin };
     }
   }
 
   return {
+    refCode: options?.refCode ?? '—',
     cliente: {
       razonSocial: canonical.client.razon_social,
       cuit: canonical.client.cuit,

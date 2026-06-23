@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { DashboardAuditRow } from '$lib/backoffice/dashboard-types';
-  import AuditStatusBadge from './audit-status-badge.svelte';
+  import AuditStatusBadge from '$lib/components/backoffice/audit-status-badge.svelte';
+  import { AUDIT_TYPE_LABELS, type AuditType } from '$lib/audit-types';
   import AuditProgressBar from './audit-progress-bar.svelte';
   import CopyLinkButton from './copy-link-button.svelte';
   import AuditRowActions from './audit-row-actions.svelte';
@@ -30,9 +31,18 @@
             <a href="/auditorias/{row.id}" class="font-medium text-sys-profundo hover:text-sys-electrico">
               {row.razonSocial}
             </a>
+            <span class="block font-mono text-xs text-sys-electrico">{row.refCode}</span>
             <span class="block text-xs text-[var(--sys-text-muted-light)]">Seg. {row.segment}</span>
           </td>
-          <td class="px-5 py-4 text-sys-medio">{row.types.join(', ')}</td>
+          <td class="px-5 py-4">
+            <div class="flex flex-wrap gap-1">
+              {#each row.types as type}
+                <span class="rounded bg-sys-offwhite px-2 py-0.5 text-xs text-sys-medio">
+                  {AUDIT_TYPE_LABELS[type as AuditType] ?? type}
+                </span>
+              {/each}
+            </div>
+          </td>
           <td class="px-5 py-4"><AuditStatusBadge status={row.status} /></td>
           <td class="px-5 py-4"><AuditProgressBar progress={row.progress} /></td>
           <td class="px-5 py-4 text-sys-medio">{row.techName}</td>
