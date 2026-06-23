@@ -1,6 +1,8 @@
 <script lang="ts">
   import SysShell from '$lib/components/brand/SysShell.svelte';
+  import BottomNav from '$lib/components/brand/BottomNav.svelte';
   import InstallPWA from '$lib/components/brand/InstallPWA.svelte';
+  import NavigationLoadingBar from '$lib/components/brand/NavigationLoadingBar.svelte';
   import { AUDIT_TYPE_LABELS } from '$lib/audit-types';
   import { page } from '$app/stores';
   import type { LayoutData } from './$types';
@@ -18,6 +20,8 @@
     }`;
   }
 </script>
+
+<NavigationLoadingBar />
 
 <SysShell variant="light">
   {#snippet nav()}
@@ -54,5 +58,7 @@
 
   {@render children?.()}
 </SysShell>
+
+<BottomNav {data} />
 
 <InstallPWA />

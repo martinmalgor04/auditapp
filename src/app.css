@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --sys-touch-min: 44px;
+  }
+
   body {
     font-family: var(--sys-font);
     -webkit-font-smoothing: antialiased;

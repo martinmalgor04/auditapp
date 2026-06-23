@@ -3,8 +3,16 @@
   import AuditFilters from '$lib/components/backoffice/audit-filters.svelte';
   import AuditTable from '$lib/components/backoffice/audit-table.svelte';
   import AuditCardList from '$lib/components/backoffice/audit-card-list.svelte';
+  import EmptyDashboard from '$lib/components/backoffice/EmptyDashboard.svelte';
 
   let { data }: { data: PageData } = $props();
+
+  const hasFilters = $derived(
+    (data.filters.type ?? '') !== '' ||
+      (data.filters.status ?? '') !== '' ||
+      (data.filters.clientId ?? '') !== '' ||
+      (data.filters.q ?? '') !== ''
+  );
 </script>
 
 <svelte:head>
@@ -19,8 +27,12 @@
 
   <AuditFilters clients={data.clients} filters={data.filters} allowedTypes={data.allowedTypes} />
 
-  <AuditTable rows={data.dashboard.rows} />
-  <AuditCardList rows={data.dashboard.rows} />
+  {#if data.dashboard.rows.length === 0}
+    <EmptyDashboard {hasFilters} />
+  {:else}
+    <AuditTable rows={data.dashboard.rows} />
+    <AuditCardList rows={data.dashboard.rows} />
+  {/if}
 
   {#if data.dashboard.hasNext || data.dashboard.page > 1}
     <nav class="flex flex-col gap-3 pt-2 text-sm text-[var(--sys-text-muted-light)] sm:flex-row sm:items-center sm:justify-between">
