@@ -8,6 +8,7 @@ import {
 import { indexToSemaphore } from '$lib/server/scoring/semaphore';
 import { logger } from '$lib/server/logger';
 import {
+  clearReportStale,
   getReportById,
   insertReport,
   listEjemplarReports,
@@ -229,6 +230,8 @@ export async function runInformePipeline(
       model,
       contextMeta
     });
+    // #39 R15: limpiar marca de desactualizado tras generación exitosa
+    await clearReportStale(reportId);
   } catch (err) {
     const message =
       err instanceof InformeDomainUnresolvedError

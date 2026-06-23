@@ -325,3 +325,122 @@ export async function loadAuditFormForApi(
 ): Promise<ReturnType<typeof loadAuditForm>> {
   return loadAuditForm(auditId, user);
 }
+
+/**
+ * #39 (R5, R6, R7): guard de acceso readonly para auditorías cerradas.
+ * Admin → siempre permitido. Técnico → debe estar asignado. Otros roles → 403.
+ * No valida estado: el llamador debe asegurarse de que la auditoría está cerrada.
+ */
+export async function assertFormReadonlyAccess(
+  audit: NonNullable<Awaited<ReturnType<typeof getAuditFormHeader>>>,
+  user: AppUser
+): Promise<void> {
+  if (user.role !== 'admin' && user.role !== 'tecnico') {
+    throw new AuditFormNotAllowedError();
+  }
+  if (user.role === 'tecnico') {
+    const assigned = await techAssignedTypes(audit.id, user.id);
+    if (assigned.length === 0) {
+      throw new AuditFormNotAllowedError();
+    }
+  }
+}
+
+/**
+ * #39 (R1–R5): carga el formulario en modo solo lectura para auditorías cerradas.
+ * No modifica audit_response, started_at ni finished_at.
+ */
+export async function loadAuditFormReadonly(
+  auditId: string,
+  user: AppUser
+): Promise<{
+  audit: AuditHeader;
+  sections: FormSection[];
+  progressPct: number;
+}> {
+  const header = await getAuditFormHeader(auditId);
+  if (!header) {
+    throw new AuditFormNotAllowedError('Auditoría no encontrada');
+  }
+
+  await assertFormReadonlyAccess(header, user);
+
+  const visibleTemplates = await visibleTemplateIds(header, user);
+
+  const [allSectionRows, allItemRows, responseRows] = await Promise.all([
+    listFormSections(auditId),
+    listFormItems(auditId),
+    listFormResponses(auditId)
+  ]);
+
+  const cabSections = allSectionRows
+    .filter((s) => s.code === 'CAB')
+    .sort((a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id));
+  const canonicalCabSectionId = cabSections[0]?.id ?? null;
+
+  const sectionRows = allSectionRows.filter((s) => {
+    if (s.code === 'CAB') {
+      return s.id === canonicalCabSectionId;
+    }
+    return visibleTemplates.has(s.template_id);
+  });
+  const visibleSectionIds = new Set(sectionRows.map((s) => s.id));
+  const itemRows = allItemRows.filter((it) => visibleSectionIds.has(it.section_id));
+
+  const responseMap = new Map(
+    responseRows.map((r) => [r.item_id, mapResponse(r)])
+  );
+
+  const itemsBySection = new Map<string, FormItem[]>();
+  for (const row of itemRows) {
+    const item = buildFormItem(row, responseMap);
+    const list = itemsBySection.get(row.section_id) ?? [];
+    list.push(item);
+    itemsBySection.set(row.section_id, list);
+  }
+
+  const allItems = itemRows.map((row) => buildFormItem(row, responseMap));
+  const progressTotal = allItems.length;
+  const progressComplete = allItems.filter(isItemComplete).length;
+  const progressPct = progressTotal > 0 ? Math.round((progressComplete / progressTotal) * 100) : 0;
+
+  const sections: FormSection[] = sectionRows.map((sec) => {
+    const items = itemsBySection.get(sec.id) ?? [];
+    const respMap = new Map(
+      items.map((it) => [it.id, { value: it.value, na: it.na }])
+    );
+    const scoreItems = itemRows
+      .filter((r) => r.section_id === sec.id)
+      .map((r) => ({
+        id: r.id,
+        fieldType: r.field_type,
+        options: r.options,
+        scores: r.scores
+      }));
+
+    const live = computeSectionScore({ items: scoreItems, responses: respMap });
+
+    return {
+      id: sec.id,
+      code: sec.code,
+      title: sec.title,
+      sortOrder: sec.sort_order,
+      items,
+      liveScore: live.score,
+      scoreBand: live.band
+    };
+  });
+
+  return {
+    audit: {
+      id: header.id,
+      name: header.name,
+      razonSocial: header.razon_social,
+      status: header.status,
+      types: header.types,
+      segment: header.segment
+    },
+    sections,
+    progressPct
+  };
+}

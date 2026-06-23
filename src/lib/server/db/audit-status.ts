@@ -21,14 +21,14 @@ export function isValidAuditStatus(value: string): value is AuditStatus {
 export function isValidAuditStatusTransition(
   from: AuditStatus,
   to: AuditStatus,
-  opts?: { allowAdminReopen?: boolean; skipBriefing?: boolean }
+  opts?: { allowAdminReopen?: boolean; allowTechReopen?: boolean; skipBriefing?: boolean }
 ): boolean {
   if (from === to) {
     return true;
   }
 
   if (from === 'cerrada' && to === 'en_cierre') {
-    return opts?.allowAdminReopen === true;
+    return opts?.allowAdminReopen === true || opts?.allowTechReopen === true;
   }
 
   const allowed = BASE_TRANSITIONS[from];

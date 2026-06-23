@@ -110,6 +110,19 @@
     {#if data.audit.status === 'en_cierre' || data.audit.status === 'cerrada'}
       <a href="/auditorias/{data.audit.id}/cierre" class="sys-btn-secondary mt-2">Pantalla de cierre</a>
     {/if}
+    {#if data.audit.status === 'cerrada' && data.canViewRelevamientoReadonly}
+      <a href="/auditorias/{data.audit.id}/form-readonly" class="sys-btn-secondary mt-2 block">
+        Ver relevamiento (solo lectura)
+      </a>
+    {/if}
+    {#if data.audit.status === 'cerrada' && data.canReopenAudit}
+      <form method="POST" action="?/reopenAudit" class="mt-2"
+        onsubmit={(e) => !confirm('¿Reabrir esta auditoría? Los informes generados quedarán marcados como posiblemente desactualizados.') && e.preventDefault()}>
+        <button type="submit" class="text-sm font-medium text-sys-naranja hover:underline">
+          Reabrir auditoría
+        </button>
+      </form>
+    {/if}
   </section>
 
   {#if data.audit.status === 'cerrada'}

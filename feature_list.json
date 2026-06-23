@@ -702,6 +702,26 @@
       ],
       "sdd": true,
       "status": "pending"
+    },
+    {
+      "id": 39,
+      "name": "39_relevamiento_visible_reapertura",
+      "title": "Ver relevamiento de auditorías cerradas + reapertura accesible",
+      "description": "Hoy una auditoría cerrada deja inaccesible su relevamiento: canOpenForm/FORM_EDITABLE_STATUSES excluyen 'cerrada' (src/lib/audit-status.ts, src/lib/server/db/audit-form.ts), el form tira 409 y el detalle ni muestra el botón. Falta poder VER lo relevado (respuestas, observaciones, fotos, grilla de inventario IT) con la auditoría cerrada, para auditoría interna y para consultar/inventariar los equipos cargados. Fase 1 (este alcance): vista de solo lectura del relevamiento accesible desde el detalle cuando la auditoría está cerrada, reusando el render data-driven del form (#07) sin permitir edición ni autosave. La reapertura ya existe (reopenAudit, persist.ts, cerrada→en_cierre) pero solo es alcanzable desde la pantalla de cierre y solo admin; este alcance la hace (a) visible/clara desde el detalle de la auditoría, (b) permitida también al técnico asignado (no solo admin), y (c) consciente del informe #14: al reabrir con informe ya generado, el informe se CONSERVA y se marca como potencialmente desactualizado (sin borrarlo), y al re-cerrar se puede regenerar versión nueva. La edición del relevamiento estando cerrada NO entra acá: para editar se reabre. No cambia el modelo de scoring; sí puede requerir un flag/marca de 'informe desactualizado' en audit_report.",
+      "source": "Solicitud operativa SyS (2026-06-22, Martín): poder ver los relevamientos aun con la auditoría cerrada (auditoría interna + inventario de equipos IT) y reabrir aunque ya se haya generado informe. Decisiones de puerta: (1) Fase 1 solo lectura, edición vía reapertura; (2) al reabrir, conservar informe y avisar desactualizado; (3) reabrir lo pueden hacer admin y técnico asignado. Base: máquina de estados src/lib/audit-status.ts, form #07, cierre/reopen src/lib/server/scoring/persist.ts, informe #14 src/lib/server/informe.",
+      "acceptance": [
+        "Con la auditoría en estado 'cerrada', el detalle ofrece una acción para ver el relevamiento en modo solo lectura (admin y técnico asignado; respeta el acceso por asignación de #32/#33)",
+        "La vista de solo lectura reusa el render data-driven del form (#07) y muestra respuestas, observaciones, fotos y la grilla de inventario IT sin controles de edición, sin autosave y sin botón 'Relevamiento completo'",
+        "El acceso de solo lectura no transiciona el estado ni sella started_at/finished_at ni toca audit_response",
+        "La reapertura es accesible desde el detalle de la auditoría (no solo desde la pantalla de cierre) cuando está 'cerrada'",
+        "Reabrir lo pueden hacer admin y el técnico asignado a la auditoría; un técnico no asignado no puede reabrir (guard de permisos)",
+        "Al reabrir con un informe (#14) ya generado, el informe se conserva (no se borra) y queda marcado como potencialmente desactualizado; la marca es visible en el panel interno del informe",
+        "Al re-cerrar una auditoría reabierta se puede regenerar el informe en una versión nueva sin perder la anterior",
+        "El form editable sigue funcionando igual en los estados editables actuales (briefing_completo/en_relevamiento/en_cierre); no hay regresión en el flujo normal",
+        "Tests: vista solo-lectura no permite edición ni cambia estado, guards de reapertura (admin y técnico asignado vs técnico no asignado), marca de informe desactualizado al reabrir, y no-regresión del form editable"
+      ],
+      "sdd": true,
+      "status": "done"
     }
   ]
 }

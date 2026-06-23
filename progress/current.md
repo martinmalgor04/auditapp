@@ -1,5 +1,27 @@
 # Sesión actual
 
+## Feature implementada: #39 39_relevamiento_visible_reapertura (implementer, 2026-06-22) — T1–T12 completos
+
+**Estado:** T1–T12 marcadas `[x]` en `specs/39_relevamiento_visible_reapertura/tasks.md`. pnpm run check: 0 errores.
+
+**Qué se hizo (T1–T12):**
+- T1: `migrations/021_audit_report_stale_since.sql` — ALTER TABLE audit_report ADD COLUMN stale_since
+- T2: `informe-reports.ts` — staleSince en AuditReportRow, REPORT_COLUMNS, mapRow; markReportsStale, clearReportStale
+- T3: `audit-status.ts` — opción allowTechReopen en isValidAuditStatusTransition
+- T4: `scoring/persist.ts` — reopenAudit amplía a admin O técnico asignado; markReportsStale en tx
+- T5: `load-form.ts` — assertFormReadonlyAccess + loadAuditFormReadonly
+- T6: `form-readonly/+page.server.ts` — loader readonly con guard 403
+- T7: `form-readonly/+page.svelte` — vista estática de secciones/ítems sin edición/autosave
+- T8: `detalle/+page.server.ts` — canViewRelevamientoReadonly, canReopenAudit, stale_since en reports, action reopenAudit
+- T9: `detalle/+page.svelte` — enlace readonly + botón reabrir + stale_since a InformeSection
+- T10: `informe-section.svelte` — aviso desactualizado cuando stale_since !== null
+- T11: `pipeline.ts` — clearReportStale tras saveDraftsAndFinish exitoso
+- T12: cierre/+page.server.ts verificado — call site compatible sin cambios
+
+**Pendiente:** T13–T16 (tests, otra fase). T17 check: ✅ 0 errores.
+
+---
+
 ## Feature implementada: #34 34_briefing_opcional (implementer, 2026-06-21) — COMPLETO, a espera de reviewer
 
 **Estado:** done. T1..T5 marcadas `[x]` en `specs/34_briefing_opcional/tasks.md`.

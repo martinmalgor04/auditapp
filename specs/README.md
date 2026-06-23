@@ -19,6 +19,7 @@ Backlog activo: [`feature_list.json`](../feature_list.json). Mapa de trazabilida
 | 24 | [`24_reunion_extraccion_precisa/`](24_reunion_extraccion_precisa/requirements.md) | Reunión: extracción precisa + análisis con Claude | spec_ready |
 | 33 | [`33_acceso_por_asignacion_unificado/`](33_acceso_por_asignacion_unificado/requirements.md) | Unificar acceso por asignación efectiva | spec_ready |
 | 34 | [`34_briefing_opcional/`](34_briefing_opcional/requirements.md) | Briefing opcional — avanzar sin esperar al cliente | spec_ready |
+| 39 | [`39_relevamiento_visible_reapertura/`](39_relevamiento_visible_reapertura/requirements.md) | Ver relevamiento de auditorías cerradas + reapertura accesible | spec_ready |
 
 Cada carpeta contiene:
 

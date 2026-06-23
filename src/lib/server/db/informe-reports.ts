@@ -4,6 +4,9 @@ import type { ContextMeta } from '$lib/server/informe/context/schemas';
 import type { ReportClientDraft, ReportInternalDraft } from '$lib/server/informe/schemas';
 import { assertInformeTransition, type InformeStatus } from '$lib/server/informe/state';
 import { InformeInvalidTransitionError } from '$lib/server/informe/errors';
+import type postgres from 'postgres';
+
+type DbExecutor = postgres.Sql | postgres.TransactionSql;
 
 export type AuditReportRow = {
   id: string;
@@ -27,6 +30,7 @@ export type AuditReportRow = {
   contextMeta: ContextMeta | null;
   createdAt: Date;
   updatedAt: Date;
+  staleSince?: Date | null;
 };
 
 export type AuditReportEditRow = {
@@ -43,7 +47,7 @@ const REPORT_COLUMNS = `
   id, audit_id, version, status, canonical_json, schema_version,
   client_draft, internal_draft, prompt_version, model, error_message, loom_url,
   requested_by, edited_by, edited_at, approved_by, approved_at,
-  ejemplar, context_meta, created_at, updated_at
+  ejemplar, context_meta, created_at, updated_at, stale_since
 `;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,7 +73,8 @@ function mapRow(row: Record<string, any>): AuditReportRow {
     ejemplar: row.ejemplar ?? false,
     contextMeta: row.context_meta ?? null,
     createdAt: row.created_at,
-    updatedAt: row.updated_at
+    updatedAt: row.updated_at,
+    staleSince: row.stale_since ?? null
   };
 }
 
@@ -349,6 +354,37 @@ export async function listEjemplarReports(limit: number): Promise<
     clientDraft: row.client_draft as ReportClientDraft,
     approvedAt: row.approved_at as Date | null
   }));
+}
+
+/**
+ * Marca como desactualizado (stale_since = now) todos los informes de una auditoría
+ * que todavía no estaban marcados (WHERE stale_since IS NULL). Idempotente (#39 R13).
+ */
+export async function markReportsStale(
+  auditId: string,
+  tx?: DbExecutor
+): Promise<void> {
+  const db = (tx ?? getSql()) as postgres.Sql;
+  await db`
+    UPDATE audit_report
+    SET stale_since = now()
+    WHERE audit_id = ${auditId} AND stale_since IS NULL
+  `;
+}
+
+/**
+ * Limpia stale_since de un informe concreto tras regeneración exitosa (#39 R15).
+ */
+export async function clearReportStale(
+  reportId: string,
+  tx?: DbExecutor
+): Promise<void> {
+  const db = (tx ?? getSql()) as postgres.Sql;
+  await db`
+    UPDATE audit_report
+    SET stale_since = NULL
+    WHERE id = ${reportId}
+  `;
 }
 
 export async function listEditHistory(reportId: string): Promise<AuditReportEditRow[]> {

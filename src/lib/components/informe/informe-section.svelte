@@ -12,6 +12,7 @@
     approved_by: string | null;
     approved_at: string | null;
     error_message: string | null;
+    stale_since?: string | null;
   };
 
   let {
@@ -95,11 +96,18 @@
     <ul class="divide-y divide-sys-offwhite">
       {#each items as report (report.report_id)}
         <li class="flex flex-wrap items-center justify-between gap-3 py-3">
-          <div class="flex items-center gap-3">
-            <span class="font-semibold">v{report.version}</span>
-            <ReportStatusBadge status={report.status} />
-            {#if report.status === 'error' && report.error_message}
-              <span class="text-xs text-sys-rojo">{report.error_message}</span>
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-3">
+              <span class="font-semibold">v{report.version}</span>
+              <ReportStatusBadge status={report.status} />
+              {#if report.status === 'error' && report.error_message}
+                <span class="text-xs text-sys-rojo">{report.error_message}</span>
+              {/if}
+            </div>
+            {#if report.stale_since}
+              <p class="text-xs text-sys-naranja" role="alert">
+                Este informe puede estar desactualizado respecto del relevamiento actual.
+              </p>
             {/if}
           </div>
           <div class="flex items-center gap-3 text-sm">

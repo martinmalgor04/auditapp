@@ -8,6 +8,8 @@ import {
 } from '$lib/server/backoffice/errors';
 import type { AppUser } from '$lib/server/auth/types';
 import { auditMatchesUserScope } from '$lib/server/auth/audit-access';
+import { techIsAssigned } from '$lib/server/db/audit-assignment';
+import { markReportsStale } from '$lib/server/db/informe-reports';
 import { scoreAudit } from './score-audit';
 import { closureFieldsSchema, type ClosureFieldsParsed } from './schemas';
 import { ClosureValidationError } from './errors';
@@ -176,9 +178,16 @@ export async function confirmClosure(
   return { warnings };
 }
 
-export async function reopenAudit(auditId: string, adminUser: AppUser): Promise<void> {
-  if (adminUser.role !== 'admin') {
+export async function reopenAudit(auditId: string, user: AppUser): Promise<void> {
+  if (user.role !== 'admin' && user.role !== 'tecnico') {
     throw new ForbiddenError();
+  }
+
+  if (user.role === 'tecnico') {
+    const assigned = await techIsAssigned(auditId, user.id);
+    if (!assigned) {
+      throw new ForbiddenError('Solo el técnico asignado puede reabrir la auditoría');
+    }
   }
 
   const ctx = await loadScoringContext(auditId);
@@ -186,6 +195,14 @@ export async function reopenAudit(auditId: string, adminUser: AppUser): Promise<
 
   if (ctx.status !== 'cerrada') {
     throw new InvalidStateTransitionError('Solo se puede reabrir una auditoría cerrada');
+  }
+
+  const isAllowed = isValidAuditStatusTransition('cerrada', 'en_cierre', {
+    allowAdminReopen: user.role === 'admin',
+    allowTechReopen: user.role === 'tecnico'
+  });
+  if (!isAllowed) {
+    throw new InvalidStateTransitionError('Transición no permitida');
   }
 
   const sql = getSql();
@@ -196,5 +213,6 @@ export async function reopenAudit(auditId: string, adminUser: AppUser): Promise<
       SET closed_at = NULL, closed_by = NULL
       WHERE audit_id = ${auditId}
     `;
+    await markReportsStale(auditId, tx);
   });
 }

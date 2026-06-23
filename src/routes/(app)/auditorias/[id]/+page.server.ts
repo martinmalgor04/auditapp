@@ -21,6 +21,8 @@ import {
   findLatestActiveLinkByAudit,
   toProposalLinkView
 } from '$lib/server/db/psys-links';
+import { techIsAssigned } from '$lib/server/db/audit-assignment';
+import { reopenAudit } from '$lib/server/scoring/persist';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
   const user = requireStaff(locals);
@@ -56,12 +58,28 @@ export const load: PageServerLoad = async ({ locals, params }) => {
   const canEditVisita =
     isAdmin || (audit.assignedTechId !== null && audit.assignedTechId === user.id);
 
+  // #39 R1, R2, R8, R9, R10: permisos para vista readonly y reapertura
+  let canViewRelevamientoReadonly = false;
+  let canReopenAudit = false;
+  if (audit.status === 'cerrada') {
+    if (isAdmin) {
+      canViewRelevamientoReadonly = true;
+      canReopenAudit = true;
+    } else if (user.role === 'tecnico') {
+      const assigned = await techIsAssigned(audit.id, user.id);
+      canViewRelevamientoReadonly = assigned;
+      canReopenAudit = assigned;
+    }
+  }
+
   return {
     audit,
     technicians,
     readonly,
     isAdmin,
     canEditVisita,
+    canViewRelevamientoReadonly,
+    canReopenAudit,
     startedAt: audit.startedAt?.toISOString() ?? null,
     finishedAt: audit.finishedAt?.toISOString() ?? null,
     briefingUrl: audit.publicToken ? getBriefingUrl(audit.publicToken) : null,
@@ -72,7 +90,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
       created_at: r.createdAt.toISOString(),
       approved_by: r.approvedBy,
       approved_at: r.approvedAt ? r.approvedAt.toISOString() : null,
-      error_message: r.errorMessage
+      error_message: r.errorMessage,
+      stale_since: r.staleSince ? r.staleSince.toISOString() : null
     })),
     hasApprovedReport,
     proposalLink,
@@ -170,5 +189,18 @@ export const actions: Actions = {
     }
 
     return { success: true, url: getBriefingUrl(publicToken) };
+  },
+
+  // #39 R8, R9, R10, R11: reabrir desde el detalle
+  reopenAudit: async ({ locals, params }) => {
+    const user = requireStaff(locals);
+
+    try {
+      await reopenAudit(params.id, user);
+      redirect(303, `/auditorias/${params.id}/cierre`);
+    } catch (e) {
+      if (isRedirect(e)) throw e;
+      return failFromError(e);
+    }
   }
 };
