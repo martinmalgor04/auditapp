@@ -4,18 +4,6 @@ export default {
   theme: {
     extend: {
       colors: {
-        sys: {
-          profundo: 'var(--sys-azul-profundo)',
-          medio: 'var(--sys-azul-medio)',
-          blanco: 'var(--sys-blanco)',
-          offwhite: 'var(--sys-offwhite)',
-          celeste: 'var(--sys-celeste)',
-          electrico: 'var(--sys-azul-electrico)',
-          verde: 'var(--sys-verde)',
-          rojo: 'var(--sys-rojo)',
-          naranja: 'var(--sys-naranja)',
-          neutro: 'var(--sys-gris-neutro)'
-        },
         'sys-primary': 'var(--sys-primary)',
         'sys-navy': 'var(--sys-navy)',
         'sys-navy-mid': 'var(--sys-navy-mid)',
@@ -31,11 +19,23 @@ export default {
         'sys-status-amber': 'var(--sys-status-amber)',
         'sys-status-red': 'var(--sys-status-red)',
         'sys-status-blue-bg': 'var(--sys-status-blue-bg)',
-        'sys-status-blue-text': 'var(--sys-status-blue-text)'
+        'sys-status-blue-text': 'var(--sys-status-blue-text)',
+        sys: {
+          profundo: 'var(--sys-azul-profundo)',
+          medio: 'var(--sys-azul-medio)',
+          blanco: 'var(--sys-blanco)',
+          offwhite: 'var(--sys-offwhite)',
+          celeste: 'var(--sys-celeste)',
+          electrico: 'var(--sys-azul-electrico)',
+          verde: 'var(--sys-verde)',
+          rojo: 'var(--sys-rojo)',
+          naranja: 'var(--sys-naranja)',
+          neutro: 'var(--sys-gris-neutro)'
+        }
       },
       fontFamily: {
         sys: ['var(--sys-font)'],
-        'sys-base': ['var(--sys-font-base)']
+        'sys-base': ['Montserrat', 'sans-serif']
       },
       borderRadius: {
         sys: 'var(--sys-radius-cta)',

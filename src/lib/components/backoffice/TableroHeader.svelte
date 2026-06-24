@@ -6,7 +6,7 @@
   export let filterValue: string = 'all';
   export let filterOptions: Array<{ label: string; value: string }> = [];
   export let onSearch: (q: string) => void;
-  export let onFilterChange: (v: string) => void;
+  export let onFilterChange: (v: string) => void = () => {};
   export let onNew: () => void;
 </script>
 
@@ -24,7 +24,7 @@
     </button>
   </div>
 
-  <div class="flex items-center gap-3 px-6 py-3 border-t border-[--sys-border] bg-white">
+  <div class="flex items-center gap-3 px-6 py-3 border-t border-[--sys-border] bg-white" data-testid="tablero-chip-filters">
     <span class="text-sm text-[--sys-text-muted] shrink-0">Filtrar:</span>
     <ChipFilters options={filterOptions} value={filterValue} onChange={onFilterChange} />
     <div class="relative flex-1 max-w-xs ml-auto">

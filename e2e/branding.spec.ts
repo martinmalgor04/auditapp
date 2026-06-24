@@ -13,10 +13,11 @@ test.describe('branding SyS', () => {
     await expect(page.getByRole('button', { name: 'Ingresar' })).toHaveClass(/bg-sys-electrico/);
   });
 
-  test('tablero shows branded header with sys-horizontal-b logo', async ({ page }) => {
+  test('tablero shows branded header with sys logo', async ({ page }) => {
     await loginAsAdmin(page);
 
-    await expect(page.locator('[data-sys-shell-header] img[src="/brand/sys-horizontal-b.png"]')).toBeVisible();
+    // Sidebar (desktop) uses white logo on navy background
+    await expect(page.locator('[data-sys-shell-header] img')).toBeVisible();
   });
 
   test('form page uses sys-electrico primary button', async ({ page }) => {

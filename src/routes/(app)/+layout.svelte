@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ProgressBar from '$lib/components/ui/ProgressBar.svelte';
   import HeaderMobile from '$lib/components/ui/HeaderMobile.svelte';
   import Sidebar from '$lib/components/ui/Sidebar.svelte';
   import BottomNav from '$lib/components/ui/BottomNav.svelte';
@@ -40,6 +41,8 @@
     void goto('/auditorias/new');
   }
 </script>
+
+<ProgressBar />
 
 {#if data.user}
   {#if showShellHeader}

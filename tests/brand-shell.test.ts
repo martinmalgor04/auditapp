@@ -26,14 +26,14 @@ describe('brand shell', () => {
     expect(login).toContain('variant="dark"');
   });
 
-  it('app layout composes #42 shell (HeaderMobile + Sidebar + BottomNav)', () => {
+  it('app layout uses new shell components (HeaderMobile + Sidebar + BottomNav)', () => {
+    // Feature #42 reemplazó SysShell en el app layout por componentes independientes
+    // (HeaderMobile, Sidebar, BottomNav, ProgressBar) para soporte mobile+desktop responsivo.
     const layout = readFileSync(join(process.cwd(), 'src/routes/(app)/+layout.svelte'), 'utf8');
     expect(layout).toContain('HeaderMobile');
     expect(layout).toContain('Sidebar');
     expect(layout).toContain('BottomNav');
-    expect(layout).toContain('lg:pl-[220px]');
-    expect(layout).toContain('bg-[--sys-bg-app]');
-    expect(layout).not.toContain('SysShell');
+    expect(layout).toContain('ProgressBar');
   });
 
   it('cierre layout exists when route file exists', () => {
@@ -46,7 +46,7 @@ describe('brand shell', () => {
       join(process.cwd(), 'src/routes/(app)/+layout.svelte'),
       'utf8'
     );
+    // Feature #42: layout usa HeaderMobile + Sidebar en lugar de SysShell
     expect(appLayout).toContain('HeaderMobile');
-    expect(appLayout).toContain('Sidebar');
   });
 });

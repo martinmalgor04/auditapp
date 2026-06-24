@@ -10,6 +10,7 @@ export const OFFICIAL_COLORS = {
   grisNeutro: '#908A82'
 } as const;
 
+// --sys-primary fue promovido a token oficial en feature #42 (R2) y ya no es legacy.
 export const LEGACY_BANNED = [
   '#1e4d8c',
   '#163a6b',

@@ -3,6 +3,7 @@
   import type { ItemStatus } from '$lib/client/form/item-status';
   import MethodBadge from './method-badge.svelte';
   import PreloadedBadge from './preloaded-badge.svelte';
+  import BoolField from './fields/bool-field.svelte';
   import DateField from './fields/date-field.svelte';
   import DatetimeField from './fields/datetime-field.svelte';
   import FieldFileRef from './fields/field-file-ref.svelte';
@@ -14,7 +15,9 @@
   import NumberField from './fields/number-field.svelte';
   import SelectField from './fields/select-field.svelte';
   import TextField from './fields/text-field.svelte';
-  import QuestionCard, { type TriValue } from './QuestionCard.svelte';
+  import TriField from './fields/tri-field.svelte';
+  import QuestionCard from './QuestionCard.svelte';
+  import type { TriValue } from './QuestionCard.svelte';
 
   export type FieldItem = {
     id: string;
@@ -188,32 +191,6 @@
     onchange?.(currentValue());
   }
 
-  function boolToTri(v: boolean | null): TriValue {
-    if (v === true) return 'si';
-    if (v === false) return 'no';
-    return null;
-  }
-
-  function triFromQuestionCard(v: TriValue): unknown {
-    if (item.fieldType === 'bool') {
-      if (v === 'si') return true;
-      if (v === 'no') return false;
-      return null;
-    }
-    return v;
-  }
-
-  function handleQuestionChange(v: TriValue) {
-    if (item.fieldType === 'bool') {
-      boolValue = v === 'si' ? true : v === 'no' ? false : null;
-    } else {
-      triValue = v ?? '';
-    }
-    emitChange();
-  }
-
-  let notesOpen = $state(false);
-
   function toggleNa() {
     naValue = !naValue;
     onnchange?.(naValue);
@@ -262,18 +239,24 @@
     {:else if item.fieldType === 'bool'}
       <QuestionCard
         question={item.label}
-        value={boolToTri(boolValue)}
-        hasObservation={Boolean(notesValue?.trim()) || status === 'con_observacion'}
-        onChange={handleQuestionChange}
-        onAddObservation={() => (notesOpen = true)}
+        value={boolValue === true ? 'si' : boolValue === false ? 'no' : null}
+        hasObservation={!!notesValue}
+        onChange={(v: TriValue) => {
+          boolValue = v === 'si' ? true : v === 'no' ? false : null;
+          emitChange();
+        }}
+        onAddObservation={() => {}}
       />
     {:else if item.fieldType === 'tri'}
       <QuestionCard
         question={item.label}
-        value={(triValue || null) as TriValue}
-        hasObservation={Boolean(notesValue?.trim()) || status === 'con_observacion'}
-        onChange={handleQuestionChange}
-        onAddObservation={() => (notesOpen = true)}
+        value={triValue || null}
+        hasObservation={!!notesValue}
+        onChange={(v: TriValue) => {
+          triValue = v ?? '';
+          emitChange();
+        }}
+        onAddObservation={() => {}}
       />
     {:else if item.fieldType === 'select'}
       <SelectField id={item.id} label={item.label} helpText={item.helpText} {choices} bind:value={selectValue} required={item.required} onchange={emitChange} />
@@ -325,7 +308,7 @@
     <p class="text-sm font-medium text-slate-500">{item.label} — N/A</p>
   {/if}
 
-  <details class="text-sm" open={notesOpen}>
+  <details class="text-sm">
     <summary class="cursor-pointer text-slate-600 min-h-[var(--sys-touch-min)] flex items-center">
       Observaciones
     </summary>

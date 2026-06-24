@@ -10,11 +10,10 @@
   import QueuePendingIndicator from '$lib/components/form/QueuePendingIndicator.svelte';
   import DraftRecoveryBanner from '$lib/components/form/DraftRecoveryBanner.svelte';
   import SectionNav from '$lib/components/form/section-nav.svelte';
+  import SysButton from '$lib/components/brand/SysButton.svelte';
   import FormHeader from '$lib/components/form/FormHeader.svelte';
   import SectionChips from '$lib/components/form/SectionChips.svelte';
   import FormNextButton from '$lib/components/form/FormNextButton.svelte';
-  import SysButton from '$lib/components/brand/SysButton.svelte';
-  import { goto } from '$app/navigation';
   import { createAutosave } from '$lib/client/form/autosave';
   import {
     downloadBackupJson,
@@ -407,60 +406,69 @@
     band: activeSection?.scoreBand ?? 'na'
   });
 
-  const sectionChipData = $derived(
-    data.sections.map((sec) => {
-      const prog = progressBySec.get(sec.id) ?? { answered: 0, total: sec.items.length };
-      return { code: sec.code, done: prog.answered, total: prog.total };
+  // T21/T23 — datos para FormHeader, SectionChips, FormNextButton
+  const totalItems = $derived(data.sections.reduce((acc, s) => acc + s.items.length, 0));
+  const totalDone = $derived(
+    data.sections.reduce((acc, s) => {
+      const prog = progressBySec.get(s.id);
+      return acc + (prog ? prog.answered : 0);
+    }, 0)
+  );
+  const globalProgress = $derived(totalItems > 0 ? Math.round((totalDone / totalItems) * 100) : 0);
+  const globalPending = $derived(totalItems - totalDone);
+
+  const sectionChipsData = $derived(
+    data.sections.map((s) => {
+      const prog = progressBySec.get(s.id);
+      return {
+        code: s.code,
+        done: prog ? prog.answered : 0,
+        total: s.items.length
+      };
     })
   );
 
-  const pendingCount = $derived(
-    data.sections.reduce((acc, sec) => {
-      const prog = progressBySec.get(sec.id);
-      if (!prog) return acc;
-      return acc + Math.max(0, prog.total - prog.answered);
-    }, 0)
+  const activeSectionPending = $derived(
+    activeSection
+      ? activeSection.items.filter((it) => {
+          const st = itemStatuses.get(it.id) ?? 'pendiente';
+          return st === 'pendiente';
+        }).length
+      : 0
   );
-
-  function handleSectionChipSelect(code: string) {
-    const section = data.sections.find((s) => s.code === code);
-    if (section) {
-      activeSectionId = section.id;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }
-
-  function handleFormBack() {
-    void goto(`/auditorias/${data.auditId}`);
-  }
 </script>
 
 <svelte:head>
   <title>Relevamiento — {data.audit.razonSocial}</title>
 </svelte:head>
 
-<div class="sticky top-0 z-30 -mx-4 mb-4 border-b border-sys-medio/10 bg-sys-offwhite px-4 py-2 lg:relative lg:top-auto">
-  <SaveIndicator state={saveState} errorMessage={saveErrorMessage} />
-</div>
-
+<!-- T23 — FormHeader fijo mobile -->
 <FormHeader
   clientName={data.audit.razonSocial}
-  progress={data.progressPct}
-  pending={pendingCount}
-  sectionTitle={activeSection ? `${activeSection.code} — ${activeSection.title}` : ''}
-  onBack={handleFormBack}
+  progress={globalProgress}
+  pending={globalPending}
+  sectionTitle={activeSection?.title ?? ''}
+  onBack={() => history.back()}
 />
 
-<div class="lg:hidden -mx-4 mb-4 pt-28">
+<!-- T23 — SectionChips debajo del header -->
+<div class="lg:hidden sticky top-[72px] z-30 -mx-4 bg-sys-offwhite py-2 border-b border-sys-medio/10">
   <SectionChips
-    sections={sectionChipData}
+    sections={sectionChipsData}
     activeCode={activeSection?.code ?? ''}
-    onSelect={handleSectionChipSelect}
+    onSelect={(code) => {
+      const sec = data.sections.find((s) => s.code === code);
+      if (sec) activeSectionId = sec.id;
+    }}
   />
 </div>
 
-<div class="lg:grid lg:grid-cols-[280px_1fr] lg:gap-6 lg:pt-0 pt-28">
-  <aside class="hidden lg:block sticky top-12 z-20 lg:top-16 lg:z-auto lg:mx-0 lg:mb-0 lg:px-0 lg:pb-0 lg:self-start">
+<div class="sticky top-0 z-30 -mx-4 mb-4 border-b border-sys-medio/10 bg-sys-offwhite px-4 py-2">
+  <SaveIndicator state={saveState} errorMessage={saveErrorMessage} />
+</div>
+
+<div class="pt-28 lg:pt-0 lg:grid lg:grid-cols-[280px_1fr] lg:gap-6">
+  <aside class="sticky top-12 z-20 -mx-4 mb-4 border-b border-sys-medio/10 bg-sys-offwhite px-4 pb-3 lg:top-16 lg:z-auto lg:mx-0 lg:mb-0 lg:border-0 lg:px-0 lg:pb-0 lg:self-start">
     <SectionNav
       sections={data.sections}
       {activeSectionId}
@@ -511,6 +519,22 @@
     </div>
 
     <ExportImportPanel onexport={() => void handleExport()} onimport={(f) => void handleImport(f)} />
+
+    <!-- T11 — Botón "Próximo pendiente" (R8) -->
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        class="min-h-[var(--sys-touch-min)] rounded-sys-app border border-sys-electrico/30 bg-sys-electrico/5
+               px-3 text-sm font-medium text-sys-electrico hover:bg-sys-electrico/10"
+        onclick={goToNextPending}
+        data-action="next-pending"
+      >
+        Próximo pendiente →
+      </button>
+      {#if noPendingMessage}
+        <span class="text-sm text-emerald-700" role="status">Sin pendientes</span>
+      {/if}
+    </div>
 
     {#if activeSection?.code === 'CAB'}
       {#if data.cab.locked}
@@ -586,7 +610,8 @@
   </div>
 </div>
 
-<FormNextButton pendingCount={pendingCount} onClick={goToNextPending} />
+<!-- T23 — FormNextButton flotante mobile -->
+<FormNextButton pendingCount={activeSectionPending} onClick={goToNextPending} />
 
 <!-- Toast de error al guardar -->
 <SaveErrorToast

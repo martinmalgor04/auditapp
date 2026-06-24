@@ -49,6 +49,9 @@ export async function ensureE2eFormAudit(existingSql?: postgres.Sql): Promise<st
   return auditId;
 }
 
+/** Alias para compatibilidad retroactiva con specs que importan `ensureFormAudit`. */
+export { ensureE2eFormAudit as ensureFormAudit };
+
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
   const id = await ensureE2eFormAudit();

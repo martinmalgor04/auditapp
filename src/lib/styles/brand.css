@@ -1,10 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
 :root {
   /* Fuentes */
   --sys-font-logo: 'Keep Calm', serif;
   --sys-font: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
   --sys-font-base: 'Montserrat', sans-serif;
 
-  /* Paleta rediseño #42 (coexiste con tokens legacy) */
+  /* Paleta UI rediseño #42 */
   --sys-primary: #2196F3;
   --sys-navy: #0A1929;
   --sys-navy-mid: #0E2540;

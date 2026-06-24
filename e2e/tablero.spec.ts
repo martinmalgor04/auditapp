@@ -40,7 +40,10 @@ test.describe('tablero', () => {
   });
 
   test('filtrar por chip IT cambia la URL y aplica el filtro', async ({ page }) => {
-    const chipIt = page.getByRole('button', { name: 'IT' }).first();
+    // Scope to the desktop chip-filters bar to avoid ambiguity with other "IT" elements
+    const chipFilters = page.getByTestId('tablero-chip-filters');
+    await expect(chipFilters).toBeVisible();
+    const chipIt = chipFilters.locator('[role="button"]').filter({ hasText: /^IT$/ });
     await expect(chipIt).toBeVisible();
     await chipIt.click();
 

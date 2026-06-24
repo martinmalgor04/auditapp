@@ -735,6 +735,25 @@
       "status": "done"
     },
     {
+      "id": 42,
+      "name": "42_rediseno_ui",
+      "title": "Rediseño UI integral — design tokens + layout shell + Tablero + Relevamiento + Mercado",
+      "description": "Rediseño visual completo basado en AuditApp Rediseño.dc.html: design tokens Montserrat/paleta navy/azul, layout shell responsive (sidebar 220px web + bottom nav 64px mobile + header navy gradient mobile + barra de progreso global), Tablero con cards mobile y tabla web, Relevamiento con QuestionCard Sí/No/Parcial + chips de sección + botón próximo pendiente, Mercado con stats grid 2×2 + distribución ERP + score por sección. Sin cambios en modelo de datos, scoring ni API routes.",
+      "source": "AuditApp Rediseño.dc.html — 6 pantallas pixel-perfect (390×816 mobile, 1100×720 web)",
+      "acceptance": [
+        "Design tokens: Montserrat, paleta navy/azul/estados en brand.css y tailwind.config",
+        "Layout shell: sidebar 220px en desktop, header navy gradient + bottom nav 64px en mobile, barra progreso global, main sin solapamiento",
+        "Tablero mobile: audit cards con ref_code, status badge, chips tipo/segmento, barra progreso, botones acción",
+        "Tablero web: tabla con 8 columnas, filter bar con chips y búsqueda",
+        "Relevamiento: header dinámico NN%·N pendientes, chips de sección con checkmark, QuestionCard Sí/No/Parcial, botón sticky próximo pendiente",
+        "Mercado: grid 2×2 stat cards, barras distribución ERP, barras score por sección, chip filters",
+        "Responsive mobile-first: breakpoint lg separa mobile de desktop",
+        "No regresión: pnpm test + playwright pasan en verde"
+      ],
+      "sdd": true,
+      "status": "spec_ready"
+    },
+    {
       "id": 41,
       "name": "41_referencia_auditoria",
       "title": "Referencia legible y anti-duplicado de auditorías",
