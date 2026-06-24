@@ -315,7 +315,7 @@
     <textarea
       class="mt-2 w-full rounded border border-slate-300 p-2 text-sm min-h-[4rem]"
       bind:value={notesValue}
-      onchange={() => onnoteschange?.(notesValue)}
+      oninput={() => onnoteschange?.(notesValue)}
     ></textarea>
   </details>
 </article>

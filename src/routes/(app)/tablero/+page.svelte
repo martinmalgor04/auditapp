@@ -112,10 +112,6 @@
     <ChipFilters options={FILTER_OPTIONS} value={activeFilter} onChange={applyFilter} />
   </div>
 
-  <div class="lg:hidden flex items-center justify-between mb-2">
-    <h1 class="text-2xl font-extrabold text-[--sys-text-primary] sr-only">Tablero</h1>
-  </div>
-
   {#if data.dashboard.rows.length === 0}
     <EmptyDashboard {hasFilters} />
   {:else}
@@ -135,7 +131,7 @@
         <thead class="bg-[#F7F9FB]">
           <tr
             class="grid items-center gap-2 px-4 py-3 text-[9px] font-bold uppercase text-[--sys-text-faint]"
-            style="grid-template-columns: 2.2fr 88px 108px 145px 108px 62px 76px 165px"
+            style="grid-template-columns: 2.2fr 88px 120px 145px 108px 62px 76px 165px"
           >
             <th class="text-left">Cliente</th>
             <th class="text-left">Tipo</th>
@@ -151,7 +147,7 @@
           {#each data.dashboard.rows as row (row.id)}
             <tr
               class="grid items-center gap-2 border-b border-[#F0F2F5] px-4 py-3"
-              style="grid-template-columns: 2.2fr 88px 108px 145px 108px 62px 76px 165px"
+              style="grid-template-columns: 2.2fr 88px 120px 145px 108px 62px 76px 165px"
             >
               <td class="min-w-0">
                 <a

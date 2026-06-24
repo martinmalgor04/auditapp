@@ -8,29 +8,29 @@ describe('BottomNav component', () => {
     'utf8'
   );
 
-  it('ítem activo usa color text-[--sys-primary]', () => {
-    expect(source).toContain('text-[--sys-primary]');
+  it('ítem activo usa color text-sys-primary', () => {
+    expect(source).toContain('text-sys-primary');
   });
 
   it('ítem inactivo usa text-white/35', () => {
     expect(source).toContain('text-white/35');
   });
 
-  it('FAB existe con bg-[--sys-primary] y rounded-full', () => {
-    expect(source).toContain('bg-[--sys-primary]');
-    expect(source).toContain('rounded-full');
+  it('respeta safe-area-inset-bottom en el contenedor fijo', () => {
+    expect(source).toContain('env(safe-area-inset-bottom');
   });
 
-  it('FAB apunta a /auditorias/new', () => {
-    expect(source).toContain('/auditorias/new');
-  });
-
-  it('tiene los 6 ítems de navegación', () => {
+  it('tiene los 5 ítems de navegación alineados con Sidebar', () => {
     expect(source).toContain("href: '/tablero'");
     expect(source).toContain("href: '/crm'");
     expect(source).toContain("href: '/mercado'");
     expect(source).toContain("href: '/usuarios'");
     expect(source).toContain("href: '/plantillas'");
+  });
+
+  it('no incluye FAB central duplicado', () => {
+    expect(source).not.toContain('isFab');
+    expect(source).not.toContain('/auditorias/new');
   });
 
   it('deriva ruta activa de $page store', () => {

@@ -60,8 +60,11 @@
   <BottomNav user={{ role: data.user.role }} />
 {/if}
 
-<main class="min-h-screen bg-[--sys-bg-app] pb-20 pt-24 lg:pb-0 lg:pl-[220px] lg:pt-0">
-  <div class="mx-auto max-w-6xl px-4 py-4 lg:px-6 lg:py-6">
+<main
+  class="min-h-screen bg-[--sys-bg-app] max-lg:pb-[var(--sys-mobile-nav-offset)] max-lg:pt-[var(--sys-mobile-header-offset)] lg:pb-0 lg:pl-[220px] lg:pt-0"
+  class:max-lg:!pt-0={!showShellHeader}
+>
+  <div class="mx-auto max-w-6xl px-4 py-3 lg:px-6 lg:py-6">
     {@render children?.()}
   </div>
 </main>

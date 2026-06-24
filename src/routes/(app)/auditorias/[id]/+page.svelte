@@ -8,6 +8,7 @@
   import PsysCard from '$lib/components/auditoria/psys-card.svelte';
   import AuditBundleActions from '$lib/components/backoffice/audit-bundle-actions.svelte';
   import { formatVisita } from '$lib/informe/visita';
+  import { toDatetimeLocalValue } from '$lib/datetime-local';
 
   let { data, form }: { data: PageData; form?: { error?: string; url?: string } } = $props();
 
@@ -18,15 +19,11 @@
   );
 
   const startedAtValue = $derived(
-    data.startedAt
-      ? new Date(data.startedAt).toISOString().slice(0, 16)
-      : ''
+    data.startedAt ? toDatetimeLocalValue(new Date(data.startedAt)) : ''
   );
 
   const finishedAtValue = $derived(
-    data.finishedAt
-      ? new Date(data.finishedAt).toISOString().slice(0, 16)
-      : ''
+    data.finishedAt ? toDatetimeLocalValue(new Date(data.finishedAt)) : ''
   );
 
   const visita = $derived(

@@ -23,6 +23,12 @@ import {
 } from '$lib/server/db/psys-links';
 import { techIsAssigned } from '$lib/server/db/audit-assignment';
 import { reopenAudit } from '$lib/server/scoring/persist';
+import { normalizeDatetimeInput } from '$lib/datetime-local';
+
+function formDatetime(raw: FormDataEntryValue | null): string | null | undefined {
+  if (raw === null) return undefined;
+  return normalizeDatetimeInput(String(raw));
+}
 
 export const load: PageServerLoad = async ({ locals, params }) => {
   const user = requireStaff(locals);
@@ -122,8 +128,8 @@ export const actions: Actions = {
           assignedTechId: String(formData.get('assignedTechId') ?? ''),
           scheduledAt: String(formData.get('scheduledAt') ?? ''),
           cabResponses,
-          startedAt: startedAtRaw !== null ? String(startedAtRaw) || null : undefined,
-          finishedAt: finishedAtRaw !== null ? String(finishedAtRaw) || null : undefined
+          startedAt: formDatetime(startedAtRaw),
+          finishedAt: formDatetime(finishedAtRaw)
         },
         user.id
       );

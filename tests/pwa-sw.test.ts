@@ -19,4 +19,17 @@ describe('pwa service worker', () => {
     expect(source).toContain("url.pathname.startsWith('/api/')");
     expect(source).not.toMatch(/caches\.match\(event\.request\)[\s\S]*?\/api\//);
   });
+
+  it('sveltekit data endpoints bypass cache', () => {
+    const source = readFileSync(swPath, 'utf8');
+    expect(source).toContain('__data.json');
+    expect(source).toContain('x-sveltekit-loader');
+    expect(source).toContain('isNetworkOnlyRequest');
+  });
+
+  it('only immutable app chunks use cache-first', () => {
+    const source = readFileSync(swPath, 'utf8');
+    expect(source).toContain('/_app/immutable/');
+    expect(source).toContain('isImmutableAsset');
+  });
 });

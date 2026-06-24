@@ -1,7 +1,6 @@
 <script lang="ts">
   import { invalidateAll } from '$app/navigation';
   import { enhance } from '$app/forms';
-  import { onMount } from 'svelte';
   import FieldRenderer from '$lib/components/form/field-renderer.svelte';
   import ExportImportPanel from '$lib/components/form/export-import-panel.svelte';
   import LiveSectionScore from '$lib/components/form/live-section-score.svelte';
@@ -77,7 +76,33 @@
     )
   );
 
-  // T10 — Animación del score (R14, R15, R23)
+  // Resincronizar estado local al cambiar de auditoría (navegación client-side sin remount).
+  let syncedAuditId = $state<string | null>(null);
+
+  $effect(() => {
+    const auditId = data.auditId;
+    if (syncedAuditId === auditId) return;
+    syncedAuditId = auditId;
+
+    activeSectionId = data.sections[0]?.id ?? '';
+    lastVisitedItemIndex = -1;
+    pendingDraft = null;
+    sectionScores = new Map(
+      data.sections.map((s) => [s.id, { sectionId: s.id, score: s.liveScore, band: s.scoreBand }])
+    );
+    itemLocalState = new Map(
+      data.sections.flatMap((s) =>
+        s.items.map((it) => [it.id, { value: it.value, na: it.na ?? false, notes: it.notes ?? null }])
+      )
+    );
+
+    void loadDraft(auditId).then((draft) => {
+      if (syncedAuditId === auditId) {
+        pendingDraft = resolvePendingDraftOnMount(draft);
+      }
+    });
+  });
+
   let animatingSectionId = $state<string | null>(null);
 
   // T11 — Próximo pendiente (R8–R12)
@@ -94,8 +119,10 @@
   function goToSection(index: number) {
     const section = data.sections[index];
     if (!section) return;
-    activeSectionId = section.id;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    void autosave.flushPending().then(() => {
+      activeSectionId = section.id;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   }
 
   function goToPrevSection() {
@@ -121,6 +148,18 @@
       setTimeout(() => {
         if (animatingSectionId === sectionId) animatingSectionId = null;
       }, 800);
+    },
+    onPatchOutcome: async (payload, outcome) => {
+      if (outcome === 'offline') {
+        await enqueueSave({
+          auditId: data.auditId,
+          ...payload,
+          enqueuedAt: new Date().toISOString(),
+          attempts: 0
+        });
+        saveState = 'offline';
+      }
+      await syncDraftCleanup(outcome);
     }
   });
 
@@ -146,10 +185,6 @@
     retryQueue = await listQueued(data.auditId);
     return result;
   }
-
-  onMount(async () => {
-    pendingDraft = resolvePendingDraftOnMount(await loadDraft(data.auditId));
-  });
 
   function handleRestore() {
     if (!pendingDraft) return;
@@ -215,20 +250,14 @@
     // T8 — Actualizar estado local inmediatamente para chip reactivo (R6)
     itemLocalState = new Map(itemLocalState).set(itemId, { value, na, notes: notes ?? null });
     persistDraftSnapshot();
-    const payload = { itemId, value, na, notes };
-    const outcome = await autosave.patch(payload);
-    if (outcome === 'offline') {
-      // Solo errores de red/5xx se encolan; un 4xx ('rejected') ya mostró
-      // error visible y reintentarlo daría siempre el mismo rechazo.
-      await enqueueSave({
-        auditId: data.auditId,
-        ...payload,
-        enqueuedAt: new Date().toISOString(),
-        attempts: 0
-      });
-      saveState = 'offline';
+    const payload = { value, na, notes };
+
+    if (autosave.debounceMs(fieldType) > 0) {
+      autosave.scheduleSave(itemId, fieldType, payload);
+      return 'saved' as const;
     }
-    await syncDraftCleanup(outcome);
+
+    const outcome = await autosave.patch({ itemId, ...payload });
     return outcome;
   }
 
@@ -392,12 +421,20 @@
       return;
     }
     if (target.sectionIndex !== activeSectionIndex) {
-      activeSectionId = target.sectionId;
-      lastVisitedItemIndex = -1;
+      void autosave.flushPending().then(() => {
+        activeSectionId = target.sectionId;
+        lastVisitedItemIndex = target.itemIndex;
+        scrollToItem(target.itemId);
+      });
+      return;
     }
     lastVisitedItemIndex = target.itemIndex;
+    scrollToItem(target.itemId);
+  }
+
+  function scrollToItem(itemId: string) {
     setTimeout(() => {
-      document.getElementById(`item-${target.itemId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById(`item-${itemId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 50);
   }
 
@@ -458,7 +495,11 @@
     activeCode={activeSection?.code ?? ''}
     onSelect={(code) => {
       const sec = data.sections.find((s) => s.code === code);
-      if (sec) activeSectionId = sec.id;
+      if (sec) {
+        void autosave.flushPending().then(() => {
+          activeSectionId = sec.id;
+        });
+      }
     }}
   />
 </div>
@@ -474,7 +515,11 @@
       {activeSectionId}
       progressPct={data.progressPct}
       sectionProgress={progressBySec}
-      onselect={(id) => (activeSectionId = id)}
+      onselect={(id) => {
+        void autosave.flushPending().then(() => {
+          activeSectionId = id;
+        });
+      }}
     />
   </aside>
 
@@ -556,26 +601,31 @@
 
     <div class="space-y-4">
       {#each activeSection?.items ?? [] as item (item.id)}
+        {@const local = itemLocalState.get(item.id) ?? {
+          value: item.value,
+          na: item.na ?? false,
+          notes: item.notes ?? null
+        }}
         <FieldRenderer
           item={{
             ...item,
-            value: item.value,
+            value: local.value,
             method: item.method,
             allowNa: item.allowNa,
             preloaded: item.preloaded,
-            notes: item.notes,
-            na: item.na
+            notes: local.notes,
+            na: local.na
           }}
           status={itemStatuses.get(item.id) ?? 'pendiente'}
           saveState={savingItemId === item.id ? saveState : 'idle'}
-          onchange={(value) => void saveItem(item.id, item.fieldType, value, item.na, item.notes)}
-          onnchange={(na) => void saveItem(item.id, item.fieldType, null, na, item.notes)}
+          onchange={(value) => void saveItem(item.id, item.fieldType, value, local.na, local.notes)}
+          onnchange={(na) => void saveItem(item.id, item.fieldType, null, na, local.notes)}
           onnoteschange={(notes) => {
             itemLocalState = new Map(itemLocalState).set(item.id, {
-              ...(itemLocalState.get(item.id) ?? { value: item.value, na: item.na ?? false }),
+              ...local,
               notes
             });
-            void saveItem(item.id, item.fieldType, item.value, item.na, notes);
+            void saveItem(item.id, item.fieldType, local.value, local.na, notes);
           }}
           oncamera={(rowId, currentRows) =>
             pickPhoto(item.id, activeSection?.code ?? '', rowId, currentRows as PhotoTableRow[])}
@@ -602,7 +652,16 @@
       </div>
     {/if}
 
-    <form method="POST" action="?/complete" use:enhance class="sticky bottom-4 pt-4">
+    <form
+      method="POST"
+      action="?/complete"
+      use:enhance={() => {
+        return async () => {
+          await autosave.flushPending();
+        };
+      }}
+      class="sticky bottom-4 pt-4"
+    >
       <SysButton type="submit" variant="primary" class="w-full shadow-md">
         Relevamiento completo
       </SysButton>

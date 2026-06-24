@@ -50,8 +50,8 @@
 </script>
 
 <span
-  class="rounded-full px-2 py-0.5 text-xs font-semibold"
-  style="background:{styles.background};color:{styles.color}"
+  class="inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold"
+  style="background: {styles.background}; color: {styles.color}"
 >
   {label}
 </span>

@@ -7,8 +7,11 @@
 </script>
 
 <div
-  class="lg:hidden fixed top-0 left-0 right-0 z-40 px-4 pt-4 pb-3"
-  style="background: linear-gradient(160deg, var(--sys-navy) 0%, var(--sys-navy-mid) 100%)"
+  class="lg:hidden fixed top-0 left-0 right-0 z-40 px-4 pb-3"
+  style="
+    padding-top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+    background: linear-gradient(160deg, var(--sys-navy) 0%, var(--sys-navy-mid) 100%);
+  "
 >
   <div class="flex items-center justify-between">
     <span class="text-[--sys-text-navy-muted] text-xs">servicios &amp; sistemas</span>

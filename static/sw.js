@@ -1,5 +1,19 @@
-const CACHE_NAME = 'auditapp-shell-v3';
+const CACHE_NAME = 'auditapp-shell-v4';
 const PRECACHE_URLS = ['/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
+
+function isImmutableAsset(pathname) {
+  return pathname.startsWith('/_app/immutable/');
+}
+
+/** Datos dinámicos y endpoints SvelteKit: siempre red, nunca cache del SW. */
+function isNetworkOnlyRequest(url, request) {
+  if (url.pathname.startsWith('/api/')) return true;
+  if (url.pathname.includes('__data.json')) return true;
+  if (url.pathname.startsWith('/_app/version.json')) return true;
+  if (request.headers.get('x-sveltekit-loader')) return true;
+  if (request.headers.get('x-sveltekit-action')) return true;
+  return false;
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -18,8 +32,9 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
 
-  if (url.pathname.startsWith('/api/')) {
+  if (isNetworkOnlyRequest(url, event.request)) {
     event.respondWith(
       fetch(event.request).catch(() =>
         new Response(JSON.stringify({ success: false, error: 'offline' }), {
@@ -35,37 +50,38 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // SSR: las navegaciones siempre van al servidor para que F5 funcione en cualquier ruta.
+  // SSR: HTML siempre desde red; no cachear páginas con datos embebidos.
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          if (response.ok && url.origin === self.location.origin) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return response;
-        })
-        .catch(() =>
-          caches.match(event.request).then((cached) => {
-            if (cached) return cached;
-            return caches.match('/');
-          })
-        )
+      fetch(event.request).catch(() =>
+        caches.match(event.request).then((cached) => cached ?? caches.match('/'))
+      )
     );
     return;
   }
 
+  // Chunks versionados: cache-first (hash en el nombre → inmutables).
+  if (isImmutableAsset(url.pathname)) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
+  // Manifest / íconos precacheados u otros estáticos pequeños.
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
-      return fetch(event.request).then((response) => {
-        if (response.ok && url.origin === self.location.origin) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        }
-        return response;
-      });
+      return fetch(event.request);
     })
   );
 });

@@ -16,9 +16,9 @@ describe('Sidebar component', () => {
     expect(source).toContain("href: '/plantillas'");
   });
 
-  it('marca activo el ítem cuya href coincide con pathname usando bg-[--sys-primary]', () => {
+  it('marca activo el ítem cuya href coincide con pathname usando bg-sys-primary', () => {
     expect(source).toContain('isActive(item.href)');
-    expect(source).toContain('bg-[--sys-primary] text-white');
+    expect(source).toContain('bg-sys-primary text-white');
   });
 
   it('ítem inactivo usa clase hover:bg-white/5', () => {
@@ -38,8 +38,17 @@ describe('Sidebar component', () => {
     expect(source).toContain('{user.role}');
   });
 
-  it('tiene fondo bg-[--sys-navy]', () => {
-    expect(source).toContain('bg-[--sys-navy]');
+  it('tiene fondo bg-sys-navy', () => {
+    expect(source).toContain('bg-sys-navy');
+  });
+
+  it('reactividad: pathname derivado de $page para isActive', () => {
+    expect(source).toContain('$: pathname = $page.url.pathname');
+  });
+
+  it('tablero activo también en ruta raíz /', () => {
+    expect(source).toContain("href === '/tablero'");
+    expect(source).toContain("pathname === '/'");
   });
 
   it('itera navItems con each', () => {

@@ -34,10 +34,12 @@ export type PatchOutcome = 'saved' | 'offline' | 'rejected';
 export type AutosaveCallbacks = {
   onStateChange?: (state: SaveState, message?: string) => void;
   onSectionScore?: (sectionId: string, score: number | null, band: string) => void;
+  onPatchOutcome?: (payload: SavePayload, outcome: PatchOutcome) => void | Promise<void>;
 };
 
 export function createAutosave(auditId: string, callbacks: AutosaveCallbacks = {}) {
   const debounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  const pendingPayloads = new Map<string, SavePayload>();
 
   function debounceMs(fieldType: string, isTableTextCell = false): number {
     if (IMMEDIATE_FIELD_TYPES.has(fieldType) && !isTableTextCell) return 0;
@@ -56,6 +58,7 @@ export function createAutosave(auditId: string, callbacks: AutosaveCallbacks = {
       if (!res.ok) {
         if (res.status >= 500 || !navigator.onLine) {
           callbacks.onStateChange?.('offline');
+          await callbacks.onPatchOutcome?.(payload, 'offline');
           return 'offline';
         }
         // 4xx: rechazo definitivo del server — mostrar error, no reintentar.
@@ -67,6 +70,7 @@ export function createAutosave(auditId: string, callbacks: AutosaveCallbacks = {
           /* respuesta sin JSON */
         }
         callbacks.onStateChange?.('error', message);
+        await callbacks.onPatchOutcome?.(payload, 'rejected');
         return 'rejected';
       }
 
@@ -81,9 +85,11 @@ export function createAutosave(auditId: string, callbacks: AutosaveCallbacks = {
 
       callbacks.onStateChange?.('saved');
       setTimeout(() => callbacks.onStateChange?.('idle'), 2000);
+      await callbacks.onPatchOutcome?.(payload, 'saved');
       return 'saved';
     } catch {
       callbacks.onStateChange?.('offline');
+      await callbacks.onPatchOutcome?.(payload, 'offline');
       return 'offline';
     }
   }
@@ -95,17 +101,40 @@ export function createAutosave(auditId: string, callbacks: AutosaveCallbacks = {
     isTableTextCell = false
   ) {
     const delay = debounceMs(fieldType, isTableTextCell);
+    const fullPayload = { itemId, ...payload };
+    pendingPayloads.set(itemId, fullPayload);
+
     const existing = debounceTimers.get(itemId);
     if (existing) clearTimeout(existing);
 
-    const run = () => void patch({ itemId, ...payload });
+    const run = () => {
+      debounceTimers.delete(itemId);
+      const pending = pendingPayloads.get(itemId);
+      pendingPayloads.delete(itemId);
+      if (pending) void patch(pending);
+    };
 
     if (delay === 0) {
-      void run();
+      pendingPayloads.delete(itemId);
+      void patch(fullPayload);
     } else {
       debounceTimers.set(itemId, setTimeout(run, delay));
     }
   }
 
-  return { scheduleSave, patch, debounceMs, IMMEDIATE_FIELD_TYPES };
+  async function flushPending(): Promise<PatchOutcome[]> {
+    const outcomes: Promise<PatchOutcome>[] = [];
+    for (const itemId of [...debounceTimers.keys()]) {
+      const timer = debounceTimers.get(itemId);
+      if (timer) clearTimeout(timer);
+      debounceTimers.delete(itemId);
+      const pending = pendingPayloads.get(itemId);
+      pendingPayloads.delete(itemId);
+      if (pending) outcomes.push(patch(pending));
+    }
+    if (outcomes.length === 0) return [];
+    return Promise.all(outcomes);
+  }
+
+  return { scheduleSave, patch, flushPending, debounceMs, IMMEDIATE_FIELD_TYPES };
 }

@@ -5,6 +5,10 @@
 @layer base {
   :root {
     --sys-touch-min: 44px;
+    --sys-mobile-header-body: 7.25rem;
+    --sys-mobile-header-offset: calc(env(safe-area-inset-top, 0px) + var(--sys-mobile-header-body));
+    --sys-mobile-nav-body: 4rem;
+    --sys-mobile-nav-offset: calc(var(--sys-mobile-nav-body) + env(safe-area-inset-bottom, 0px));
   }
 
   body {

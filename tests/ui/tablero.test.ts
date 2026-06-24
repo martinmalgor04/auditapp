@@ -67,6 +67,6 @@ describe('Tablero tabla web', () => {
   });
 
   it('usa grid-template-columns del design', () => {
-    expect(source).toContain('2.2fr 88px 108px 145px 108px 62px 76px 165px');
+    expect(source).toContain('2.2fr 88px 120px 145px 108px 62px 76px 165px');
   });
 });

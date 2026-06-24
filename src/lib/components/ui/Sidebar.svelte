@@ -13,12 +13,17 @@
     { label: 'Plantillas', href: '/plantillas', icon: '📝', adminOnly: false }
   ];
 
+  $: pathname = $page.url.pathname;
+
   function isActive(href: string) {
-    return $page.url.pathname === href || $page.url.pathname.startsWith(`${href}/`);
+    if (href === '/tablero') {
+      return pathname === '/' || pathname === '/tablero' || pathname.startsWith('/tablero/');
+    }
+    return pathname === href || pathname.startsWith(`${href}/`);
   }
 </script>
 
-<aside class="hidden lg:flex flex-col fixed left-0 top-0 h-full w-[220px] bg-[--sys-navy] z-40">
+<aside class="hidden lg:flex flex-col fixed left-0 top-0 h-full w-[220px] bg-sys-navy z-40">
   <div class="px-4 py-5 border-b border-white/10" data-sys-shell-header>
     <img src="/brand/sys-horizontal-w.png" alt="Servicios & Sistemas" class="h-6 mb-1" />
     <p class="text-[--sys-text-navy-muted] text-xs">servicios & sistemas</p>
@@ -31,8 +36,8 @@
           href={item.href}
           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium
             {isActive(item.href)
-            ? 'bg-[--sys-primary] text-white'
-            : 'text-[--sys-text-navy-muted] hover:bg-white/5'}"
+            ? 'bg-sys-primary text-white'
+            : 'text-sys-text-navy-muted hover:bg-white/5'}"
           aria-current={isActive(item.href) ? 'page' : undefined}
         >
           <span>{item.icon}</span>{item.label}

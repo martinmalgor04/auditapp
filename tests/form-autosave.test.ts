@@ -28,6 +28,23 @@ describe('form autosave', () => {
     vi.useRealTimers();
   });
 
+  it('flushPending runs debounced save immediately', async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: {} })
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal('navigator', { onLine: true });
+
+    const { scheduleSave, flushPending } = createAutosave('audit-1');
+    scheduleSave('item-1', 'text', { value: 'a' });
+    expect(fetchMock).not.toHaveBeenCalled();
+    await flushPending();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+  });
+
   it('saves tri immediately', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,

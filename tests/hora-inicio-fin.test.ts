@@ -6,6 +6,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { renderInformeHtml } from '../src/lib/informe/render';
 import { buildInformeRenderModel } from '../src/lib/server/informe/model';
 import { formatVisita, formatDuracion } from '../src/lib/informe/visita';
+import { normalizeDatetimeInput, toDatetimeLocalValue } from '../src/lib/datetime-local';
 import { updateAuditSchema } from '../src/lib/server/backoffice/schemas';
 import type { AuditReportRow } from '../src/lib/server/db/informe-reports';
 import { indexToSemaphore } from '../src/lib/server/scoring/semaphore';
@@ -237,6 +238,38 @@ describe('T11.6 — updateAuditSchema rechaza fin < inicio (R9)', () => {
       finishedAt: null
     });
     expect(result.success).toBe(true);
+  });
+
+  it('acepta datetime-local (sin offset) vía normalización previa', () => {
+    const startedAt = normalizeDatetimeInput('2026-06-14T09:30');
+    const finishedAt = normalizeDatetimeInput('2026-06-14T11:15');
+    const result = updateAuditSchema.safeParse({ startedAt, finishedAt });
+    expect(result.success).toBe(true);
+  });
+
+  it('acepta horas pasadas (inicio y fin anteriores a ahora)', () => {
+    const startedAt = normalizeDatetimeInput('2020-01-01T08:00');
+    const finishedAt = normalizeDatetimeInput('2020-01-01T12:00');
+    const result = updateAuditSchema.safeParse({ startedAt, finishedAt });
+    expect(result.success).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// datetime-local — conversión hora local ↔ ISO
+// ---------------------------------------------------------------------------
+describe('datetime-local helpers', () => {
+  it('toDatetimeLocalValue usa hora local, no UTC', () => {
+    const utcMorning = new Date('2026-06-14T12:30:00Z');
+    const local = toDatetimeLocalValue(utcMorning);
+    expect(local.endsWith('09:30') || local.endsWith('12:30')).toBe(true);
+    expect(local).not.toContain('Z');
+  });
+
+  it('normalizeDatetimeInput convierte datetime-local a ISO con offset', () => {
+    const iso = normalizeDatetimeInput('2026-06-14T09:30');
+    expect(iso).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
+    expect(updateAuditSchema.safeParse({ startedAt: iso }).success).toBe(true);
   });
 });
 

@@ -30,6 +30,10 @@ describe('HeaderMobile component', () => {
     expect(source).toContain('lg:hidden');
   });
 
+  it('respeta safe-area-inset-top para no solapar la barra de estado', () => {
+    expect(source).toContain('env(safe-area-inset-top');
+  });
+
   it('avatar tiene clases de estilo correctas', () => {
     expect(source).toContain('w-8 h-8 rounded-full bg-[--sys-primary]');
   });
