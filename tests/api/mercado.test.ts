@@ -3,6 +3,10 @@ import { setSqlForTests } from '../../src/lib/server/db/client';
 import { GET as mercadoGet } from '../../src/routes/api/mercado/+server';
 import * as mercadoServer from '../../src/routes/api/mercado/+server';
 import { seedMercadoDashboardFixtures } from '../fixtures/mercado-audit';
+import {
+  insertAccionableAudit,
+  seedMercadoAccionable
+} from '../fixtures/mercado-accionable';
 import { findUserByEmail } from '../helpers/auth';
 import { getTestSql } from '../helpers/db';
 
@@ -97,5 +101,60 @@ describe('mercado API', () => {
     expect((mercadoServer as { POST?: unknown }).POST).toBeUndefined();
     expect((mercadoServer as { PATCH?: unknown }).PATCH).toBeUndefined();
     expect((mercadoServer as { DELETE?: unknown }).DELETE).toBeUndefined();
+  });
+
+  it('R4 — filtro provincia normaliza (case/espacios) y reduce el universo', async () => {
+    const sql = getTestSql();
+    await seedMercadoAccionable(sql);
+    const admin = await findUserByEmail(sql, 'admin@serviciosysistemas.com.ar');
+
+    const exact = await mercadoGet({
+      locals: locals(admin),
+      url: new URL('http://x?provincia=Chaco')
+    } as never);
+    expect((await exact.json()).data.universe.n).toBe(2);
+
+    const messy = await mercadoGet({
+      locals: locals(admin),
+      url: new URL('http://x?provincia=%20%20chaco%20')
+    } as never);
+    expect((await messy.json()).data.universe.n).toBe(2);
+
+    const missing = await mercadoGet({
+      locals: locals(admin),
+      url: new URL('http://x?provincia=Mendoza')
+    } as never);
+    expect((await missing.json()).data.universe.n).toBe(0);
+  });
+
+  it('R13/R16 — el payload no expone textos de hallazgos ni identificadores', async () => {
+    const sql = getTestSql();
+    const secretRisk = 'SECRETO_RIESGO_UNICO_XYZ backup';
+    const secretWin = 'SECRETO_WIN_UNICO_XYZ licencia';
+    await insertAccionableAudit(sql, {
+      razonSocial: 'Acc Anonimizacion SA',
+      segment: 'A',
+      rubro: 'Industria',
+      erpActual: 'Tango',
+      provincia: 'Chaco',
+      relacion: 'cliente',
+      indiceIt: 60,
+      indiceErp: 60,
+      topRisks: [{ text: secretRisk, severity: 'alta' }],
+      quickWins: [secretWin],
+      closedAt: new Date('2026-03-01T12:00:00Z')
+    });
+
+    const admin = await findUserByEmail(sql, 'admin@serviciosysistemas.com.ar');
+    const res = await mercadoGet({ locals: locals(admin), url: new URL('http://x') } as never);
+    const body = await res.json();
+    const serialized = JSON.stringify(body);
+
+    expect(serialized).not.toContain('SECRETO_RIESGO_UNICO_XYZ');
+    expect(serialized).not.toContain('SECRETO_WIN_UNICO_XYZ');
+    expect(serialized).not.toMatch(/empresa_id|client_id|audit_id|razon_social|cuit/);
+    // El bloque agregado sí viaja, con categorías y conteos (no textos).
+    expect(body.data.recurring_findings.internal).toBe(true);
+    expect(body.data.recurring_findings.total_risks).toBeGreaterThan(0);
   });
 });

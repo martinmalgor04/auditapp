@@ -135,7 +135,7 @@ type EmpresaRow = {
  * Devuelve un SELECT que expone `id` + `estado` + `estado_source` por empresa; se compone con un
  * JOIN sobre `empresa` en cada consulta. Se computa en UNA pasada (LEFT JOIN agregados), sin N+1.
  */
-function estadoSelectSql(sql: ReturnType<typeof getSql>) {
+export function estadoSelectSql(sql: ReturnType<typeof getSql>) {
   return sql`
     SELECT
       e.id AS id,

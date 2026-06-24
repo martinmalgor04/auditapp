@@ -5,6 +5,7 @@ export const mercadoFiltersSchema = z
   .object({
     segment: z.enum(['A', 'B', 'C']).optional(),
     rubro: z.string().min(1).optional(),
+    provincia: z.string().min(1).optional(),
     from: z.coerce.date().optional(),
     to: z.coerce.date().optional()
   })
@@ -23,6 +24,7 @@ export function parseMercadoFilters(url: URL): MercadoFilters {
   const parsed = mercadoFiltersSchema.safeParse({
     segment: url.searchParams.get('segment') || undefined,
     rubro: url.searchParams.get('rubro') || undefined,
+    provincia: url.searchParams.get('provincia') || undefined,
     from: parseDateParam(url.searchParams.get('from')),
     to: parseDateParam(url.searchParams.get('to'))
   });

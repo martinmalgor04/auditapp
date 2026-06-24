@@ -791,6 +791,27 @@
       ],
       "sdd": true,
       "status": "done"
+    },
+    {
+      "id": 43,
+      "name": "43_mercado_accionable",
+      "title": "Mercado accionable: del promedio al insight de negocio",
+      "description": "Reimaginar el dashboard /mercado (#18) para que deje de ser descriptivo (promedios de índices) y pase a ser accionable para SyS, MANTENIENDO el universo en auditorías cerradas y sin cambios en el modelo de datos, scoring ni API de escritura (solo lectura, igual que #18). Las queries de #18 ya hacen JOIN audit→empresa→audit_closure: se enriquece leyendo columnas de la fila empresa ya unida (provincia, relacion, estado derivado) y desagregando audit_closure (top_risks, quick_wins, upsell_findings) sin tocar el denominador. Cinco bloques nuevos/reencuadrados, todos sobre el universo de auditorías cerradas filtrado: (1) OPORTUNIDAD DE MIGRACIÓN A TANGO: distribución de empresa.erp_actual entre las auditadas separando Tango vs competidores (SAP/Bejerman/Odoo/otros) vs Sin ERP, cruzada por rubro y segmento, para identificar mercado direccionable; (2) MAPA DEL MERCADO NEA: cortes de las auditorías cerradas por provincia (Chaco/Corrientes/Formosa/Misiones, empresa.provincia texto libre normalizado, bucket Sin dato) y por rubro y segmento, con conteos; (3) SALUD DE LA BASE INSTALADA TANGO + CROSS-SELL: índice ERP de las auditadas que ya usan Tango y ranking de módulos Tango MENOS adoptados (módulos faltantes = oportunidad de cross-sell), reutilizando el desagregado cab_modulos_tango de #18; (4) HALLAZGOS RECURRENTES DEL MERCADO: agregación de audit_closure.top_risks y quick_wins (hoy #18 solo cuenta upsell por volumen) — ranking de los hallazgos más frecuentes con categorización ligera por palabras clave (backups, seguridad, licencias, hardware/EOL, etc.) para alimentar guiones de venta y material de lead magnet; (5) RIESGO / RETENCIÓN: de las empresas que SÍ auditamos (auditoría cerrada), cuántas hoy tienen relacion=ex_cliente o estado derivado inactiva — anclado al universo de cerradas, solo lee relacion/estado de la fila empresa ya unida. Se conservan los filtros (segmento/rubro/fechas) y la anonimización por umbral n<3 de #18 en todo corte comparativo; se puede sumar provincia como filtro. Sin libs de charts nuevas (SVG/CSS con tokens --sys-*). Evolución de #18: reutiliza src/lib/server/mercado/{queries,aggregate,filters}.ts y src/lib/components/mercado/*; no duplica el tablero operativo (la vista / sigue siendo la lista de auditorías).",
+      "source": "Solicitud operativa SyS (2026-06-24, Martín): reimaginar /mercado para que muestre data que sirva al negocio. Decisiones de alcance en charla: mantener universo en auditorías cerradas (no abrir a toda la base empresa), pero hacerlo accionable cubriendo migración a Tango, mapa NEA, salud base instalada + módulos faltantes, hallazgos recurrentes y riesgo/retención. Base: feature #18 (specs/18_dashboard_mercado/), modelo empresa unificada #23, cierre #8 (top_risks/quick_wins/upsell_findings), estado derivado src/lib/server/crm/empresa-estado.ts.",
+      "acceptance": [
+        "Vista /mercado solo admin, solo lectura, sobre el universo de auditorías cerradas filtrado (segmento/rubro/fechas), sin migraciones de modelo de datos ni cambios de scoring",
+        "Bloque migración a Tango: distribución de empresa.erp_actual entre las auditadas agrupando Tango / competidores / Sin ERP, con conteo y porcentaje y cruce por rubro y segmento",
+        "Bloque mapa NEA: cortes del universo por provincia (normalizada, bucket Sin dato), rubro y segmento con conteos correctos",
+        "Bloque salud base instalada: índice ERP promedio de las auditadas con Tango y ranking de módulos Tango menos adoptados (faltantes) reutilizando el desagregado cab_modulos_tango",
+        "Bloque hallazgos recurrentes: agregación de top_risks y quick_wins (no solo upsell por volumen) con ranking por frecuencia y categorización ligera por palabras clave; marcado como interno cuando corresponda",
+        "Bloque riesgo/retención: conteo de empresas con auditoría cerrada cuya relacion=ex_cliente o estado derivado=inactiva, anclado al universo de cerradas",
+        "Se mantiene la anonimización: todo corte comparativo con n<3 llega suppressed sin promedios; el endpoint no expone razón social, cuit, ids ni textos individuales sensibles",
+        "Degradación con cero/pocos datos: estructura completa con n:0 y null sin divisiones por cero; la UI muestra estado vacío claro",
+        "Visualizaciones SVG/CSS con tokens --sys-*, sin agregar libs de charts; reutiliza componentes de #18 donde aplique",
+        "Tests de agregaciones SQL por bloque, de la ruta/endpoint (acceso admin, filtros, anonimización, 400 inválidos) y e2e de render y estado vacío pasan; init.sh verde"
+      ],
+      "sdd": true,
+      "status": "done"
     }
   ]
 }

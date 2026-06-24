@@ -24,7 +24,27 @@ test.describe('dashboard mercado', () => {
       await expect(page.getByTestId('mercado-section-semaforos')).toBeVisible();
       await expect(page.getByTestId('mercado-section-trend')).toBeVisible();
       await expect(page.getByTestId('mercado-section-upsell')).toBeVisible();
+      // #43 — los 5 bloques accionables
+      await expect(page.getByTestId('mercado-section-tango')).toBeVisible();
+      await expect(page.getByTestId('mercado-section-nea')).toBeVisible();
+      await expect(page.getByTestId('mercado-section-base')).toBeVisible();
+      await expect(page.getByTestId('mercado-section-hallazgos')).toBeVisible();
+      await expect(page.getByTestId('mercado-section-riesgo')).toBeVisible();
     }
+  });
+
+  test('#43 — filtro provincia y bloques accionables (R4, R18, R19)', async ({ page }) => {
+    await loginAsAdmin(page);
+    await page.goto('/mercado');
+    await expect(page.getByRole('heading', { name: 'Estudio de mercado NEA' })).toBeVisible({
+      timeout: 15_000
+    });
+    // El filtro de provincia existe.
+    await expect(page.getByTestId('mercado-filter-provincia')).toBeVisible();
+
+    // Provincia inexistente → estado vacío (R18).
+    await page.goto('/mercado?provincia=ProvinciaInexistenteE2E');
+    await expect(page.getByTestId('mercado-empty-state')).toBeVisible();
   });
 
   test('técnico no ve link Mercado y recibe 403 (R1)', async ({ page }) => {

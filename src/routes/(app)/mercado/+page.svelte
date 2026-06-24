@@ -4,10 +4,20 @@
   import TrendChart from '$lib/components/mercado/trend-chart.svelte';
   import ErpDistribution from '$lib/components/mercado/ErpDistribution.svelte';
   import SectionScoreBar from '$lib/components/mercado/SectionScoreBar.svelte';
+  import GroupedBar from '$lib/components/mercado/grouped-bar.svelte';
   import ChipFilters from '$lib/components/ui/ChipFilters.svelte';
   import SysButton from '$lib/components/brand/SysButton.svelte';
   import type { PageData } from './$types';
   let { data }: { data: PageData } = $props();
+
+  const FINDING_LABELS: Record<string, string> = {
+    backups: 'Backups',
+    seguridad: 'Seguridad',
+    licencias: 'Licencias',
+    hardware_eol: 'Hardware / EOL',
+    redes: 'Redes',
+    otros: 'Otros'
+  };
 
   const currentYear = new Date().getFullYear().toString();
 
@@ -24,12 +34,14 @@
   // Server-driven filter form state
   let segmentFilter = $state('');
   let rubroFilter = $state('');
+  let provinciaFilter = $state('');
   let fromFilter = $state('');
   let toFilter = $state('');
 
   $effect(() => {
     segmentFilter = data.filters.segment ?? '';
     rubroFilter = data.filters.rubro ?? '';
+    provinciaFilter = data.filters.provincia ?? '';
     fromFilter = data.filters.from ? data.filters.from.toISOString().slice(0, 10) : '';
     toFilter = data.filters.to ? data.filters.to.toISOString().slice(0, 10) : '';
   });
@@ -40,6 +52,7 @@
     const params = new URLSearchParams();
     if (segmentFilter) params.set('segment', segmentFilter);
     if (rubroFilter) params.set('rubro', rubroFilter);
+    if (provinciaFilter) params.set('provincia', provinciaFilter);
     if (fromFilter) params.set('from', fromFilter);
     if (toFilter) params.set('to', toFilter);
     const qs = params.toString();
@@ -146,6 +159,19 @@
       </select>
     </label>
     <label class="flex flex-col gap-1 text-sm">
+      <span class="text-sys-medio">Provincia</span>
+      <select
+        bind:value={provinciaFilter}
+        class="rounded-sys border border-sys-borde px-3 py-2 text-sm"
+        data-testid="mercado-filter-provincia"
+      >
+        <option value="">Todas</option>
+        {#each data.provincias as prov (prov.key)}
+          <option value={prov.key}>{prov.key}{prov.is_nea ? ' (NEA)' : ''}</option>
+        {/each}
+      </select>
+    </label>
+    <label class="flex flex-col gap-1 text-sm">
       <span class="text-sys-medio">Desde</span>
       <input
         type="date"
@@ -179,6 +205,192 @@
       </p>
     </div>
   {:else}
+    <!-- #43 Bloque 1: Oportunidad de migración a Tango -->
+    <section
+      class="rounded-sys border border-sys-borde bg-white p-4 shadow-sm"
+      data-testid="mercado-section-tango"
+    >
+      <h2 class="mb-1 text-lg font-semibold text-sys-profundo">Oportunidad de migración a Tango</h2>
+      <p class="mb-4 text-sm text-sys-medio">
+        Distribución del ERP de las empresas auditadas y mercado direccionable por rubro y segmento.
+      </p>
+      <div class="grid gap-4 lg:grid-cols-3">
+        {#each data.dashboard.tango_opportunity.overall as grp (grp.group)}
+          <div class="rounded-sys border border-sys-borde px-3 py-2">
+            <div class="text-sm font-medium capitalize text-sys-profundo">
+              {grp.group === 'sin_erp' ? 'Sin ERP' : grp.group}
+            </div>
+            <div class="text-2xl font-semibold text-sys-profundo">{grp.n}</div>
+            <div class="text-xs text-sys-medio">{grp.pct}% del universo</div>
+          </div>
+        {/each}
+      </div>
+      <div class="mt-4 grid gap-6 lg:grid-cols-2">
+        <div>
+          <h3 class="mb-2 text-sm font-medium text-sys-medio">Por rubro</h3>
+          <GroupedBar cuts={data.dashboard.tango_opportunity.by_rubro} testId="mercado-tango-rubro" />
+        </div>
+        <div>
+          <h3 class="mb-2 text-sm font-medium text-sys-medio">Por segmento</h3>
+          <GroupedBar
+            cuts={data.dashboard.tango_opportunity.by_segment}
+            testId="mercado-tango-segment"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- #43 Bloque 2: Mapa del mercado NEA -->
+    <section
+      class="rounded-sys border border-sys-borde bg-white p-4 shadow-sm"
+      data-testid="mercado-section-nea"
+    >
+      <h2 class="mb-4 text-lg font-semibold text-sys-profundo">Mapa del mercado NEA</h2>
+      <div class="grid gap-6 lg:grid-cols-3">
+        <div>
+          <h3 class="mb-2 text-sm font-medium text-sys-medio">Por provincia</h3>
+          <BarChart
+            items={data.dashboard.nea_map.by_provincia.map((p) => ({
+              key: p.is_nea ? `${p.key} (NEA)` : p.key,
+              n: p.n
+            }))}
+            testId="mercado-nea-provincia"
+          />
+        </div>
+        <div>
+          <h3 class="mb-2 text-sm font-medium text-sys-medio">Por rubro</h3>
+          <BarChart items={data.dashboard.nea_map.by_rubro} testId="mercado-nea-rubro" />
+        </div>
+        <div>
+          <h3 class="mb-2 text-sm font-medium text-sys-medio">Por segmento</h3>
+          <BarChart items={data.dashboard.nea_map.by_segment} testId="mercado-nea-segment" />
+        </div>
+      </div>
+    </section>
+
+    <!-- #43 Bloque 3: Salud de la base instalada Tango + cross-sell -->
+    <section
+      class="rounded-sys border border-sys-borde bg-white p-4 shadow-sm"
+      data-testid="mercado-section-base"
+    >
+      <h2 class="mb-4 text-lg font-semibold text-sys-profundo">
+        Salud de la base instalada Tango
+      </h2>
+      {#if data.dashboard.installed_base.suppressed}
+        <p class="text-sm text-sys-medio" data-testid="mercado-base-suppressed">
+          Muestra insuficiente de usuarios Tango (n &lt; 3).
+        </p>
+      {:else}
+        <div class="grid gap-4 sm:grid-cols-2">
+          <StatCard
+            category="ERP"
+            label="Índice ERP promedio (usuarios Tango)"
+            value={data.dashboard.installed_base.avg_erp ?? 0}
+            n={data.dashboard.installed_base.tango_users_n}
+          />
+          <StatCard
+            category="Cerradas"
+            label="Empresas con Tango"
+            value={data.dashboard.installed_base.tango_users_n}
+            n={data.dashboard.installed_base.tango_users_n}
+          />
+        </div>
+        <h3 class="mb-2 mt-4 text-sm font-medium text-sys-medio">
+          Módulos menos adoptados (oportunidad de cross-sell)
+        </h3>
+        <div class="space-y-1">
+          {#each data.dashboard.installed_base.modules as mod (mod.key)}
+            <div class="flex items-center justify-between rounded-sys border border-sys-borde px-3 py-1 text-sm">
+              <span class="capitalize text-sys-profundo">{mod.key}</span>
+              <span class="text-sys-medio">
+                {mod.adopted} adoptan · {mod.missing} faltan · {mod.adoption_pct}%
+              </span>
+            </div>
+          {/each}
+        </div>
+      {/if}
+    </section>
+
+    <!-- #43 Bloque 4: Hallazgos recurrentes (interno) -->
+    <section
+      class="rounded-sys border border-dashed border-sys-borde bg-sys-offwhite p-4 shadow-sm"
+      data-testid="mercado-section-hallazgos"
+    >
+      <h2 class="text-lg font-semibold text-sys-profundo">Hallazgos recurrentes — solo SyS</h2>
+      <p class="mt-1 text-sm text-sys-medio">
+        Uso interno; categorías por palabras clave, sin textos individuales.
+      </p>
+      <div class="mt-4 grid gap-6 lg:grid-cols-2">
+        <div>
+          <h3 class="mb-2 text-sm font-medium text-sys-medio">
+            Riesgos (top_risks) — {data.dashboard.recurring_findings.total_risks}
+          </h3>
+          <BarChart
+            items={data.dashboard.recurring_findings.top_risks.map((c) => ({
+              key: FINDING_LABELS[c.category] ?? c.category,
+              n: c.n
+            }))}
+            testId="mercado-hallazgos-risks"
+          />
+        </div>
+        <div>
+          <h3 class="mb-2 text-sm font-medium text-sys-medio">
+            Quick wins — {data.dashboard.recurring_findings.total_quick_wins}
+          </h3>
+          <BarChart
+            items={data.dashboard.recurring_findings.quick_wins.map((c) => ({
+              key: FINDING_LABELS[c.category] ?? c.category,
+              n: c.n
+            }))}
+            testId="mercado-hallazgos-wins"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- #43 Bloque 5: Riesgo / retención (interno) -->
+    <section
+      class="rounded-sys border border-dashed border-sys-borde bg-sys-offwhite p-4 shadow-sm"
+      data-testid="mercado-section-riesgo"
+    >
+      <h2 class="text-lg font-semibold text-sys-profundo">Riesgo / retención — solo SyS</h2>
+      <p class="mt-1 text-sm text-sys-medio">
+        Empresas con auditoría cerrada que hoy están en riesgo (ex-cliente o estado inactiva).
+      </p>
+      {#if data.dashboard.risk_retention.suppressed}
+        <p class="mt-4 text-sm text-sys-medio" data-testid="mercado-riesgo-suppressed">
+          Muestra insuficiente (n &lt; 3).
+        </p>
+      {:else}
+        <div class="mt-4 grid gap-4 sm:grid-cols-4">
+          <StatCard
+            category="Cerradas"
+            label="Auditadas"
+            value={data.dashboard.risk_retention.universe_empresas}
+            n={data.dashboard.risk_retention.universe_empresas}
+          />
+          <StatCard
+            category="Upsell"
+            label="Ex-clientes"
+            value={data.dashboard.risk_retention.ex_cliente ?? 0}
+            n={data.dashboard.risk_retention.universe_empresas}
+          />
+          <StatCard
+            category="Upsell"
+            label="Inactivas"
+            value={data.dashboard.risk_retention.inactiva ?? 0}
+            n={data.dashboard.risk_retention.universe_empresas}
+          />
+          <StatCard
+            category="Upsell"
+            label="En riesgo (unión)"
+            value={data.dashboard.risk_retention.at_risk ?? 0}
+            n={data.dashboard.risk_retention.universe_empresas}
+          />
+        </div>
+      {/if}
+    </section>
+
     <!-- Grid 2x2 StatCards -->
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <StatCard
