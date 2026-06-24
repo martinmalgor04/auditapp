@@ -64,7 +64,7 @@
   class="min-h-screen bg-[--sys-bg-app] max-lg:pb-[var(--sys-mobile-nav-offset)] max-lg:pt-[var(--sys-mobile-header-offset)] lg:pb-0 lg:pl-[220px] lg:pt-0"
   class:max-lg:!pt-0={!showShellHeader}
 >
-  <div class="mx-auto max-w-6xl px-4 py-3 lg:px-6 lg:py-6">
+  <div class="mx-auto max-w-6xl px-4 max-lg:pt-0 max-lg:pb-3 lg:px-6 lg:py-6">
     {@render children?.()}
   </div>
 </main>

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { SYS_LOGOS } from '$lib/brand/logos';
+
   export let title: string;
   export let subtitle: string = '';
   export let user: { name: string };
@@ -14,7 +16,13 @@
   "
 >
   <div class="flex items-center justify-between">
-    <span class="text-[--sys-text-navy-muted] text-xs">servicios &amp; sistemas</span>
+    <img
+      src={SYS_LOGOS.sysHorizontalW}
+      alt="Servicios y Sistemas"
+      class="h-6 w-auto"
+      width="120"
+      height="24"
+    />
     <div class="w-8 h-8 rounded-full bg-[--sys-primary] flex items-center justify-center text-white text-sm font-bold">
       {user.name.charAt(0).toUpperCase()}
     </div>

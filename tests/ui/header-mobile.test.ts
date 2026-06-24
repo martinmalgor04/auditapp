@@ -21,6 +21,11 @@ describe('HeaderMobile component', () => {
     expect(source).toContain('user.name.charAt(0).toUpperCase()');
   });
 
+  it('muestra logo horizontal blanco del CDN', () => {
+    expect(source).toContain('SYS_LOGOS.sysHorizontalW');
+    expect(source).toContain('alt="Servicios y Sistemas"');
+  });
+
   it('muestra botón "+ Nueva" solo cuando showNew=true', () => {
     expect(source).toContain('if showNew');
     expect(source).toContain('+ Nueva');

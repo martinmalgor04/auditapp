@@ -97,7 +97,7 @@
   <title>Tablero — auditapp</title>
 </svelte:head>
 
-<div class="space-y-4 lg:space-y-0">
+<div class="max-lg:space-y-0 lg:space-y-0">
   <TableroHeader
     auditCount={data.dashboard.total}
     searchValue={data.filters.q ?? ''}
