@@ -2,6 +2,25 @@
   /* Fuentes */
   --sys-font-logo: 'Keep Calm', serif;
   --sys-font: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+  --sys-font-base: 'Montserrat', sans-serif;
+
+  /* Paleta rediseño #42 (coexiste con tokens legacy) */
+  --sys-primary: #2196F3;
+  --sys-navy: #0A1929;
+  --sys-navy-mid: #0E2540;
+  --sys-bg-app: #ECEEF2;
+  --sys-surface: #ffffff;
+  --sys-border: #E4E7ED;
+  --sys-text-primary: #0A1929;
+  --sys-text-secondary: #374151;
+  --sys-text-muted: #6B7280;
+  --sys-text-faint: #9CA3AF;
+  --sys-text-navy-muted: #A2C6D4;
+  --sys-status-green: #10B981;
+  --sys-status-amber: #F59E0B;
+  --sys-status-red: #EF4444;
+  --sys-status-blue-bg: #DBEAFE;
+  --sys-status-blue-text: #1E40AF;
 
   /* Superficies */
   --sys-azul-profundo: #0a1929;

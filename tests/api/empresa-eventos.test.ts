@@ -9,7 +9,7 @@ import {
 } from '../../src/routes/api/crm/empresas/[id]/eventos/+server';
 import { POST as overridePost } from '../../src/routes/api/crm/empresas/[id]/override/+server';
 import { setupTestDb, teardownTestDb } from '../helpers/db';
-import { findUserByEmail, findUserIdByEmail } from '../helpers/auth';
+import { findUserByEmail, findUserIdByEmail, seedAuthUsers } from '../helpers/auth';
 
 /**
  * #23 Fase 5 (T25, R22/R23): eventos/timeline y override de estado.
@@ -81,6 +81,12 @@ describe('#23 Fase 5 — eventos/timeline + override (R22, R23)', () => {
 
   beforeEach(async () => {
     setSqlForTests(sql);
+    if (!(await findUserByEmail(sql, 'admin@serviciosysistemas.com.ar'))) {
+      await seedAuthUsers(sql);
+    }
+    adminId = await findUserIdByEmail(sql, 'admin@serviciosysistemas.com.ar');
+    admin = await findUserByEmail(sql, 'admin@serviciosysistemas.com.ar');
+    tecnico = await findUserByEmail(sql, 'facu@serviciosysistemas.com.ar');
     await cleanup();
     empresaId = await mkEmpresa();
   });

@@ -110,3 +110,10 @@
 - **Veredicto:** APPROVED (`progress/review_24_reunion_extraccion_precisa.md`)
 - **Commit:** solo archivos de #24 (el árbol mantiene cambios sin commitear de #23). Decisión humana: commitear #24 pese al rojo global de #23.
 - **Próximo paso:** desbloquear #23 Fase 1 (bug SQL real en `dashboard.ts` GROUP BY + replay de migración 013 en `clients-cuit-cleanup.test.ts`); Docker ya está operativo.
+
+## 2026-06-24 — 42_rediseno_ui (#42) done
+
+- **Agente:** leader → implementer (loop) → reviewer (CHANGES_REQUESTED) → implementer fixes → re-reviewer (APPROVED)
+- **Resultado:** Rediseño visual integral: tokens CSS/Tailwind (#42), layout shell (HeaderMobile, Sidebar, BottomNav, ProgressBar), tablero cards/tabla + chips, form (FormHeader, SectionChips, QuestionCard, FormNextButton), mercado (StatCard, ErpDistribution, SectionScoreBar, ChipFilters). 32/32 tasks `[x]`. 128 tests UI + e2e specs. Fixes post-review: `brand-shell`, `brand-typography`, aislamiento DB (`setup.ts`, `empresa-estado`, `audit-create-flow`, `clients-cuit-cleanup`). `./init.sh` verde (1231 tests).
+- **Veredicto:** APPROVED (`progress/review_42_rediseno_ui.md`, re-review eb89bf48)
+- **Próximo paso:** `/leader` → siguiente feature pendiente (#12 `12_reunion_asistente` en `spec_ready`, pausada)

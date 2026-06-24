@@ -9,7 +9,7 @@ import {
   type EstadoInputs
 } from '../src/lib/server/crm/empresa-estado';
 import { getEmpresaById, getEstadoInputs } from '../src/lib/server/db/empresa';
-import { setupTestDb, teardownTestDb } from './helpers/db';
+import { ensureBaselineSeed, setupTestDb, teardownTestDb } from './helpers/db';
 import { findUserIdByEmail } from './helpers/auth';
 
 /**
@@ -213,11 +213,13 @@ describe('#23 Fase 5 — paridad SQL↔TS (R13/R14/R15)', () => {
   beforeAll(async () => {
     sql = await setupTestDb();
     setSqlForTests(sql);
+    await ensureBaselineSeed(sql);
     adminId = await findUserIdByEmail(sql, 'admin@serviciosysistemas.com.ar');
   });
 
   beforeEach(async () => {
     setSqlForTests(sql);
+    adminId = await findUserIdByEmail(sql, 'admin@serviciosysistemas.com.ar');
     await cleanup();
   });
 

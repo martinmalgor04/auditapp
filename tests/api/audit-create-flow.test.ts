@@ -20,6 +20,16 @@ describe('nueva auditoría — scope completo', () => {
     sql = await setupTestDb();
   });
 
+  async function deleteEmpresaByCuit(cuit: string) {
+    const variants = [...new Set([cuit, cuit.replace(/\D/g, '')].filter(Boolean))];
+    for (const variant of variants) {
+      await sql`DELETE FROM audit_ref_counter WHERE empresa_id IN (SELECT id FROM empresa WHERE cuit = ${variant})`;
+      await sql`DELETE FROM audit WHERE empresa_id IN (SELECT id FROM empresa WHERE cuit = ${variant})`;
+      await sql`DELETE FROM empresa_evento WHERE empresa_id IN (SELECT id FROM empresa WHERE cuit = ${variant})`;
+      await sql`DELETE FROM empresa WHERE cuit = ${variant}`;
+    }
+  }
+
   beforeEach(async () => {
     setSqlForTests(sql);
     adminId = await findUserIdByEmail(sql, 'admin@serviciosysistemas.com.ar');
@@ -95,12 +105,14 @@ describe('nueva auditoría — scope completo', () => {
 
   it('cliente nuevo: alta, CAB explícita prevalece y sync a client', async () => {
     const cabItemId = await getCabItemId(sql, 'it');
+    const cuit = '30-75890123-4';
+    await deleteEmpresaByCuit(cuit);
 
     const { id } = await createAudit(
       {
         newClient: {
           razonSocial: 'Nuevo Cliente SRL',
-          cuit: '30-12345678-9',
+          cuit,
           rubro: 'Comercio'
         },
         types: ['it'],
@@ -120,7 +132,7 @@ describe('nueva auditoría — scope completo', () => {
       SELECT razon_social, cuit, rubro FROM client WHERE id = ${audit!.clientId}
     `;
     expect(client.razon_social).toBe('Nombre CAB distinto SRL');
-    expect(client.cuit).toBe('30-12345678-9');
+    expect(client.cuit).toBe(cuit);
     expect(client.rubro).toBe('Comercio');
   });
 });

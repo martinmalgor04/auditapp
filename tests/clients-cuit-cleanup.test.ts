@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type postgres from 'postgres';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -52,7 +52,22 @@ describe('client cuit cleanup + índice único (R17, R18)', () => {
     setSqlForTests(sql);
   });
 
+  async function ensureCuitUniqueIndex(): Promise<void> {
+    const idx = await indexNames(sql, 'empresa');
+    if (!idx.includes('empresa_cuit_unique')) {
+      await sql`
+        CREATE UNIQUE INDEX IF NOT EXISTS empresa_cuit_unique
+        ON empresa (cuit) WHERE cuit IS NOT NULL
+      `;
+    }
+  }
+
+  afterEach(async () => {
+    await ensureCuitUniqueIndex();
+  });
+
   afterAll(async () => {
+    await ensureCuitUniqueIndex();
     await teardownTestDb();
   });
 

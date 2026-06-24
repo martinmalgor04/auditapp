@@ -26,10 +26,14 @@ describe('brand shell', () => {
     expect(login).toContain('variant="dark"');
   });
 
-  it('app layout uses SysShell light for backoffice', () => {
+  it('app layout composes #42 shell (HeaderMobile + Sidebar + BottomNav)', () => {
     const layout = readFileSync(join(process.cwd(), 'src/routes/(app)/+layout.svelte'), 'utf8');
-    expect(layout).toContain('SysShell');
-    expect(layout).toContain('variant="light"');
+    expect(layout).toContain('HeaderMobile');
+    expect(layout).toContain('Sidebar');
+    expect(layout).toContain('BottomNav');
+    expect(layout).toContain('lg:pl-[220px]');
+    expect(layout).toContain('bg-[--sys-bg-app]');
+    expect(layout).not.toContain('SysShell');
   });
 
   it('cierre layout exists when route file exists', () => {
@@ -42,6 +46,7 @@ describe('brand shell', () => {
       join(process.cwd(), 'src/routes/(app)/+layout.svelte'),
       'utf8'
     );
-    expect(appLayout).toContain('SysShell');
+    expect(appLayout).toContain('HeaderMobile');
+    expect(appLayout).toContain('Sidebar');
   });
 });

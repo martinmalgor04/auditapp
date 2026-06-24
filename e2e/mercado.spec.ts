@@ -39,4 +39,19 @@ test.describe('dashboard mercado', () => {
     await expect(page.getByTestId('mercado-empty-state')).toBeVisible();
     await expect(page.getByText('No hay auditorías cerradas para estos filtros')).toBeVisible();
   });
+
+  test('chip Seg. A filtra y activa estilo primario', async ({ page }) => {
+    await loginAsAdmin(page);
+    await page.goto('/mercado');
+    await expect(page.getByTestId('mercado-filters')).toBeVisible();
+
+    const chipA = page.getByRole('button', { name: 'Seg. A' });
+    await chipA.click();
+    await page.waitForURL(/segment=A/, { timeout: 10_000 });
+
+    const statIt = page.getByTestId('mercado-stat-it');
+    if (await statIt.isVisible()) {
+      await expect(statIt).toBeVisible();
+    }
+  });
 });

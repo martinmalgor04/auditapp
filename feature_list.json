@@ -754,6 +754,24 @@
       ],
       "sdd": true,
       "status": "done"
+    },
+    {
+      "id": 42,
+      "name": "42_rediseno_ui",
+      "title": "Rediseño visual integral (tokens + layout + tablero + form + mercado)",
+      "description": "Design tokens unificados, layout shell responsive (sidebar web + bottom nav mobile), Tablero con cards/tabla, Relevamiento con question cards, Mercado con stats grid. No cambia modelo de datos ni scoring.",
+      "source": "AuditApp Rediseño.dc.html + specs/42_rediseno_ui/",
+      "acceptance": [
+        "Tokens CSS/Tailwind según R1-R3 en brand.css y tailwind.config",
+        "Layout shell: HeaderMobile + Sidebar + ProgressBar + BottomNav en +layout.svelte",
+        "Tablero: AuditCard mobile + tabla web + ChipFilters",
+        "Form: FormHeader + SectionChips + QuestionCard + FormNextButton integrados",
+        "Mercado: StatCard + ErpDistribution + SectionScoreBar + ChipFilters",
+        "pnpm run check, pnpm test y playwright e2e verdes",
+        "./init.sh verde"
+      ],
+      "sdd": true,
+      "status": "done"
     }
   ]
 }

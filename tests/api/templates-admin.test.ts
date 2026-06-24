@@ -7,7 +7,7 @@ import {
 } from '../../src/routes/(app)/plantillas/[id]/+page.server';
 import { setupTestDb, teardownTestDb } from '../helpers/db';
 import { findUserIdByEmail } from '../helpers/auth';
-import { getFirstTemplateItemId, getTemplateIdByCode } from '../helpers/backoffice';
+import { getTemplateIdByCode } from '../helpers/backoffice';
 import type postgres from 'postgres';
 
 describe('templates admin', () => {
@@ -59,7 +59,18 @@ describe('templates admin', () => {
   });
 
   it('update allowed fields persists; rejects new item or section', async () => {
-    const itemId = await getFirstTemplateItemId(sql, 'it');
+    // No mutar ítems CAB: otros tests (audits-create, audit-create-flow) dependen de labels canónicos.
+    const [nonCab] = await sql<{ id: string }[]>`
+      SELECT ti.id
+      FROM template_item ti
+      JOIN section s ON s.id = ti.section_id
+      WHERE s.template_id = ${templateId}
+        AND s.code <> 'CAB'
+      ORDER BY s.sort_order, ti.sort_order
+      LIMIT 1
+    `;
+    if (!nonCab) throw new Error('No hay ítem fuera de CAB en plantilla it');
+    const itemId = nonCab.id;
 
     await updateTemplateItem({
       itemId,

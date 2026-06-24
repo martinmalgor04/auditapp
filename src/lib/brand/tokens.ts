@@ -15,7 +15,6 @@ export const LEGACY_BANNED = [
   '#163a6b',
   '#2b7de9',
   '#003366',
-  '--sys-primary',
   '--sys-primary-dark',
   '--sys-accent'
 ] as const;
