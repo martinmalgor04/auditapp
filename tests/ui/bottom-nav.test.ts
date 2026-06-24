@@ -33,8 +33,9 @@ describe('BottomNav component', () => {
     expect(source).not.toContain('/auditorias/new');
   });
 
-  it('deriva ruta activa de $page store', () => {
-    expect(source).toContain("from '$app/stores'");
-    expect(source).toContain('$page.url.pathname');
+  it('deriva ruta activa de page state', () => {
+    expect(source).toContain("from '$app/state'");
+    expect(source).toContain('$derived(page.url.pathname)');
+    expect(source).toContain('isNavItemActive');
   });
 });

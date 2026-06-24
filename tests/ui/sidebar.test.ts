@@ -17,7 +17,7 @@ describe('Sidebar component', () => {
   });
 
   it('marca activo el ítem cuya href coincide con pathname usando bg-sys-primary', () => {
-    expect(source).toContain('isActive(item.href)');
+    expect(source).toContain('isNavItemActive(pathname, item.href)');
     expect(source).toContain('bg-sys-primary text-white');
   });
 
@@ -25,9 +25,9 @@ describe('Sidebar component', () => {
     expect(source).toContain('hover:bg-white/5');
   });
 
-  it('importa $app/stores para page', () => {
-    expect(source).toContain("from '$app/stores'");
-    expect(source).toContain('page');
+  it('importa page de $app/state', () => {
+    expect(source).toContain("from '$app/state'");
+    expect(source).toContain('page.url.pathname');
   });
 
   it('muestra inicial del nombre de usuario en avatar', () => {
@@ -42,13 +42,9 @@ describe('Sidebar component', () => {
     expect(source).toContain('bg-sys-navy');
   });
 
-  it('reactividad: pathname derivado de $page para isActive', () => {
-    expect(source).toContain('$: pathname = $page.url.pathname');
-  });
-
-  it('tablero activo también en ruta raíz /', () => {
-    expect(source).toContain("href === '/tablero'");
-    expect(source).toContain("pathname === '/'");
+  it('reactividad: pathname $derived desde page state', () => {
+    expect(source).toContain('$derived(page.url.pathname)');
+    expect(source).toContain('isNavItemActive');
   });
 
   it('itera navItems con each', () => {

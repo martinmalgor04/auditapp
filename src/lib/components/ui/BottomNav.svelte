@@ -1,9 +1,11 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
+  import { isNavItemActive } from '$lib/nav/active-route';
 
-  export let user: { role: 'admin' | 'tecnico' } = { role: 'admin' };
+  let { user = { role: 'admin' as const } }: { user?: { role: 'admin' | 'tecnico' } } = $props();
 
-  const isAdmin = user.role === 'admin';
+  const isAdmin = $derived(user.role === 'admin');
+  const pathname = $derived(page.url.pathname);
 
   const items = [
     { label: 'Tablero', href: '/tablero', icon: '📋', adminOnly: false },
@@ -12,15 +14,6 @@
     { label: 'Usuarios', href: '/usuarios', icon: '👤', adminOnly: true },
     { label: 'Plantillas', href: '/plantillas', icon: '📝', adminOnly: false }
   ];
-
-  $: pathname = $page.url.pathname;
-
-  function isActive(href: string) {
-    if (href === '/tablero') {
-      return pathname === '/' || pathname === '/tablero' || pathname.startsWith('/tablero/');
-    }
-    return pathname === href || pathname.startsWith(`${href}/`);
-  }
 </script>
 
 <nav
@@ -31,11 +24,12 @@
   <div class="flex h-16 items-center justify-around">
     {#each items as item}
       {#if !item.adminOnly || isAdmin}
+        {@const active = isNavItemActive(pathname, item.href)}
         <a
           href={item.href}
           class="flex flex-col items-center gap-0.5 text-xs min-w-[3rem]
-            {isActive(item.href) ? 'text-sys-primary' : 'text-white/35'}"
-          aria-current={isActive(item.href) ? 'page' : undefined}
+            {active ? 'text-sys-primary' : 'text-white/35'}"
+          aria-current={active ? 'page' : undefined}
         >
           <span class="text-base">{item.icon}</span>
           <span>{item.label}</span>
