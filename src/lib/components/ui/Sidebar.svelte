@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { isNavItemActive } from '$lib/nav/active-route';
+  import UserMenu from '$lib/components/ui/UserMenu.svelte';
 
   let { user }: { user: { name: string; role: 'admin' | 'tecnico' } } = $props();
 
@@ -39,16 +40,6 @@
   </nav>
 
   <div class="border-t border-white/10 px-4 py-3">
-    <div class="flex items-center gap-2">
-      <div
-        class="w-8 h-8 rounded-full bg-sys-primary flex items-center justify-center text-white text-sm font-bold"
-      >
-        {user.name.charAt(0).toUpperCase()}
-      </div>
-      <div>
-        <p class="text-white text-xs font-medium">{user.name}</p>
-        <p class="text-sys-text-navy-muted text-xs">{user.role}</p>
-      </div>
-    </div>
+    <UserMenu user={{ name: user.name, role: user.role }} variant="sidebar" />
   </div>
 </aside>

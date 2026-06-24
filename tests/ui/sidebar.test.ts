@@ -30,12 +30,9 @@ describe('Sidebar component', () => {
     expect(source).toContain('page.url.pathname');
   });
 
-  it('muestra inicial del nombre de usuario en avatar', () => {
-    expect(source).toContain('user.name.charAt(0).toUpperCase()');
-  });
-
-  it('muestra el rol del usuario', () => {
-    expect(source).toContain('{user.role}');
+  it('avatar tiene menú de usuario con cerrar sesión', () => {
+    expect(source).toContain('UserMenu');
+    expect(source).toContain('variant="sidebar"');
   });
 
   it('tiene fondo bg-sys-navy', () => {

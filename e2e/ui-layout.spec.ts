@@ -34,8 +34,8 @@ test.describe('ui-layout responsive', () => {
     const bottomNav = page.locator('nav.lg\\:hidden.fixed');
     await expect(bottomNav).toBeHidden();
 
-    // Header mobile: lg:hidden, a 1100px debe estar oculto
-    const headerMobile = page.locator('div.lg\\:hidden.fixed');
+    // Header mobile: lg:hidden sticky, a 1100px debe estar oculto
+    const headerMobile = page.locator('[data-testid="header-mobile"]');
     await expect(headerMobile).toBeHidden();
   });
 });

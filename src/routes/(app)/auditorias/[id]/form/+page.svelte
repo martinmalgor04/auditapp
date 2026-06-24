@@ -656,8 +656,9 @@
       method="POST"
       action="?/complete"
       use:enhance={() => {
-        return async () => {
+        return async ({ update }) => {
           await autosave.flushPending();
+          await update();
         };
       }}
       class="sticky bottom-4 pt-4"

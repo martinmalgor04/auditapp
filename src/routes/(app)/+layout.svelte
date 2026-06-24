@@ -45,7 +45,15 @@
 <ProgressBar />
 
 {#if data.user}
-  {#if showShellHeader}
+  <Sidebar user={{ name: data.user.name, role: data.user.role }} />
+
+  <BottomNav user={{ role: data.user.role }} />
+{/if}
+
+<main
+  class="min-h-screen bg-[--sys-bg-app] max-lg:pb-[var(--sys-mobile-nav-offset)] lg:pb-0 lg:pl-[220px]"
+>
+  {#if data.user && showShellHeader}
     <HeaderMobile
       title={meta.title}
       subtitle={meta.subtitle}
@@ -55,16 +63,7 @@
     />
   {/if}
 
-  <Sidebar user={{ name: data.user.name, role: data.user.role }} />
-
-  <BottomNav user={{ role: data.user.role }} />
-{/if}
-
-<main
-  class="min-h-screen bg-[--sys-bg-app] max-lg:pb-[var(--sys-mobile-nav-offset)] max-lg:pt-[var(--sys-mobile-header-offset)] lg:pb-0 lg:pl-[220px] lg:pt-0"
-  class:max-lg:!pt-0={!showShellHeader}
->
-  <div class="mx-auto max-w-6xl px-4 max-lg:pt-0 max-lg:pb-3 lg:px-6 lg:py-6">
+  <div class="mx-auto max-w-6xl px-4 max-lg:pb-3 lg:px-6 lg:py-6">
     {@render children?.()}
   </div>
 </main>

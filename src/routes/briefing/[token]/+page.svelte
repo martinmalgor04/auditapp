@@ -58,8 +58,9 @@
       method="POST"
       action="?/submit"
       use:enhance={() => {
-        return async () => {
+        return async ({ update }) => {
           await flushPendingSaves();
+          await update();
         };
       }}
       class="sticky bottom-4 pt-2"

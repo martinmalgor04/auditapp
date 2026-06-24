@@ -29,17 +29,17 @@
 
   <!-- Botones -->
   <div class="flex gap-2">
-    <button on:click={() => onChange('si')}
+    <button type="button" on:click={() => onChange('si')}
       class="flex-1 py-2 rounded-lg text-sm font-medium border
         {value === 'si' ? 'bg-[--sys-status-green] text-white border-[--sys-status-green]' : 'bg-white border-[--sys-border] text-[--sys-text-secondary]'}">
       Sí
     </button>
-    <button on:click={() => onChange('no')}
+    <button type="button" on:click={() => onChange('no')}
       class="flex-1 py-2 rounded-lg text-sm font-medium border
         {value === 'no' ? 'bg-[--sys-status-red] text-white border-[--sys-status-red]' : 'bg-white border-[--sys-border] text-[--sys-text-secondary]'}">
       No
     </button>
-    <button on:click={() => onChange('parcial')}
+    <button type="button" on:click={() => onChange('parcial')}
       class="flex-1 py-2 rounded-lg text-sm font-medium border
         {value === 'parcial' ? 'border-[--sys-primary] text-[--sys-primary] bg-white' : 'bg-white border-[--sys-border] text-[--sys-text-secondary]'}">
       Parcial
@@ -47,5 +47,5 @@
   </div>
 
   <!-- Link observación -->
-  <button on:click={onAddObservation} class="mt-3 text-xs text-[--sys-primary]">+ Agregar observación</button>
+  <button type="button" on:click={onAddObservation} class="mt-3 text-xs text-[--sys-primary]">+ Agregar observación</button>
 </div>

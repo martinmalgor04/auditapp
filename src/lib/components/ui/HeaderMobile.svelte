@@ -1,5 +1,6 @@
 <script lang="ts">
   import { SYS_LOGOS } from '$lib/brand/logos';
+  import UserMenu from '$lib/components/ui/UserMenu.svelte';
 
   export let title: string;
   export let subtitle: string = '';
@@ -9,7 +10,8 @@
 </script>
 
 <div
-  class="lg:hidden fixed top-0 left-0 right-0 z-40 px-4 pb-3"
+  class="lg:hidden sticky top-0 z-40 px-4 pb-3"
+  data-testid="header-mobile"
   style="
     padding-top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
     background: linear-gradient(160deg, var(--sys-navy) 0%, var(--sys-navy-mid) 100%);
@@ -23,9 +25,7 @@
       width="120"
       height="24"
     />
-    <div class="w-8 h-8 rounded-full bg-[--sys-primary] flex items-center justify-center text-white text-sm font-bold">
-      {user.name.charAt(0).toUpperCase()}
-    </div>
+    <UserMenu {user} variant="header" />
   </div>
 
   <div class="flex items-end justify-between mt-2">

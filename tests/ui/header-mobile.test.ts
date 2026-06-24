@@ -17,10 +17,6 @@ describe('HeaderMobile component', () => {
     expect(source).toContain('if subtitle');
   });
 
-  it('muestra la inicial del nombre de usuario en el avatar', () => {
-    expect(source).toContain('user.name.charAt(0).toUpperCase()');
-  });
-
   it('muestra logo horizontal blanco del CDN', () => {
     expect(source).toContain('SYS_LOGOS.sysHorizontalW');
     expect(source).toContain('alt="Servicios y Sistemas"');
@@ -31,16 +27,18 @@ describe('HeaderMobile component', () => {
     expect(source).toContain('+ Nueva');
   });
 
-  it('contenedor tiene clase lg:hidden', () => {
+  it('contenedor tiene clase lg:hidden y sticky', () => {
     expect(source).toContain('lg:hidden');
+    expect(source).toContain('sticky');
+  });
+
+  it('usa UserMenu para avatar y cerrar sesión', () => {
+    expect(source).toContain('UserMenu');
+    expect(source).toContain('variant="header"');
   });
 
   it('respeta safe-area-inset-top para no solapar la barra de estado', () => {
     expect(source).toContain('env(safe-area-inset-top');
-  });
-
-  it('avatar tiene clases de estilo correctas', () => {
-    expect(source).toContain('w-8 h-8 rounded-full bg-[--sys-primary]');
   });
 
   it('botón nueva llama a onNew', () => {
