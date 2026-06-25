@@ -25,6 +25,12 @@ export const canonicalTemplateSchema = z.object({
   version: z.string().min(1)
 });
 
+export const canonicalItemRowSchema = z.object({
+  row_id: z.string().min(1),
+  cells: z.record(z.unknown()),
+  attachments: z.array(z.string().min(1))
+});
+
 export const canonicalItemSchema = z.object({
   item_id: z.string().uuid(),
   label: z.string().min(1),
@@ -33,7 +39,11 @@ export const canonicalItemSchema = z.object({
   na: z.boolean(),
   score_contribution: z.number().int().min(0).max(100).optional(),
   observations: z.string().nullable(),
-  attachments: z.array(z.string().min(1))
+  attachments: z.array(z.string().min(1)),
+  // #45 (R1, R4) — filas de inventario para ítems field_type='table'. Campo
+  // opcional nuevo (MINOR 1.1 → 1.2): los consumidores que lo ignoran siguen
+  // validando (R3). Cada fila trae sus celdas y las claves R2 de sus fotos.
+  rows: z.array(canonicalItemRowSchema).optional()
 });
 
 export const canonicalSectionSchema = z.object({
@@ -89,6 +99,7 @@ export type MarketData = z.infer<typeof marketDataSchema>;
 export type CanonicalAudit = z.infer<typeof canonicalAuditSchema>;
 export type CanonicalSection = z.infer<typeof canonicalSectionSchema>;
 export type CanonicalItem = z.infer<typeof canonicalItemSchema>;
+export type CanonicalItemRow = z.infer<typeof canonicalItemRowSchema>;
 export type TopRiskCanonical = z.infer<typeof topRiskSchema>;
 export type UpsellFinding = z.infer<typeof upsellFindingSchema>;
 

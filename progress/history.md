@@ -133,3 +133,11 @@
 - **Verificación:** `pnpm run check` 0 errores (41 warnings preexistentes ajenos a la feature); `pnpm run build` OK; `pnpm test` 230 archivos / 1265 tests verdes, 2 skipped (incluye `tests/ui/*`).
 - **Veredicto:** APPROVED.
 - **Próximo paso:** `/leader` → siguiente feature del backlog.
+
+## 2026-06-25 — 45_inventario_it_informe (#45) done
+
+- **Agente:** implementer → reviewer (APPROVED)
+- **Resultado:** Inventario IT en el informe (IT puro y mixto): el JSON canónico (`schema.ts`/`build.ts`) expone las filas de los ítems `field_type=table` de inventario con sus celdas y los attachments por fila (claves R2 de las fotos) sin romper `schema_version`. `InformeRenderModel` incluye el inventario derivado del canónico vía `stripInternalFindings` (jamás material interno). El render IT/mixto muestra sección de inventario con tabla de equipos (tipo, modelo/categoría, antigüedad/año, estado EOL con semáforo del scoring `inventory-eol`) y galería de fotos por equipo (presigned R2 o data-uri, placeholder si falta el attachment); los informes ERP puros no la muestran. Branding SyS (tokens `--sys-*`), reveal-on-scroll y CSS print A4 coherentes. T1–T17 en `[x]`.
+- **Verificación:** `pnpm run check` 0 errores; `pnpm run build` OK; `pnpm test` 1285 pass / 2 skip; `./init.sh` verde. Snapshots ERP existentes sin cambios; nuevos snapshots de inventario IT (con y sin fotos) pasan; test de no-filtración de material interno verde.
+- **Veredicto:** APPROVED. Trazabilidad en `progress/impl_45_inventario_it_informe.md`.
+- **Próximo paso:** `/leader` → siguiente feature del backlog.

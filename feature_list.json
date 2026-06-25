@@ -828,7 +828,7 @@
         "Los snapshots de render ERP existentes no cambian; nuevos snapshots de inventario IT (con y sin fotos) pasan; test de que no se filtra material interno"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 46,

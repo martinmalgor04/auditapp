@@ -4,7 +4,7 @@ import { loadInformeCanonicalGolden } from './informe-claude-mock';
 function withTemplateCodes(canonical: CanonicalAudit): CanonicalAudit {
   return {
     ...canonical,
-    schema_version: '1.1',
+    schema_version: '1.2',
     sections: canonical.sections.map((s) => ({
       ...s,
       template_code: s.template_code ?? (s.code.startsWith('A') ? 'it' : 'erp-tango')

@@ -164,4 +164,133 @@ describe('informe web render (R10, R11, R12)', () => {
   it('snapshot estable del render web', () => {
     expect(html).toMatchSnapshot();
   });
+
+  // #45 — ERP puro no incluye la sección de inventario (R9, R14).
+  it('ERP puro no renderiza la sección de inventario (R9, R14)', () => {
+    const erpGolden = {
+      ...golden,
+      types: ['erp-tango'],
+      templates: golden.templates.filter((t) => t.code === 'erp-tango'),
+      sections: golden.sections.filter((s) => s.template_code === 'erp-tango'),
+      indices: { erp: golden.indices.erp! }
+    };
+    const out = renderInformeWebHtml(
+      buildInformeRenderModel(fakeReport({ canonicalJson: erpGolden }))
+    );
+    expect(out).not.toContain('Inventario de equipos');
+    // el selector CSS .equip-table está en el STYLE; lo que no debe existir es la
+    // tabla renderizada ni la sección de inventario.
+    expect(out).not.toContain('<table class="equip-table"');
+    expect(out).not.toContain('class="wrap equip"');
+    // El slot de inventario no altera el flujo hallazgos → riesgos (R14).
+    expect(out.indexOf('02 · Hallazgos por circuito')).toBeLessThan(
+      out.indexOf('03 · Riesgos priorizados')
+    );
+  });
+});
+
+// #45 (R8, R10, R11, R5, R15) — render de inventario IT.
+const A1_PHOTO_KEY = 'audits/x/A1/photo-1.jpg';
+
+function goldenWithInventory(rows: unknown[]): typeof golden {
+  return {
+    ...golden,
+    sections: golden.sections.map((s) =>
+      s.code === 'A1'
+        ? {
+            ...s,
+            items: s.items.map((i) =>
+              i.field_type === 'table' ? { ...i, rows } : i
+            )
+          }
+        : s
+    )
+  } as typeof golden;
+}
+
+describe('informe web render — inventario IT (#45)', () => {
+  const fakePhotoUrl = (key: string) => `/photos/${key}`;
+
+  it('tabla equip-table + galería con foto resuelta vía resolvedor (R8, R10)', () => {
+    const canonicalJson = goldenWithInventory([
+      {
+        row_id: 'r-1',
+        cells: { tipo: 'Notebook', modelo: 'Lenovo T14', anio: 2018, estado_eol: 'eol' },
+        attachments: [A1_PHOTO_KEY]
+      }
+    ]);
+    const model = buildInformeRenderModel(fakeReport({ canonicalJson }), {
+      photoUrl: fakePhotoUrl
+    });
+    const out = renderInformeWebHtml(model);
+
+    expect(out).toContain('Inventario de equipos');
+    expect(out).toContain('class="equip-table"');
+    expect(out).toContain('Notebook');
+    expect(out).toContain('Lenovo T14');
+    expect(out).toContain(`/photos/${A1_PHOTO_KEY}`);
+    expect(out).toContain('class="equip-fig"');
+    expect(out).toContain('equip-dot r');
+    // con foto no se renderiza el placeholder (el selector CSS .equip-ph sí está
+    // en el STYLE, pero no el div del placeholder).
+    expect(out).not.toContain('<div class="equip-ph"');
+  });
+
+  it('equipo sin fotos resolubles renderiza placeholder equip-ph (R11)', () => {
+    const canonicalJson = goldenWithInventory([
+      { row_id: 'r-1', cells: { tipo: 'Servidor', anio: 2015 }, attachments: [] }
+    ]);
+    const model = buildInformeRenderModel(fakeReport({ canonicalJson }), {
+      photoUrl: fakePhotoUrl
+    });
+    const out = renderInformeWebHtml(model);
+    expect(out).toContain('Inventario de equipos');
+    expect(out).toContain('<div class="equip-ph"');
+    expect(out).toContain('Servidor');
+  });
+
+  it('snapshot inventario IT con y sin fotos', () => {
+    const conFoto = renderInformeWebHtml(
+      buildInformeRenderModel(
+        fakeReport({
+          canonicalJson: goldenWithInventory([
+            {
+              row_id: 'r-1',
+              cells: { tipo: 'Notebook', modelo: 'Lenovo T14', anio: 2018, estado_eol: 'vigente' },
+              attachments: [A1_PHOTO_KEY]
+            }
+          ])
+        }),
+        { photoUrl: fakePhotoUrl }
+      )
+    );
+    expect(conFoto).toMatchSnapshot('inventario-con-foto');
+
+    const sinFoto = renderInformeWebHtml(
+      buildInformeRenderModel(
+        fakeReport({
+          canonicalJson: goldenWithInventory([
+            { row_id: 'r-1', cells: { tipo: 'Servidor', anio: 2015 }, attachments: [] }
+          ])
+        }),
+        { photoUrl: fakePhotoUrl }
+      )
+    );
+    expect(sinFoto).toMatchSnapshot('inventario-sin-foto');
+  });
+
+  it('no-fuga: inventario sin material interno (R5, R15)', () => {
+    const canonicalJson = goldenWithInventory([
+      { row_id: 'r-1', cells: { tipo: 'Notebook', anio: 2018 }, attachments: [A1_PHOTO_KEY] }
+    ]);
+    const report = fakeReport({ canonicalJson, loomUrl: null });
+    const out = renderInformeWebHtml(
+      buildInformeRenderModel(report, { photoUrl: fakePhotoUrl })
+    );
+    for (const finding of golden.upsell_findings) {
+      expect(out).not.toContain(finding.text);
+    }
+    expect(out).not.toContain('upsell');
+    expect(out).not.toContain('internal');
+  });
 });

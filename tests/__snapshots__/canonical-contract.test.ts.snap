@@ -31,7 +31,7 @@ exports[`canonical contract > canonical JSON matches snapshot 1`] = `
   "quick_wins": [
     "Activar MFA en correo",
   ],
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "sections": [
     {
       "code": "A1",
@@ -61,6 +61,7 @@ exports[`canonical contract > canonical JSON matches snapshot 1`] = `
           "label": "Tabla de equipos relevados",
           "na": false,
           "observations": null,
+          "rows": [],
           "value": null,
         },
         {

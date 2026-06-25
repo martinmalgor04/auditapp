@@ -65,6 +65,16 @@ export type InformeRenderModel = {
     standardRef: string | null;
   }>;
   draft: RenderClientDraft;
+  // #45 (R6) — inventario IT derivado del canónico (vía stripInternalFindings).
+  // Vacío en ERP puro o cuando no hay equipos relevados en secciones IT.
+  inventarioIt: Array<{
+    tipo: string;
+    modeloCategoria: string;
+    antiguedad: string;
+    estadoEol: string;
+    semaforo: RenderSemaphore | null;
+    fotos: Array<{ url: string; alt: string }>;
+  }>;
   loomUrl: string | null;
   visita?: { inicio: string; fin: string; duracionMin: number };
 };

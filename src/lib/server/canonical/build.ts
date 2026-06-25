@@ -34,6 +34,44 @@ function formatIsoWithOffset(date: Date): string {
   return `${y}-${mo}-${d}T${h}:${mi}:${s}${sign}${oh}:${om}`;
 }
 
+/**
+ * #45 (R1, R2, R4) — deriva las filas canónicas de inventario de un ítem
+ * field_type='table'. Lee `value.rows` (forma del form técnico:
+ * `[{ row_id, cells, attachment_ids }]`), resuelve cada UUID de
+ * `attachment_ids` a su r2_key vía `photoKeyById` (solo fotos) y omite los UUID
+ * huérfanos (R2). Si no hay filas relevadas, devuelve `[]` (R4).
+ */
+export function buildItemRows(
+  value: unknown,
+  photoKeyById: Map<string, string>
+): CanonicalItem['rows'] {
+  const rawRows =
+    value && typeof value === 'object' && Array.isArray((value as { rows?: unknown }).rows)
+      ? ((value as { rows: unknown[] }).rows ?? [])
+      : [];
+
+  return rawRows.map((raw, idx) => {
+    const row = (raw ?? {}) as {
+      row_id?: unknown;
+      cells?: unknown;
+      attachment_ids?: unknown;
+    };
+    const rowId = typeof row.row_id === 'string' && row.row_id.length > 0 ? row.row_id : `row-${idx}`;
+    const cells =
+      row.cells && typeof row.cells === 'object' && !Array.isArray(row.cells)
+        ? (row.cells as Record<string, unknown>)
+        : {};
+    const attachmentIds = Array.isArray(row.attachment_ids) ? row.attachment_ids : [];
+    const attachments: string[] = [];
+    for (const id of attachmentIds) {
+      if (typeof id !== 'string') continue;
+      const key = photoKeyById.get(id);
+      if (key) attachments.push(key);
+    }
+    return { row_id: rowId, cells, attachments };
+  });
+}
+
 function breakdownToMap(breakdown: unknown): Map<string, number> {
   const map = new Map<string, number>();
   if (!Array.isArray(breakdown)) return map;
@@ -172,8 +210,8 @@ export async function buildCanonicalAuditJson(
 
   const scoreBySection = new Map(scoreRows.map((s) => [s.section_id, s]));
 
-  const attachmentRows = await sql<{ item_id: string; r2_key: string }[]>`
-    SELECT item_id, r2_key
+  const attachmentRows = await sql<{ id: string; item_id: string; r2_key: string; kind: string }[]>`
+    SELECT id, item_id, r2_key, kind
     FROM attachment
     WHERE audit_id = ${auditId}
       AND item_id IS NOT NULL
@@ -181,10 +219,16 @@ export async function buildCanonicalAuditJson(
   `;
 
   const attachmentsByItem = new Map<string, string[]>();
+  // #45 (R2) — mapa UUID de attachment → r2_key, solo fotos. Permite resolver
+  // las fotos por fila (value.rows[].attachment_ids) a sus claves R2.
+  const photoKeyById = new Map<string, string>();
   for (const row of attachmentRows) {
     const list = attachmentsByItem.get(row.item_id) ?? [];
     list.push(row.r2_key);
     attachmentsByItem.set(row.item_id, list);
+    if (row.kind === 'photo') {
+      photoKeyById.set(row.id, row.r2_key);
+    }
   }
 
   const [modulosRow] = await sql<{ value: unknown }[]>`
@@ -235,6 +279,10 @@ export async function buildCanonicalAuditJson(
         observations: response?.observations ?? null,
         attachments: attachmentsByItem.get(item.id) ?? []
       };
+
+      if (item.field_type === 'table') {
+        canonicalItem.rows = buildItemRows(canonicalItem.value, photoKeyById);
+      }
 
       if (item.scores && !canonicalItem.na) {
         const contribution = breakdownMap.get(item.id);

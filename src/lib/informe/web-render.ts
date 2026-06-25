@@ -165,9 +165,30 @@ const STYLE = `
 .informe-web .contact a { color:var(--sys-celeste); text-decoration:none; }
 .informe-web .contact a:hover { text-decoration:underline; }
 .informe-web footer { border-top:1px solid rgba(255,255,255,0.07); padding:28px 0 36px; text-align:center; font-size:12px; color:rgba(255,255,255,0.3); letter-spacing:0.3px; }
+.informe-web .equip-table-wrap { margin-top:44px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.informe-web .equip-table { width:100%; border-collapse:collapse; font-size:14px; }
+.informe-web .equip-table th { text-align:left; font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--sys-celeste); padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.12); }
+.informe-web .equip-table td { padding:12px 14px; color:rgba(255,255,255,0.82); border-bottom:1px solid rgba(255,255,255,0.06); vertical-align:top; }
+.informe-web .equip-table tbody tr:hover { background:rgba(255,255,255,0.03); }
+.informe-web .equip-eol { display:flex; align-items:center; gap:8px; }
+.informe-web .equip-dot { width:9px; height:9px; border-radius:50%; background:var(--sys-gris-neutro); flex-shrink:0; }
+.informe-web .equip-dot.r { background:var(--sys-rojo); }
+.informe-web .equip-dot.o { background:var(--sys-naranja); }
+.informe-web .equip-dot.g { background:var(--sys-verde); }
+.informe-web .equip-gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:16px; margin-top:32px; }
+.informe-web .equip-fig { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:3px; overflow:hidden; }
+.informe-web .equip-fig img { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; }
+.informe-web .equip-ph { width:100%; aspect-ratio:4/3; display:grid; place-items:center; font-size:12px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,0.35); background:repeating-linear-gradient(45deg,rgba(255,255,255,0.02),rgba(255,255,255,0.02) 8px,rgba(255,255,255,0.04) 8px,rgba(255,255,255,0.04) 16px); }
+.informe-web .equip-cap { font-size:12px; color:rgba(255,255,255,0.6); padding:10px 12px; line-height:1.4; }
+@media print {
+  .informe-web .equip-table-wrap { overflow:visible; }
+  .informe-web .equip-gallery { grid-template-columns:repeat(3,1fr); }
+  .informe-web .equip-fig, .informe-web .equip-table tbody tr { break-inside:avoid; }
+}
 @media (max-width:720px){
   .informe-web section { padding:68px 0; }
   .informe-web .risks, .informe-web .fix-grid, .informe-web .twocol { grid-template-columns:1fr; }
+  .informe-web .equip-gallery { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); }
   .informe-web .tl-h { grid-template-columns:1fr !important; }
   .informe-web .tl-h::before { top:0; bottom:0; left:9px; right:auto; width:2px; height:auto; }
   .informe-web .tl-step { text-align:left; padding:0 0 28px 38px; position:relative; }
@@ -337,6 +358,85 @@ function renderHallazgos(model: InformeRenderModel): string {
 </section>`;
 }
 
+/**
+ * #45 (R8, R9, R10, R11) — sección "Inventario de equipos" para IT/mixta.
+ * Devuelve '' en ERP puro o sin equipos (R9). Renderiza tabla `equip-table`
+ * (tipo, modelo/categoría, antigüedad, EOL con semáforo) + galería de fotos por
+ * equipo (`equip-gallery`/`equip-fig`/`equip-cap`); placeholder `equip-ph`
+ * cuando un equipo no tiene fotos resolubles (R11).
+ */
+function renderInventario(model: InformeRenderModel): string {
+  if (model.tipoAuditoria === 'erp') return '';
+  if (model.inventarioIt.length === 0) return '';
+
+  const rows = model.inventarioIt
+    .map((eq) => {
+      const semClass = eq.semaforo ? semaphoreToRowClass(eq.semaforo) : '';
+      const dot = `<span class="equip-dot ${semClass}" aria-hidden="true"></span>`;
+      const eol = eq.estadoEol ? `${dot}${e(eq.estadoEol)}` : `${dot}<span class="muted">s/d</span>`;
+      return `
+      <tr>
+        <td>${e(eq.tipo || '—')}</td>
+        <td>${e(eq.modeloCategoria || '—')}</td>
+        <td>${e(eq.antiguedad || '—')}</td>
+        <td class="equip-eol">${eol}</td>
+      </tr>`;
+    })
+    .join('\n');
+
+  const figs = model.inventarioIt
+    .map((eq) => {
+      const cap = [eq.tipo, eq.modeloCategoria].filter(Boolean).join(' · ') || 'Equipo relevado';
+      const fotosValidas = eq.fotos.filter((f) => f.url);
+      if (fotosValidas.length === 0) {
+        return `
+      <figure class="equip-fig">
+        <div class="equip-ph" aria-hidden="true">Sin foto</div>
+        <figcaption class="equip-cap">${e(cap)}</figcaption>
+      </figure>`;
+      }
+      return fotosValidas
+        .map(
+          (f) => `
+      <figure class="equip-fig">
+        <img src="${e(f.url)}" alt="${e(f.alt)}" loading="lazy">
+        <figcaption class="equip-cap">${e(cap)}</figcaption>
+      </figure>`
+        )
+        .join('\n');
+    })
+    .join('\n');
+
+  return `
+<section class="wrap equip">
+  <div class="reveal">
+    <div class="eyebrow">Inventario de equipos</div>
+    <h2>Qué hay instalado hoy</h2>
+    <p class="muted">Relevamiento de equipos con su estado de fin de vida (EOL) según los ciclos de vida de cada fabricante.</p>
+  </div>
+  <div class="equip-table-wrap reveal">
+    <table class="equip-table">
+      <thead>
+        <tr><th>Tipo</th><th>Modelo / categoría</th><th>Antigüedad / año</th><th>Estado EOL</th></tr>
+      </thead>
+      <tbody>${rows}
+      </tbody>
+    </table>
+  </div>
+  <div class="equip-gallery reveal">${figs}
+  </div>
+</section>`;
+}
+
+/**
+ * Slot de inserción de inventario tras hallazgos: '' cuando no aplica (R9/R14, no
+ * altera el HTML ERP) o el HTML de la sección precedido de salto de línea.
+ */
+function renderInventarioSlot(model: InformeRenderModel): string {
+  // renderInventario ya emite su propio salto de línea inicial; '' cuando no aplica.
+  return renderInventario(model);
+}
+
 function renderRiesgos(model: InformeRenderModel): string {
   const d = model.draft;
   const cards = d.riesgos.items
@@ -473,7 +573,7 @@ export function renderInformeWebHtml(model: InformeRenderModel): string {
 ${renderHero(model)}
 ${renderLoom(model)}
 ${renderResumen(model)}
-${renderHallazgos(model)}
+${renderHallazgos(model)}${renderInventarioSlot(model)}
 ${renderRiesgos(model)}
 ${renderDiaADia(model)}
 ${renderPlan(model)}

@@ -7,9 +7,9 @@ import {
 } from './constants';
 import type { ScorePoints } from './types';
 
-const EOL_KEYS = ['estado_eol', 'soporte', 'eol_status'] as const;
-const TYPE_KEYS = ['tipo', 'categoria', 'type'] as const;
-const AGE_KEYS = ['antiguedad', 'fecha_compra', 'anio', 'year'] as const;
+export const EOL_KEYS = ['estado_eol', 'soporte', 'eol_status'] as const;
+export const TYPE_KEYS = ['tipo', 'categoria', 'type'] as const;
+export const AGE_KEYS = ['antiguedad', 'fecha_compra', 'anio', 'year'] as const;
 
 function normalizeRows(value: unknown): Array<Record<string, unknown>> {
   if (Array.isArray(value)) {
