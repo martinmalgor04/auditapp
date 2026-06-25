@@ -36,16 +36,25 @@ function startStaticServer(port: number): Server {
   }).listen(port);
 }
 
-describe('pwa production assets', () => {
+// El build de producción puede no existir en CI/local sin `pnpm run build`.
+// En ese caso saltamos la suite en vez de fallar con `previewBase` vacío.
+const hasProdBuild = existsSync(resolve(clientDir, 'manifest.webmanifest'));
+const describeIfBuild = hasProdBuild ? describe : describe.skip;
+
+describeIfBuild('pwa production assets', () => {
   let server: Server | undefined;
-  let previewPort = 0;
   let previewBase = '';
 
-  beforeAll(async () => {
+  // Arranque perezoso e idempotente del server estático. No dependemos del
+  // orden de ejecución de `beforeAll` bajo `pool: forks`: cada test garantiza
+  // que el preview esté levantado antes de hacer fetch.
+  async function ensureServer(): Promise<string> {
+    if (previewBase) {
+      return previewBase;
+    }
     if (!existsSync(resolve(clientDir, 'manifest.webmanifest'))) {
       execSync('pnpm run build', { cwd: root, stdio: 'pipe' });
     }
-
     await new Promise<void>((resolveWait, reject) => {
       server = startStaticServer(0);
       server.once('listening', () => {
@@ -54,12 +63,16 @@ describe('pwa production assets', () => {
           reject(new Error('Could not bind static server'));
           return;
         }
-        previewPort = address.port;
-        previewBase = `http://127.0.0.1:${previewPort}`;
+        previewBase = `http://127.0.0.1:${address.port}`;
         resolveWait();
       });
       server.once('error', reject);
     });
+    return previewBase;
+  }
+
+  beforeAll(async () => {
+    await ensureServer();
   }, 120_000);
 
   afterAll(async () => {
@@ -69,7 +82,8 @@ describe('pwa production assets', () => {
   });
 
   it('serves manifest with 200 from production container', async () => {
-    const response = await fetch(`${previewBase}/manifest.webmanifest`);
+    const base = await ensureServer();
+    const response = await fetch(`${base}/manifest.webmanifest`);
     expect(response.status).toBe(200);
     const contentTypeHeader = response.headers.get('content-type') ?? '';
     expect(contentTypeHeader).toMatch(/manifest|json/i);
@@ -79,15 +93,17 @@ describe('pwa production assets', () => {
   });
 
   it('serves service worker', async () => {
-    const response = await fetch(`${previewBase}/sw.js`);
+    const base = await ensureServer();
+    const response = await fetch(`${base}/sw.js`);
     expect(response.status).toBe(200);
     const body = await response.text();
     expect(body).toContain('install');
   });
 
   it('serves pwa icons from static', async () => {
+    const base = await ensureServer();
     for (const iconPath of ['/icons/icon-192.png', '/icons/icon-512.png']) {
-      const response = await fetch(`${previewBase}${iconPath}`);
+      const response = await fetch(`${base}${iconPath}`);
       expect(response.status).toBe(200);
     }
 

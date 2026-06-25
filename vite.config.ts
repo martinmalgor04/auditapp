@@ -13,6 +13,10 @@ export default defineConfig({
       forks: { singleFork: true }
     },
     sequence: { concurrent: false, hooks: 'list' },
+    // Con `singleFork` los stubs de globals (p. ej. `vi.stubGlobal('fetch')`)
+    // persisten entre archivos. Restaurarlos automáticamente evita fugas como
+    // un `fetch` mockeado filtrándose a tests posteriores (pwa-prod).
+    unstubGlobals: true,
     globalSetup: ['tests/global-setup.ts'],
     // globalTeardown no está tipado en InlineConfig de esta versión de vitest
     ...({ globalTeardown: ['tests/global-teardown.ts'] } as object),

@@ -117,3 +117,12 @@
 - **Resultado:** Rediseño visual integral: tokens CSS/Tailwind (#42), layout shell (HeaderMobile, Sidebar, BottomNav, ProgressBar), tablero cards/tabla + chips, form (FormHeader, SectionChips, QuestionCard, FormNextButton), mercado (StatCard, ErpDistribution, SectionScoreBar, ChipFilters). 32/32 tasks `[x]`. 128 tests UI + e2e specs. Fixes post-review: `brand-shell`, `brand-typography`, aislamiento DB (`setup.ts`, `empresa-estado`, `audit-create-flow`, `clients-cuit-cleanup`). `./init.sh` verde (1231 tests).
 - **Veredicto:** APPROVED (`progress/review_42_rediseno_ui.md`, re-review eb89bf48)
 - **Próximo paso:** `/leader` → siguiente feature pendiente (#12 `12_reunion_asistente` en `spec_ready`, pausada)
+
+## 2026-06-25 — 12_reunion_asistente (#12) done
+
+- **Agente:** implementer (corrección post-review) → reviewer (APPROVED)
+- **Resultado:** Asistente de reunión: grabación/subida de audio (webm/m4a/mp3) vinculado a auditoría editable, almacenamiento R2 (`attachment kind=recording`), transcripción asíncrona con estado visible, extracción IA de propuestas por `item_id` (valor tipado + cita + confidence), UI de revisión humana (aceptar/rechazar/editar) sin auto-aplicar, upsert de `audit_response` con `source=reunion_ia`, consentimiento documentado. T1–T44 en `[x]`.
+- **Corrección post-review:** dos bloqueantes del reviewer resueltos sin ampliar alcance: (1) `init.sh` en rojo por 3 tests de `tests/pwa-prod.test.ts` por fuga de `vi.stubGlobal('fetch', ...)` desde `tests/form-autosave.test.ts` bajo `pool: forks` + `singleFork: true` → fix `unstubGlobals: true` en `vite.config.ts`, y `pwa-prod` levanta server estático perezoso e idempotente y se salta sin build de producción; (2) `feature_list.json` actualizado de `spec_ready` (nota "Pausado") a `done`.
+- **Verificación:** `pnpm run check` 0 errores (warnings pre-existentes de Svelte); `pnpm run build` OK (adapter-node); `pnpm test` 230 archivos, 1265 pass / 2 skip / 0 fail; `./init.sh` exit 0 "Entorno listo".
+- **Veredicto:** APPROVED (`progress/review_12_reunion_asistente.md`)
+- **Próximo paso:** `/leader` → siguiente feature del backlog

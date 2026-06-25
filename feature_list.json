@@ -231,8 +231,8 @@
         "Tests de flujo feliz, permisos y validación Zod de propuestas pasan"
       ],
       "sdd": true,
-      "status": "spec_ready",
-      "_status_note": "Pausado 2026-06-23: prioridad features #40/#41; retomar tras cierre offline snapshot."
+      "status": "done",
+      "_status_note": "Implementada y verificada 2026-06-25: pipeline reunión IA + revisión humana; init.sh en verde."
     },
     {
       "id": 13,
