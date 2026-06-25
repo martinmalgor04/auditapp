@@ -812,6 +812,58 @@
       ],
       "sdd": true,
       "status": "done"
+    },
+    {
+      "id": 45,
+      "name": "45_inventario_it_informe",
+      "title": "Inventario IT con tabla y galería de fotos en el informe",
+      "description": "Renderizar en el informe IT (puro y mixto) el inventario de equipos relevado en el form técnico (ítems field_type=table, p.ej. 'punto 1' de la auditoría IT) con (1) tabla de equipos —tipo, modelo/categoría, antigüedad/año, estado de fin de vida (EOL) con semáforo del scoring inventory-eol— y (2) galería de fotos de cada equipo a partir de los attachment vinculados a cada fila (attachment_ids → R2, kind='photo'). Hoy estos datos y fotos existen en audit_response/value.rows y attachment pero NO se muestran en el render del informe (web-render.ts solo arma hallazgos/riesgos/plan). Alcance: extender InformeRenderModel y el JSON canónico (build.ts/schema.ts) para exponer las filas de inventario con sus columnas y URLs de fotos (presigned R2 o embebido), renderizar tabla equip-table responsive + grilla equip-gallery con miniaturas (estilo del gold standard 2026-informe-grupo_agros), respetando branding SyS, reveal-on-scroll y print A4. Solo material cliente: nunca interno. No altera el motor de scoring.",
+      "source": "Solicitud operativa SyS (2026-06-24, Martín): los informes IT deben incluir el inventario de objetos del 'punto 1' con las imágenes. Base: #14 (informe IA), #15 (entrega), #19 (template IT), field-table.svelte + scoring/inventory-eol.ts + storage/attachments.ts. Referencia visual: ~/Downloads/2026-informe-grupo_agros_formosa-auditoria-erp-it.html (equip-table + equip-gallery).",
+      "acceptance": [
+        "El JSON canónico (schema.ts/build.ts) expone, para ítems field_type=table de inventario, las filas con sus celdas y los attachments de cada fila (claves R2 de las fotos), sin romper el schema_version existente (test de contrato)",
+        "InformeRenderModel incluye el inventario IT (tabla + fotos) derivado del canónico vía stripInternalFindings; jamás material interno",
+        "El render del informe IT/mixto muestra una sección de inventario con tabla de equipos (tipo, modelo/categoría, antigüedad/año y estado EOL con semáforo del scoring inventory-eol) y una galería de fotos por equipo; los informes ERP puros no la muestran",
+        "Las fotos se sirven con URL válida (presigned R2 o data-uri embebido) y degradan a placeholder si falta el attachment; la galería es responsive y apta print A4",
+        "Branding SyS (tokens --sys-*), reveal-on-scroll y CSS print coherentes con el resto del informe",
+        "Los snapshots de render ERP existentes no cambian; nuevos snapshots de inventario IT (con y sin fotos) pasan; test de que no se filtra material interno"
+      ],
+      "sdd": true,
+      "status": "spec_ready"
+    },
+    {
+      "id": 46,
+      "name": "46_paridad_informe_gold",
+      "title": "Paridad del informe generado con el formato a mano (gold standard)",
+      "description": "Elevar el render automático del informe (web-render.ts) al nivel del informe que SyS arma a mano (referencia: 2026-informe-grupo_agros_formosa), cerrando las brechas no cubiertas por #45: (1) tabla de control de usuarios y seguridad dentro de Hallazgos (estilo equip-table: control, estado, observaciones) cuando la auditoría tiene esa sección; (2) sección Próximos pasos con pasos numerados + bloque 'qué necesitamos del cliente' / 'qué no incluye esta etapa' (excl-grid), reemplazando/enriqueciendo el twocol actual; (3) timeline del plan en versión vertical con semanas (además de la horizontal) según cantidad de etapas; (4) @media print A4 robusto: saltos de página por sección, gauge fijo, tema claro impreso y barras/scores estáticos para PDF fiel. Todo parametrizado desde el client_draft/canónico, branded SyS, sin material interno. La sección 06 'Propuesta de abono' queda EXCLUIDA: es una spec aparte futura.",
+      "source": "Solicitud operativa SyS (2026-06-24, Martín): que la app genere informes iguales o mejores que los hechos a mano. Gap analysis leader vs ~/Downloads/2026-informe-grupo_agros_formosa-auditoria-erp-it.html. Base: web-render.ts, template_informe_web_v2.html, #14/#15/#19. Abono = spec separada (no incluida).",
+      "acceptance": [
+        "Cuando la auditoría tiene relevamiento de seguridad/control de usuarios, el informe renderiza una tabla control/estado/observaciones branded SyS; si no, la sección se omite sin huecos",
+        "La sección Próximos pasos muestra pasos numerados y un bloque 'qué necesitamos / qué no incluye' (excl-grid) poblado desde el client_draft",
+        "El timeline del plan se renderiza vertical con semanas cuando corresponde, sin romper el caso horizontal existente",
+        "@media print A4: cada sección principal respeta saltos de página, el gauge y las barras quedan en su valor final y el tema impreso es legible (test/snapshot de print)",
+        "Todo el contenido nuevo sale del canónico/client_draft (parametrizado), branded con tokens --sys-*, sin exponer material interno (test explícito)",
+        "Snapshots ERP/IT existentes no cambian salvo lo intencional; nuevos snapshots de tabla seguridad, próximos pasos, timeline vertical y print pasan"
+      ],
+      "sdd": true,
+      "status": "spec_ready"
+    },
+    {
+      "id": 47,
+      "name": "47_encuesta_conformidad",
+      "title": "Encuesta de conformidad embebida en el informe",
+      "description": "Agregar una encuesta de conformidad/satisfacción propia (in-app, no externa) embebida al final del informe público que ve el cliente en /informe/[token] (feature #15). El cliente, tras leer el informe aprobado, responde una breve encuesta de conformidad sin salir de la página. Alcance: (1) modelo de datos propio (tabla survey_response o similar) vinculado al informe/auditoría, con una o pocas preguntas: valoración global (escala, p.ej. 1-5 o NPS-like), claridad del informe, conformidad con los hallazgos, y un campo de comentario libre opcional; definir el set exacto de preguntas en la spec; (2) bloque de encuesta branded SyS al final del render cliente de #15, no intrusivo, que respeta el patrón de token público de solo lectura; (3) persistencia con validación Zod, una respuesta por informe/token (idempotente, editable hasta cierto punto o de única vez — decidir en spec), con registro de cuándo se respondió; (4) confirmación amable al enviar ('gracias por tu respuesta'); (5) vista de resultados en el backoffice: la respuesta visible en el detalle de la auditoría/informe (quién la generó es el cliente vía token), y agregable a futuro al estudio de mercado #18. NO debe exponer material interno (upsell, recomendaciones). Reusa el patrón de token firmado y registro de vistas de #15, y los tokens de branding SyS (#11). Migración SQL idempotente. No toca el motor de scoring ni la generación del informe #14.",
+      "source": "Solicitud operativa SyS (2026-06-24, Martín): incluir debajo de los informes de auditoría una encuesta de conformidad, embebida en el mismo informe. Decisiones de puerta: encuesta embebida en el informe (no link aparte) y propia en auditapp (no Google Forms/Typeform). Base: feature #15 (entrega del informe, ruta pública /informe/[token]), branding #11, estudio de mercado #18. REORDEN 2026-06-24: movida después de #45 y #46 (ambas reescriben el render del informe / web-render.ts); la encuesta embebida se implementa al final para no pisar snapshots ni render.",
+      "acceptance": [
+        "El render público /informe/[token] de un informe aprobado incluye al final un bloque de encuesta de conformidad branded SyS, no intrusivo, sin exponer material interno (upsell/recomendaciones)",
+        "Migración SQL idempotente crea la tabla de respuestas de encuesta vinculada al informe/auditoría",
+        "El cliente responde la encuesta (valoración global, claridad, conformidad con hallazgos y comentario libre opcional; set final definido en spec) validada con Zod, vía el token público sin auth",
+        "Una respuesta por informe/token con comportamiento idempotente definido (única vez o editable acotado); se registra la fecha de respuesta",
+        "Al enviar, el cliente ve una confirmación amable; token inválido o informe no aprobado degradan a la pantalla amable existente de #15",
+        "La respuesta de la encuesta es visible en el backoffice en el detalle de la auditoría/informe (solo SyS); el render público nunca muestra material interno (test explícito)",
+        "Tests: validación Zod, persistencia idempotente, guard de token público, que el bloque no filtra material interno, y e2e del flujo ver informe → responder → confirmación"
+      ],
+      "sdd": true,
+      "status": "spec_ready"
     }
   ]
 }
