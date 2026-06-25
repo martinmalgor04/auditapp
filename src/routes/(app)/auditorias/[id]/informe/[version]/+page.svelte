@@ -6,6 +6,7 @@
   import InlineEditor from '$lib/components/informe/inline-editor.svelte';
   import SectionEditor from '$lib/components/informe/section-editor.svelte';
   import SharePanel from '$lib/components/informe/share-panel.svelte';
+  import SurveyResult from '$lib/components/informe/survey-result.svelte';
   import InternalView from '$lib/components/informe/internal-view.svelte';
   import { startReportPolling } from '$lib/client/informe/polling';
   import type { RenderClientDraft } from '$lib/informe/render';
@@ -175,6 +176,9 @@
 
     {#if status === 'aprobado'}
       <SharePanel auditId={data.auditId} version={data.version} shares={data.shares} />
+      {#if data.isAdmin}
+        <SurveyResult encuesta={data.encuesta} />
+      {/if}
       {#if data.isAdmin}
         <div class="sys-card-pad flex flex-wrap items-center gap-3">
           <span class="text-sm text-sys-medio">

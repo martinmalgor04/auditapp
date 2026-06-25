@@ -205,7 +205,29 @@ No se introducen errores nuevos. La resolución de adjuntos huérfanos es
   y versionado de templates; la heurística columnas+dominio IT es suficiente y no
   toca el motor de scoring (decisión (b)).
 
-## 7. Open questions para la puerta humana
+## 8. Decisiones de la puerta humana (2026-06-25, Martín)
+
+Open questions resueltas. Las de abajo quedan como registro histórico.
+
+- **OQ-1 → URL pública del custom domain R2 (NO presigned).** Corregido tras ver el
+  informe real (`informes/2026-informe-grupo_agros_formosa-auditoria-erp-it.html`):
+  las fotos se sirven con la URL pública del dominio R2 (`R2_PUBLIC_BASE_URL`), sin
+  firma ni vencimiento. **Reusar el resolvedor existente** `presignGet`/
+  `buildPublicObjectUrl` (`src/lib/server/storage/presign.ts:23,67`), que ya devuelve
+  esa URL pública cuando el custom domain está configurado. No se genera presigned ni
+  se fija TTL al render. (Si `R2_PUBLIC_BASE_URL` no está seteado, `presignGet` cae a
+  firma S3 — aceptable como fallback.)
+- **OQ-2 → Detección por presencia de fotos (no automapeo por columnas).** El
+  inventario es la **única parte del form donde se suben fotos**: ahí se declara cada
+  foto con su equipo. El ítem de inventario se identifica por ser la tabla con
+  attachments (kind='photo') en sus filas, no por match de columnas. **Martín envía un
+  modelo** con la estructura/columnas exactas (equipo + foto); la implementación se
+  ajusta a ese modelo cuando llegue (dependencia de entrada — bloquea la tarea de
+  mapeo de columnas).
+- **OQ-3 → La sección de inventario va ANTES del Plan** (no inmediatamente tras
+  Hallazgos). Ajustar el orden de render en `web-render.ts`.
+
+## 7. Open questions para la puerta humana (resueltas — ver §8)
 
 - **OQ-1 (a · TTL presigned):** ¿qué TTL para las presigned GET de fotos en el
   informe web público y en el flujo de impresión? Si el informe se comparte por

@@ -863,7 +863,7 @@
         "Tests: validación Zod, persistencia idempotente, guard de token público, que el bloque no filtra material interno, y e2e del flujo ver informe → responder → confirmación"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     }
   ]
 }

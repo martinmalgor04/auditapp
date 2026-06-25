@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
   import ReportWebRender from '$lib/components/informe/report-web-render.svelte';
+  import SurveyBlock from '$lib/components/informe/survey-block.svelte';
   import { initInformeWebEffects } from '$lib/client/informe/web-effects';
 
   let { data }: { data: PageData } = $props();
@@ -14,6 +15,9 @@
 </svelte:head>
 
 <ReportWebRender model={data.model} />
+
+<!-- Encuesta de conformidad embebida al pie del informe (#47). -->
+<SurveyBlock survey={data.encuesta} token={data.token} />
 
 <!-- Acción de descarga (R13): vista print A4 con window.print(). -->
 <a

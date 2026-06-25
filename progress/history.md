@@ -141,3 +141,12 @@
 - **Verificación:** `pnpm run check` 0 errores; `pnpm run build` OK; `pnpm test` 1285 pass / 2 skip; `./init.sh` verde. Snapshots ERP existentes sin cambios; nuevos snapshots de inventario IT (con y sin fotos) pasan; test de no-filtración de material interno verde.
 - **Veredicto:** APPROVED. Trazabilidad en `progress/impl_45_inventario_it_informe.md`.
 - **Próximo paso:** `/leader` → siguiente feature del backlog.
+
+## 2026-06-25 — 47_encuesta_conformidad (#47) done
+
+- **Agente:** implementer → reviewer (APPROVED)
+- **Resultado:** Encuesta de conformidad propia embebida al final del informe público `/informe/[token]` (#15). Migración idempotente `025_encuesta_conformidad.sql` (tabla `survey_response` + índice único). Dominio: `src/lib/server/db/survey-responses.ts` y `src/lib/server/informe/survey.ts` (Zod + `submitSurveyResponse`). Set fijo: `valoracion_global` 1–5, `claridad_informe` 1–5, `conforme_hallazgos` Sí/No, `comentario` opcional. Una respuesta por share (token), inmutable; reenvío → `already_answered` (409). La respuesta cuelga de `share_id`, congelando «respondés lo que viste». Bloque público `survey-block.svelte` branded SyS, no intrusivo, que nunca expone material interno (load solo entrega `SurveyState`). Resultado visible solo para admin en «Entrega al cliente» (`survey-result.svelte`). T1–T14 en `[x]`.
+- **Corrección post-review:** BUG de integridad en `survey.ts` — `conforme_hallazgos` usaba `z.coerce.boolean()` que coacciona el string `'false'` (radio «No») a `true`. Reemplazado por parser explícito de literal `z.union([z.boolean(), z.enum(['true','false'])]).transform(...)`. Cobertura agregada en `tests/encuesta-schema.test.ts` y `tests/api/encuesta-public.test.ts`.
+- **Verificación:** `pnpm run check` 0 errores (44 warnings preexistentes ajenos); `pnpm test` 235 archivos, 1306 pass / 2 skip; e2e `e2e/encuesta-conformidad.spec.ts` creado.
+- **Veredicto:** APPROVED.
+- **Próximo paso:** `/leader` → siguiente feature del backlog.

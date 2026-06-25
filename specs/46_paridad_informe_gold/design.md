@@ -208,7 +208,22 @@ const TL_HORIZONTAL_MAX = 4;                                        // R9/R10
 
 ---
 
-## Open Questions para la puerta humana (Martín)
+## Decisiones de la puerta humana (2026-06-25, Martín)
+
+Open questions resueltas. Las de abajo quedan como registro histórico.
+
+- **OQ-1 → "Próximos pasos" SIN número** en el eyebrow (no se reserva el 06 del abono futuro).
+- **OQ-2 → `TL_HORIZONTAL_MAX = 4`.** Hasta 4 etapas horizontal; 5+ vertical.
+- **OQ-3 → Identificación por título/dominio** (no hay code fijo). Detectar la sección
+  de seguridad/control de usuarios por `title` (contiene "seguridad"/"usuarios") o
+  `domain`; documentar el criterio exacto en implementación.
+- **OQ-4 → Print A4 robusto en AMBOS:** vista web pública (`web-render.ts`) y render A4
+  imprimible del editor (`render-*.ts`). Portar `@media print` + `@page` a los dos.
+- **OQ-5 → `estado` = ENUM con color.** Estado normalizado (OK / Parcial / Faltante) con
+  semáforo SyS (verde/naranja/rojo, tokens `--sys-*`), no texto libre. Definir el origen
+  del enum en `draft.seguridad`.
+
+## Open Questions para la puerta humana (resueltas — ver arriba)
 
 - **OQ-1 (numeración de secciones):** la sección 06 "Propuesta de abono" está excluida.
   ¿"Próximos pasos" se rotula como sección 06 (y el abono futuro pasa a 07), o se rotula

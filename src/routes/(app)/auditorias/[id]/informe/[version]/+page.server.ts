@@ -7,6 +7,8 @@ import { getAuditForReport } from '$lib/server/informe/access';
 import { listAuditAssignments } from '$lib/server/db/audit-assignment';
 import { buildInformeRenderModel } from '$lib/server/informe/model';
 import { buildShareView, type ShareView } from '$lib/server/informe/share';
+import { getSurveyByActiveShare } from '$lib/server/db/survey-responses';
+import { toSurveyState, type SurveyState } from '$lib/server/informe/survey';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
   const user = requireUser(locals);
@@ -42,13 +44,19 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
   // Entrega al cliente (#15, R8): share actual + historial, solo informe aprobado.
   let shares: ShareView[] = [];
+  // Encuesta de conformidad (#47, R9): solo admin la ve, sobre informe aprobado.
+  let encuesta: SurveyState | null = null;
   if (report.status === 'aprobado') {
     shares = (await listSharesByReport(report.id)).map((s) => buildShareView(s));
+    if (isAdmin) {
+      encuesta = toSurveyState(await getSurveyByActiveShare(report.id));
+    }
   }
 
   return {
     auditId: audit.id,
     shares,
+    encuesta,
     version: report.version,
     status: report.status,
     errorMessage: report.errorMessage,

@@ -203,14 +203,16 @@ export async function submitSurveyResponse(input: {
 | Renderizar el formulario dentro del HTML string del informe (`web-render.ts`) | Ese render es HTML estático sin interactividad; el form necesita estado/enhance Svelte. Se monta como componente hermano en `+page.svelte`, debajo del `{@html}` |
 | Bloque de encuesta en la vista `/imprimir` (A4) | La vista print es para PDF; una encuesta interactiva no tiene sentido impresa. El bloque va solo en la vista web (R1) |
 
-## Open questions (puerta humana)
+## Open questions (puerta humana) — RESUELTAS 2026-06-25 (Martín)
 
-1. **Set de preguntas (recomendado):** `valoracion_global` 1–5, `claridad_informe` 1–5,
-   `conforme_hallazgos` Sí/No, `comentario` libre opcional. ¿Confirmás este set y las escalas
-   1–5 (vs NPS 0–10)? ¿Querés agregar/quitar alguna pregunta (p. ej. «¿recomendarías a SyS?»)?
-2. **Idempotencia (recomendado):** **una respuesta por token, inmutable** tras enviar (sin
-   edición). ¿OK, o preferís editable hasta el vencimiento del link?
-3. **Comentario obligatorio cuando `conforme_hallazgos = No`:** propuesto **opcional siempre**
-   (no bloquear el envío). ¿Querés exigir comentario si el cliente marca «no conforme»?
-4. **Visibilidad de la respuesta:** propuesto **solo admin** en la pantalla de revisión del
-   informo. ¿Debe verla también el rol `tecnico` asignado a la auditoría?
+Decisiones de la puerta humana, ya cerradas. El implementer las toma como spec firme:
+
+1. **Set de preguntas — DECIDIDO:** `valoracion_global` 1–5, `claridad_informe` 1–5,
+   `conforme_hallazgos` Sí/No, `comentario` libre opcional. Escalas 1–5 (NO NPS). Sin
+   preguntas adicionales.
+2. **Idempotencia — DECIDIDO:** **una respuesta por token, INMUTABLE** tras enviar (sin
+   edición). Reenviar sobre un token ya respondido → estado `already_answered`, no error.
+3. **Comentario obligatorio si «no conforme» — DECIDIDO:** **opcional siempre**; el envío
+   nunca se bloquea por falta de comentario.
+4. **Visibilidad de la respuesta — DECIDIDO:** **solo admin** en la pantalla de revisión del
+   informe. El rol `tecnico` no la ve en esta iteración.
