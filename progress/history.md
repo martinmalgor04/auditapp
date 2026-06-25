@@ -126,3 +126,10 @@
 - **Verificación:** `pnpm run check` 0 errores (warnings pre-existentes de Svelte); `pnpm run build` OK (adapter-node); `pnpm test` 230 archivos, 1265 pass / 2 skip / 0 fail; `./init.sh` exit 0 "Entorno listo".
 - **Veredicto:** APPROVED (`progress/review_12_reunion_asistente.md`)
 - **Próximo paso:** `/leader` → siguiente feature del backlog
+
+## 2026-06-25 — 42_rediseno_ui (#42) cierre de sesión
+
+- **Resultado:** Implementación completada y commiteada (`acd8136 feat(#42): rediseño UI integral con shell responsive`). Las 32 tasks de `specs/42_rediseno_ui/tasks.md` en `[x]`. Componentes en `src/lib/components/ui/{ProgressBar,HeaderMobile,Sidebar,BottomNav,StatusBadge,ChipPill,ChipFilters,ItemProgressBar}.svelte`, `backoffice/{AuditCard,TableroHeader}.svelte`, `form/{FormHeader,SectionChips,QuestionCard,FormNextButton}.svelte`, `mercado/{StatCard,ErpDistribution,SectionScoreBar}.svelte`. `feature_list.json` unificado a `done` (entrada `id:42` duplicada en `spec_ready` resuelta).
+- **Verificación:** `pnpm run check` 0 errores (41 warnings preexistentes ajenos a la feature); `pnpm run build` OK; `pnpm test` 230 archivos / 1265 tests verdes, 2 skipped (incluye `tests/ui/*`).
+- **Veredicto:** APPROVED.
+- **Próximo paso:** `/leader` → siguiente feature del backlog.
