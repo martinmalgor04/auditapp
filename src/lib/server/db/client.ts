@@ -29,8 +29,10 @@ export function getSql(): postgres.Sql {
   }
   const bridged = getTestBridge();
   if (bridged) {
+    console.log('DBG getSql -> BRIDGED');
     return bridged;
   }
+  console.log('DBG getSql -> OWN sqlInstance (NO bridge!)');
   if (!sqlInstance) {
     sqlInstance = createSql(connectionString);
   }

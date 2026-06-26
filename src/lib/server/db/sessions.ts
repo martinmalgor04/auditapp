@@ -12,6 +12,8 @@ export async function insertSession(
   expiresAt: Date
 ): Promise<void> {
   const sql = getSql();
+  const [pid] = await sql`SELECT pg_backend_pid() AS pid`;
+  console.log('DBG insertSession pid=', (pid as any).pid, 'id=', id, 'user=', userId);
   await sql`
     INSERT INTO session (id, user_id, expires_at)
     VALUES (${id}, ${userId}, ${expiresAt})
@@ -40,5 +42,23 @@ export async function touchSessionExpiry(id: string, expiresAt: Date): Promise<v
     UPDATE session
     SET expires_at = ${expiresAt}
     WHERE id = ${id}
+  `;
+}
+
+/**
+ * Borra todas las sesiones del usuario excepto la indicada (R11): tras cambiar la
+ * contraseña, las demás sesiones quedan invalidadas y la actual sigue vigente.
+ */
+export async function deleteOtherSessions(
+  userId: string,
+  keepSessionId: string
+): Promise<void> {
+  const sql = getSql();
+  const [pid] = await sql`SELECT pg_backend_pid() AS pid`;
+  const all = await sql`SELECT id FROM session WHERE user_id = ${userId}`;
+  console.log('DBG deleteOtherSessions pid=', (pid as any).pid, 'userId=', userId, 'rows=', all.map((r:any)=>r.id));
+  await sql`
+    DELETE FROM session
+    WHERE user_id = ${userId} AND id <> ${keepSessionId}
   `;
 }
