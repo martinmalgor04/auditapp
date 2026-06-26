@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { renderInformeWebHtml } from '../src/lib/informe/web-render';
+import { renderInformeWebHtml, TL_HORIZONTAL_MAX } from '../src/lib/informe/web-render';
 import { buildInformeRenderModel } from '../src/lib/server/informe/model';
 import type { AuditReportRow } from '../src/lib/server/db/informe-reports';
 import { indexToSemaphore } from '../src/lib/server/scoring/semaphore';
@@ -292,5 +292,248 @@ describe('informe web render — inventario IT (#45)', () => {
     }
     expect(out).not.toContain('upsell');
     expect(out).not.toContain('internal');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// #46 — paridad informe gold: tabla de seguridad, próximos pasos + excl-grid,
+// timeline vertical, print A4. Cada test mapea a R<n> de
+// specs/46_paridad_informe_gold/requirements.md.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Golden recortado a una sección de seguridad con ítems control/estado/obs. */
+function goldenSoloSeguridad(): typeof golden {
+  const seg = golden.sections.find((s) => /seguridad|usuario/i.test(s.title));
+  if (!seg) throw new Error('fixture sin sección de seguridad');
+  return { ...golden, sections: [seg] } as typeof golden;
+}
+
+/** Golden sin ninguna sección cuyo título mencione seguridad/usuarios. */
+function goldenSinSeguridad(): typeof golden {
+  const sections = golden.sections.filter((s) => !/seguridad|usuario/i.test(s.title));
+  return { ...golden, sections } as typeof golden;
+}
+
+describe('informe web render — tabla de seguridad (#46 R1–R4)', () => {
+  it('renderiza tabla equip-table de seguridad cuando hay sección relevada (R1, R3)', () => {
+    const segSection = golden.sections.find((s) => /seguridad|usuario/i.test(s.title))!;
+    const out = renderInformeWebHtml(
+      buildInformeRenderModel(fakeReport({ canonicalJson: goldenSoloSeguridad() }))
+    );
+    expect(out).toContain('class="seguridad-block reveal"');
+    expect(out).toContain('equip-table equip-table--seguridad');
+    expect(out).toContain('<th>Control</th><th>Estado</th><th>Observaciones</th>');
+    expect(out).toContain(segSection.title);
+    // El control sale del label del primer ítem no-na de la sección canónica (R3).
+    const primerItem = segSection.items.find((i) => !i.na)!;
+    expect(out).toContain(primerItem.label);
+    // data-label para responsive (R1).
+    expect(out).toContain('data-label="Control"');
+    expect(out).toContain('data-label="Estado"');
+    expect(out).toContain('data-label="Observaciones"');
+  });
+
+  it('omite por completo la tabla cuando no hay sección de seguridad (R2)', () => {
+    const out = renderInformeWebHtml(
+      buildInformeRenderModel(fakeReport({ canonicalJson: goldenSinSeguridad() }))
+    );
+    // No debe existir el markup renderizado (las clases CSS sí viven en el STYLE).
+    expect(out).not.toContain('class="seguridad-block reveal"');
+    expect(out).not.toContain('equip-table equip-table--seguridad');
+    expect(out).not.toContain('<th>Control</th><th>Estado</th><th>Observaciones</th>');
+  });
+
+  it('escapa el texto dinámico de cada celda con escapeHtml (R4)', () => {
+    const malicious = goldenSoloSeguridad();
+    malicious.sections = malicious.sections.map((s) => ({
+      ...s,
+      items: s.items.map((i, idx) =>
+        idx === 0
+          ? { ...i, na: false, label: '<script>x</script>', observations: 'a & b <b>' }
+          : i
+      )
+    }));
+    const out = renderInformeWebHtml(
+      buildInformeRenderModel(fakeReport({ canonicalJson: malicious }))
+    );
+    expect(out).not.toContain('<script>x</script>');
+    expect(out).toContain('&lt;script&gt;x&lt;/script&gt;');
+    expect(out).toContain('a &amp; b &lt;b&gt;');
+  });
+
+  it('snapshots: tabla de seguridad presente y ausente (R1, R2)', () => {
+    const conSeg = renderInformeWebHtml(
+      buildInformeRenderModel(fakeReport({ canonicalJson: goldenSoloSeguridad() }))
+    );
+    expect(conSeg).toMatchSnapshot('seguridad-presente');
+    const sinSeg = renderInformeWebHtml(
+      buildInformeRenderModel(fakeReport({ canonicalJson: goldenSinSeguridad() }))
+    );
+    expect(sinSeg).toMatchSnapshot('seguridad-ausente');
+  });
+
+  it('la tabla de seguridad no expone material interno (R3, R18)', () => {
+    const report = fakeReport({ canonicalJson: goldenSoloSeguridad() });
+    const out = renderInformeWebHtml(buildInformeRenderModel(report));
+    for (const finding of golden.upsell_findings) {
+      expect(out).not.toContain(finding.text);
+    }
+    for (const rec of report.internalDraft!.recomendaciones_presupuesto) {
+      expect(out).not.toContain(rec.linea);
+      expect(out).not.toContain(rec.justificacion);
+    }
+    expect(out).not.toContain('upsell');
+    expect(out).not.toContain('recomendaciones_presupuesto');
+  });
+});
+
+describe('informe web render — próximos pasos + excl-grid (#46 R5–R8)', () => {
+  const html = renderInformeWebHtml(buildInformeRenderModel(fakeReport()));
+
+  it('renderiza pasos numerados steps/step/sn desde proximos_pasos (R5)', () => {
+    expect(html).toContain('<div class="steps reveal">');
+    expect(html).toContain('<div class="sn">1</div>');
+    expect(html).toContain('<div class="sn">2</div>');
+    expect(html).toContain('<div class="sn">3</div>');
+    expect(html).toContain('El cliente aprueba este informe y designa su referente.');
+  });
+
+  it('renderiza excl-grid con dos excl-box necesitamos/no_incluye (R6)', () => {
+    expect(html).toContain('<div class="excl-grid reveal">');
+    expect((html.match(/class="excl-box"/g) ?? []).length).toBe(2);
+    expect(html).toContain(`Qué necesitamos de ${golden.client.razon_social}`);
+    expect(html).toContain('Qué no incluye esta etapa');
+    expect(html).toContain('Referente del proyecto designado.');
+    expect(html).toContain('Desarrollo a medida.');
+  });
+
+  it('omite el bloque de pasos cuando proximos_pasos está vacío (R7)', () => {
+    const report = fakeReport();
+    report.clientDraft!.proximos_pasos = [];
+    const out = renderInformeWebHtml(buildInformeRenderModel(report));
+    expect(out).not.toContain('<div class="steps reveal">');
+    expect(out).not.toContain('<div class="sn">');
+    // pero el excl-grid sigue presente.
+    expect(out).toContain('<div class="excl-grid reveal">');
+  });
+
+  it('no renderiza el bloque twocol previo (R8)', () => {
+    expect(html).not.toContain('class="twocol"');
+    expect(html).not.toContain('<div><h3>Qué no incluye esta etapa</h3>');
+  });
+
+  it('snapshot próximos pasos: con pasos y sin pasos (R5–R8)', () => {
+    expect(html).toMatchSnapshot('proximos-pasos-con-pasos');
+    const report = fakeReport();
+    report.clientDraft!.proximos_pasos = [];
+    const sinPasos = renderInformeWebHtml(buildInformeRenderModel(report));
+    expect(sinPasos).toMatchSnapshot('proximos-pasos-sin-pasos');
+  });
+});
+
+describe('informe web render — timeline horizontal vs vertical (#46 R9–R11)', () => {
+  function reportConEtapas(n: number) {
+    const report = fakeReport();
+    report.clientDraft!.plan.etapas = Array.from({ length: n }, (_, i) => ({
+      semana: `Sem ${i + 1}`,
+      titulo: `Etapa ${i + 1}`,
+      descripcion: `Descripción ${i + 1}.`
+    }));
+    return report;
+  }
+
+  it(`conserva el horizontal tl-h con <= ${TL_HORIZONTAL_MAX} etapas (R10)`, () => {
+    const out = renderInformeWebHtml(buildInformeRenderModel(reportConEtapas(TL_HORIZONTAL_MAX)));
+    expect(out).toContain('class="tl-h reveal"');
+    expect(out).not.toContain('class="tl reveal"');
+    expect(out).toContain('Etapa 1');
+    expect(out).toContain(`Etapa ${TL_HORIZONTAL_MAX}`);
+  });
+
+  it(`pasa a vertical tl/tl-item con > ${TL_HORIZONTAL_MAX} etapas (R9, R11)`, () => {
+    const out = renderInformeWebHtml(buildInformeRenderModel(reportConEtapas(TL_HORIZONTAL_MAX + 1)));
+    expect(out).toContain('class="tl reveal"');
+    expect(out).toContain('class="tl-item"');
+    expect(out).not.toContain('class="tl-h reveal"');
+    expect(out).toContain('Etapa 1');
+    expect(out).toContain(`Etapa ${TL_HORIZONTAL_MAX + 1}`);
+  });
+
+  it('escapa semana/titulo/descripcion en el vertical (R11)', () => {
+    const report = reportConEtapas(5);
+    report.clientDraft!.plan.etapas[0] = {
+      semana: 'S<1>',
+      titulo: 'T & T',
+      descripcion: 'D <b>'
+    };
+    const out = renderInformeWebHtml(buildInformeRenderModel(report));
+    expect(out).toContain('S&lt;1&gt;');
+    expect(out).toContain('T &amp; T');
+    expect(out).toContain('D &lt;b&gt;');
+  });
+
+  it('snapshots timeline horizontal y vertical (R9, R10)', () => {
+    expect(
+      renderInformeWebHtml(buildInformeRenderModel(reportConEtapas(TL_HORIZONTAL_MAX)))
+    ).toMatchSnapshot('timeline-horizontal');
+    expect(
+      renderInformeWebHtml(buildInformeRenderModel(reportConEtapas(TL_HORIZONTAL_MAX + 1)))
+    ).toMatchSnapshot('timeline-vertical');
+  });
+});
+
+describe('informe web render — print A4 robusto (#46 R12–R17)', () => {
+  const html = renderInformeWebHtml(buildInformeRenderModel(fakeReport()));
+
+  it('declara @page A4 portrait y bloque @media print (R12)', () => {
+    expect(html).toContain('@page { size: A4 portrait; margin: 14mm 16mm; }');
+    expect(html).toContain('@media print');
+    expect(html).toContain('page-break-after:always');
+    expect(html).toContain('page-break-before:always');
+  });
+
+  it('gauge con valor final estático para print, sin depender de JS (R13)', () => {
+    // arco con offset final en --gauge-final y regla print que lo fija.
+    expect(html).toContain('--gauge-final:');
+    expect(html).toContain('stroke-dashoffset:var(--gauge-final) !important');
+    // número final estático en gauge-num-print (no el "0" animado).
+    expect(html).toContain('class="gauge-num-print"');
+    expect(html).toContain('.informe-web .gauge-num-print { display:block !important; }');
+  });
+
+  it('barras y contadores en valor final estático (R14)', () => {
+    expect(html).toContain('.informe-web .bar i { transition:none !important; }');
+    // regla por ancho concreto presente en el snapshot canónico.
+    expect(html).toMatch(/\.informe-web \.bar i\[data-w="\d+"\] \{ width:\d+% !important; \}/);
+    // el número de las cards está en el DOM como texto estático (no solo data-count).
+    expect(html).toMatch(/data-count="\d+">\d+/);
+  });
+
+  it('tema claro legible en secciones, hero azul, acentos --sys-* (R15, R17)', () => {
+    expect(html).toContain('.informe-web { background:#fff !important; color:#102A43 !important; }');
+    expect(html).toContain('.informe-web section:not(.hero) { background:#fff !important; }');
+    expect(html).toContain('section.hero { min-height:auto !important;');
+    expect(html).toContain('var(--sys-azul-electrico) !important');
+  });
+
+  it('break-inside avoid en card/score-row/risk/fix/tabla/step/tl-item/excl-box (R16)', () => {
+    const printBlock = html.slice(html.indexOf('R16: anti-corte'));
+    for (const sel of [
+      '.card',
+      '.score-row',
+      '.risk',
+      '.fix',
+      '.equip-table tr',
+      '.step',
+      '.tl-item',
+      '.excl-box'
+    ]) {
+      expect(printBlock).toContain(`.informe-web ${sel}`);
+    }
+    expect(printBlock).toContain('break-inside:avoid; page-break-inside:avoid;');
+  });
+
+  it('snapshot del render con bloques print (R12–R17)', () => {
+    expect(html).toMatchSnapshot('print-a4-render');
   });
 });

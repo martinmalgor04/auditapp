@@ -46,6 +46,13 @@ export type RenderClientDraft = {
     callout_transversal: string | null;
   };
   proximos_pasos: string[];
+  // #46 (R1, R3) — control de usuarios / seguridad: poblado por el builder server
+  // desde la sección canónica de seguridad. null cuando la auditoría no relevó esa
+  // sección (R2). Todo el texto sale del canónico curado, jamás material interno.
+  seguridad?: {
+    titulo: string;
+    filas: Array<{ control: string; estado: string; observaciones: string }>;
+  } | null;
 };
 
 export type InformeRenderModel = {

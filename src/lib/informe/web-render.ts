@@ -13,15 +13,23 @@ import {
   type InformeRenderModel,
   type RenderSemaphore
 } from './render';
-import { hayNorma, hayAlgunaNormaIt } from './render-shared';
+import { hayNorma, hayAlgunaNormaIt, type RenderClientDraft } from './render-shared';
 import {
   WEB_GAUGE_CIRCUMFERENCE,
   webGaugeBadgeLabel,
-  webGaugeColorVar
+  webGaugeColorVar,
+  webGaugeDashoffset
 } from '$lib/client/informe/web-effects';
 import { formatDuracion } from './visita';
 
 const e = escapeHtml;
+
+/**
+ * #46 (R9/R10, OQ-2) — umbral de etapas para el timeline horizontal. Hasta 4
+ * etapas se usa el horizontal `.tl-h` (4 columnas caben en 860px); con 5+ se pasa
+ * al vertical `.tl`/`.tl-item`.
+ */
+export const TL_HORIZONTAL_MAX = 4;
 
 /** Clase de score-row del template: r = rojo · o = naranja · g = verde. */
 export function semaphoreToRowClass(s: RenderSemaphore): 'r' | 'o' | 'g' {
@@ -180,10 +188,41 @@ const STYLE = `
 .informe-web .equip-fig img { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; }
 .informe-web .equip-ph { width:100%; aspect-ratio:4/3; display:grid; place-items:center; font-size:12px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,0.35); background:repeating-linear-gradient(45deg,rgba(255,255,255,0.02),rgba(255,255,255,0.02) 8px,rgba(255,255,255,0.04) 8px,rgba(255,255,255,0.04) 16px); }
 .informe-web .equip-cap { font-size:12px; color:rgba(255,255,255,0.6); padding:10px 12px; line-height:1.4; }
+/* #46 — tabla de seguridad (variante de equip-table) */
+.informe-web .seguridad-block { margin-top:48px; }
+.informe-web .seguridad-titulo { font-size:15px; font-weight:700; color:#fff; margin-bottom:14px; }
+.informe-web .equip-table--seguridad td strong { color:#fff; font-weight:700; }
+/* #46 — próximos pasos numerados */
+.informe-web .steps { margin-top:44px; display:flex; flex-direction:column; gap:0; }
+.informe-web .step { display:grid; grid-template-columns:36px 1fr; gap:20px; align-items:flex-start; padding:20px 0; border-bottom:1px solid rgba(255,255,255,0.07); }
+.informe-web .step:last-child { border-bottom:none; }
+.informe-web .step .sn { width:36px; height:36px; border-radius:50%; background:var(--sys-azul-electrico); color:#fff; font-size:16px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px; }
+.informe-web .step h4 { font-size:17px; font-weight:700; color:#fff; margin-bottom:6px; }
+.informe-web .step p { font-size:14.5px; color:rgba(255,255,255,0.72); }
+/* #46 — excl-grid (qué necesitamos / qué no incluye) */
+.informe-web .excl-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:28px; }
+.informe-web .excl-box { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:2px; padding:22px 20px; }
+.informe-web .excl-box h4 { font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--sys-celeste); margin-bottom:12px; }
+.informe-web .excl-box ul { list-style:none; }
+.informe-web .excl-box li { font-size:14px; color:rgba(255,255,255,0.72); padding-left:16px; position:relative; margin-bottom:8px; line-height:1.45; }
+.informe-web .excl-box li::before { content:'\\2192'; position:absolute; left:0; color:rgba(255,255,255,0.3); font-size:12px; top:2px; }
+/* #46 — timeline vertical */
+.informe-web .tl { margin-top:56px; position:relative; padding-left:34px; }
+.informe-web .tl::before { content:''; position:absolute; left:9px; top:6px; bottom:6px; width:2px; background:rgba(33,150,243,0.3); }
+.informe-web .tl-item { position:relative; padding-bottom:34px; }
+.informe-web .tl-item:last-child { padding-bottom:0; }
+.informe-web .tl-item::before { content:''; position:absolute; left:-32px; top:4px; width:16px; height:16px; border-radius:50%; background:var(--sys-azul-electrico); border:3px solid var(--sys-azul-profundo); }
+.informe-web .tl-item .week { font-size:11.5px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--sys-azul-electrico); }
+.informe-web .tl-item h3 { font-size:19px; font-weight:700; color:#fff; margin:4px 0 6px; }
+.informe-web .tl-item p { font-size:14.5px; color:rgba(255,255,255,0.7); max-width:560px; }
+.informe-web .gauge-num-print { display:none; }
 @media print {
   .informe-web .equip-table-wrap { overflow:visible; }
   .informe-web .equip-gallery { grid-template-columns:repeat(3,1fr); }
   .informe-web .equip-fig, .informe-web .equip-table tbody tr { break-inside:avoid; }
+}
+@media (max-width:720px){
+  .informe-web .excl-grid { grid-template-columns:1fr; }
 }
 @media (max-width:720px){
   .informe-web section { padding:68px 0; }
@@ -195,6 +234,58 @@ const STYLE = `
   .informe-web .tl-dot { position:absolute; left:0; top:0; margin:0; }
   .informe-web .score-right .bar { width:80px; }
 }
+/* ============ #46 (R12–R17) — @media print A4 robusto ============ */
+@page { size: A4 portrait; margin: 14mm 16mm; }
+@media print {
+  .informe-web *, .informe-web *::before, .informe-web *::after { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  .informe-web { background:#fff !important; color:#102A43 !important; }
+  /* R14/R13: sin animaciones; reveal y barras en su estado final estático. */
+  .informe-web .reveal, .informe-web .reveal.in { opacity:1 !important; transform:none !important; transition:none !important; }
+  .informe-web .bar i { transition:none !important; }
+  .informe-web [data-gauge-arc] { transition:none !important; stroke-dashoffset:var(--gauge-final) !important; }
+  .informe-web [data-gauge-num] { display:none !important; }
+  .informe-web .gauge-num-print { display:block !important; }
+  /* R12: A4 portrait + salto de página por sección principal. */
+  .informe-web .wrap { max-width:none; }
+  .informe-web section { padding:8mm 0 10mm !important; }
+  .informe-web section.hero { min-height:auto !important; padding:22mm 0 20mm !important; page-break-after:always; break-after:page; background:linear-gradient(160deg, var(--sys-azul-profundo) 0%, #0d2035 55%, var(--sys-azul-medio) 100%) !important; color:#fff !important; border-top:4px solid var(--sys-azul-electrico); }
+  .informe-web section + section { border-top:1px solid #e8ecf0; page-break-before:always; }
+  .informe-web section.loom-section { display:none !important; }
+  /* R15: tema claro legible en todo menos el hero; acentos --sys-*. */
+  .informe-web section:not(.hero) { background:#fff !important; }
+  .informe-web section:not(.hero) h2 { color:#0A1929 !important; }
+  .informe-web section:not(.hero) .lead { color:#102A43 !important; }
+  .informe-web section:not(.hero) .muted { color:#5a6a7a !important; }
+  .informe-web section:not(.hero) p { color:#102A43 !important; }
+  .informe-web section:not(.hero) .eyebrow { color:var(--sys-azul-electrico) !important; }
+  .informe-web section:not(.hero) .score-row { background:#f7f9fb !important; border-color:#e2e8f0 !important; }
+  .informe-web section:not(.hero) .score-info .name { color:#0A1929 !important; }
+  .informe-web section:not(.hero) .score-info .detail { color:#6b7c8f !important; }
+  .informe-web section:not(.hero) .bar { background:#e2e8f0 !important; }
+  .informe-web section:not(.hero) .legend { color:#6b7c8f !important; border-left-color:rgba(0,0,0,0.12) !important; }
+  .informe-web section:not(.hero) .risk { background:#f7f9fb !important; border-color:#e2e8f0 !important; }
+  .informe-web section:not(.hero) .risk h3 { color:#0A1929 !important; }
+  .informe-web section:not(.hero) .risk p { color:#102A43 !important; }
+  .informe-web section:not(.hero) .risk .ev { color:#6b7c8f !important; }
+  .informe-web section:not(.hero) .equip-table th { color:var(--sys-azul-electrico) !important; border-bottom-color:#d8e0e8 !important; }
+  .informe-web section:not(.hero) .equip-table td { color:#102A43 !important; border-bottom-color:#e8ecf0 !important; }
+  .informe-web section:not(.hero) .equip-table td strong { color:#0A1929 !important; }
+  .informe-web section:not(.hero) .seguridad-titulo { color:#0A1929 !important; }
+  .informe-web section:not(.hero) .tl-item h3 { color:#0A1929 !important; }
+  .informe-web section:not(.hero) .tl-item p { color:#102A43 !important; }
+  .informe-web section:not(.hero) .tl-item::before { border-color:#fff !important; }
+  .informe-web section:not(.hero) .step h4 { color:#0A1929 !important; }
+  .informe-web section:not(.hero) .step p { color:#102A43 !important; }
+  .informe-web section:not(.hero) .step { border-bottom-color:#e2e8f0 !important; }
+  .informe-web section:not(.hero) .excl-box { background:#f7f9fb !important; border-color:#e2e8f0 !important; }
+  .informe-web section:not(.hero) .excl-box h4 { color:var(--sys-azul-electrico) !important; }
+  .informe-web section:not(.hero) .excl-box li { color:#102A43 !important; }
+  .informe-web section:not(.hero) footer { color:#8a96a3 !important; border-color:#e2e8f0 !important; }
+  /* R16: anti-corte entre páginas. */
+  .informe-web .card, .informe-web .score-row, .informe-web .risk, .informe-web .fix,
+  .informe-web .equip-table tr, .informe-web .equip-fig, .informe-web .step,
+  .informe-web .tl-item, .informe-web .excl-box { break-inside:avoid; page-break-inside:avoid; }
+}
 </style>`;
 
 function renderGauge(model: InformeRenderModel): string {
@@ -205,12 +296,18 @@ function renderGauge(model: InformeRenderModel): string {
   }
   const label = indices.erp ? 'Índice ERP general' : 'Índice IT general';
   const color = webGaugeColorVar(index.semaforo);
+  // #46 (R13): el arco arranca vacío (offset = circunferencia) y lo anima el JS en
+  // pantalla; el valor FINAL se emite en `--gauge-final` para que `@media print` lo
+  // fije sin depender de JS (arco lleno). El número real va en `data-gauge-final`
+  // y el print lo muestra en lugar del "0" animado.
+  const finalOffset = webGaugeDashoffset(index.valor);
   return `
-    <div class="gauge-wrap" data-gauge-score="${index.valor}">
+    <div class="gauge-wrap" data-gauge-score="${index.valor}" style="--gauge-final:${finalOffset};">
       <svg viewBox="0 0 220 124" style="width:100%">
         <path d="M 22 108 A 88 88 0 0 1 198 108" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="16" stroke-linecap="round"/>
         <path data-gauge-arc="" d="M 22 108 A 88 88 0 0 1 198 108" fill="none" stroke="${color}" stroke-width="16" stroke-linecap="round" stroke-dasharray="${WEB_GAUGE_CIRCUMFERENCE}" stroke-dashoffset="${WEB_GAUGE_CIRCUMFERENCE}" style="transition:stroke-dashoffset 1.8s var(--ease);"/>
-        <text data-gauge-num="" x="110" y="92" text-anchor="middle" font-family="Montserrat,Arial" font-weight="800" font-size="52" fill="${color}" letter-spacing="-1">0</text>
+        <text data-gauge-num="" data-gauge-final="${index.valor}" x="110" y="92" text-anchor="middle" font-family="Montserrat,Arial" font-weight="800" font-size="52" fill="${color}" letter-spacing="-1">0</text>
+        <text class="gauge-num-print" x="110" y="92" text-anchor="middle" font-family="Montserrat,Arial" font-weight="800" font-size="52" fill="${color}" letter-spacing="-1">${index.valor}</text>
         <text x="110" y="114" text-anchor="middle" font-family="Montserrat,Arial" font-weight="600" font-size="13" fill="rgba(255,255,255,0.45)">de 100</text>
       </svg>
       <div class="gauge-badge" style="color:${color}; background:${BADGE_BG[index.semaforo]}; border:1px solid ${BADGE_BORDER[index.semaforo]};">${webGaugeBadgeLabel(index.semaforo)}</div>
@@ -265,7 +362,7 @@ function renderResumen(model: InformeRenderModel): string {
   if (index) {
     cards.push(`
     <div class="card">
-      <div class="num ${semaphoreToNumClass(index.semaforo)}" data-count="${index.valor}">0<span>/100</span></div>
+      <div class="num ${semaphoreToNumClass(index.semaforo)}" data-count="${index.valor}">${index.valor}<span>/100</span></div>
       <div class="label">${indexLabel}</div>
     </div>`);
   }
@@ -273,14 +370,14 @@ function renderResumen(model: InformeRenderModel): string {
     // Decisión puerta #15-4: campo null → card omitida en la vista pública.
     cards.push(`
     <div class="card">
-      <div class="num warn" data-count="${cc.n}">0<span>&nbsp;de&nbsp;${cc.total}</span></div>
+      <div class="num warn" data-count="${cc.n}">${cc.n}<span>&nbsp;de&nbsp;${cc.total}</span></div>
       <div class="label">circuitos con controles internos aplicados</div>
     </div>`);
   }
   if (model.modulos.length > 0) {
     cards.push(`
     <div class="card">
-      <div class="num" data-count="${model.modulos.length}">0</div>
+      <div class="num" data-count="${model.modulos.length}">${model.modulos.length}</div>
       <div class="label">módulos Tango en uso: ${e(modulosLista)}</div>
     </div>`);
   }
@@ -354,8 +451,45 @@ function renderHallazgos(model: InformeRenderModel): string {
   </div>
   <div class="score-list">${rows}
   </div>
-  ${legend}${metodologia}
+  ${legend}${metodologia}${renderSeguridad(model)}
 </section>`;
+}
+
+/**
+ * #46 (R1–R4) — tabla de control de usuarios y seguridad dentro de Hallazgos.
+ * Devuelve '' cuando `draft.seguridad` es null o sin filas (R2): no deja
+ * encabezado, contenedor ni espacio. Cada celda pasa por `escapeHtml` (R4). Todo
+ * el dato sale de `draft.seguridad`, poblado server-side desde el canónico (R3),
+ * jamás material interno (R18).
+ */
+function renderSeguridad(model: InformeRenderModel): string {
+  const seg = model.draft.seguridad;
+  if (!seg || seg.filas.length === 0) return '';
+
+  const rows = seg.filas
+    .map(
+      (f) => `
+        <tr>
+          <td data-label="Control"><strong>${e(f.control)}</strong></td>
+          <td data-label="Estado">${e(f.estado) || '<span class="muted">s/d</span>'}</td>
+          <td data-label="Observaciones">${e(f.observaciones) || '<span class="muted">—</span>'}</td>
+        </tr>`
+    )
+    .join('\n');
+
+  return `
+  <div class="seguridad-block reveal">
+    <h3 class="seguridad-titulo">${e(seg.titulo)}</h3>
+    <div class="equip-table-wrap">
+      <table class="equip-table equip-table--seguridad">
+        <thead>
+          <tr><th>Control</th><th>Estado</th><th>Observaciones</th></tr>
+        </thead>
+        <tbody>${rows}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
 }
 
 /**
@@ -511,14 +645,78 @@ function renderDiaADia(model: InformeRenderModel): string {
 </section>`;
 }
 
-function renderPlan(model: InformeRenderModel): string {
-  const d = model.draft;
-  const steps = d.plan.etapas
+/**
+ * #46 (R9, R11) — timeline vertical con semanas. Un `.tl-item` por etapa
+ * (`.week` + `<h3>` + `<p>`); la línea vertical la dibuja `.tl::before`. Cada
+ * campo escapado (R11). Usado cuando `etapas.length > TL_HORIZONTAL_MAX`.
+ */
+function renderTimelineVertical(
+  etapas: RenderClientDraft['plan']['etapas']
+): string {
+  const items = etapas
     .map(
       (et) => `
-    <div class="tl-step"><div class="tl-dot"></div><div class="week">${e(et.semana)}</div><h3>${e(et.titulo)}</h3><p>${e(et.descripcion)}</p></div>`
+    <div class="tl-item"><div class="week">${e(et.semana)}</div><h3>${e(et.titulo)}</h3><p>${e(et.descripcion)}</p></div>`
     )
     .join('\n');
+  return `
+  <div class="tl reveal">${items}
+  </div>`;
+}
+
+function renderPlan(model: InformeRenderModel): string {
+  const d = model.draft;
+  const etapas = d.plan.etapas;
+
+  // #46 (R9/R10): horizontal hasta el umbral, vertical con más etapas.
+  const timeline =
+    etapas.length > TL_HORIZONTAL_MAX
+      ? renderTimelineVertical(etapas)
+      : (() => {
+          const steps = etapas
+            .map(
+              (et) => `
+    <div class="tl-step"><div class="tl-dot"></div><div class="week">${e(et.semana)}</div><h3>${e(et.titulo)}</h3><p>${e(et.descripcion)}</p></div>`
+            )
+            .join('\n');
+          return `
+  <div class="tl-h reveal" style="grid-template-columns:repeat(${etapas.length},1fr);">${steps}
+  </div>`;
+        })();
+
+  // #46 (R8): el bloque `.twocol` (necesitamos / no_incluye) se removió; su
+  // contenido vive ahora en el `excl-grid` de renderProximosPasos.
+  return `
+<section class="wrap">
+  <div class="reveal">
+    <div class="eyebrow">05 · El plan</div>
+    <h2>${e(d.plan.titulo)}</h2>
+    <p class="lead">${e(d.plan.descripcion)}</p>
+  </div>${timeline}
+</section>`;
+}
+
+/**
+ * #46 (R5–R8) — sección "Próximos pasos": pasos numerados desde
+ * `draft.proximos_pasos` (omitidos si vacío, R7) + `excl-grid` con dos `excl-box`
+ * ("Qué necesitamos de {cliente}" / "Qué no incluye esta etapa") desde
+ * `plan.necesitamos_cliente` / `plan.no_incluye` (R6). Reemplaza el `.twocol`
+ * previo (R8). Rótulo sin número (OQ-1) para no chocar con el abono futuro.
+ */
+function renderProximosPasos(model: InformeRenderModel): string {
+  const d = model.draft;
+
+  const pasos =
+    d.proximos_pasos.length > 0
+      ? `
+  <div class="steps reveal">${d.proximos_pasos
+    .map(
+      (paso, i) => `
+    <div class="step"><div class="sn">${i + 1}</div><div><p>${e(paso)}</p></div></div>`
+    )
+    .join('\n')}
+  </div>`
+      : '';
 
   const necesitamos = d.plan.necesitamos_cliente.map((it) => `<li>${e(it)}</li>`).join('\n');
   const noIncluye = d.plan.no_incluye.map((it) => `<li>${e(it)}</li>`).join('\n');
@@ -526,15 +724,12 @@ function renderPlan(model: InformeRenderModel): string {
   return `
 <section class="wrap">
   <div class="reveal">
-    <div class="eyebrow">05 · El plan</div>
-    <h2>${e(d.plan.titulo)}</h2>
-    <p class="lead">${e(d.plan.descripcion)}</p>
-  </div>
-  <div class="tl-h reveal" style="grid-template-columns:repeat(${d.plan.etapas.length},1fr);">${steps}
-  </div>
-  <div class="twocol reveal">
-    <div><h3>Qué necesitamos de ${e(model.cliente.razonSocial)}</h3><ul>${necesitamos}</ul></div>
-    <div><h3>Qué no incluye esta etapa</h3><ul>${noIncluye}</ul></div>
+    <div class="eyebrow">Próximos pasos</div>
+    <h2>Cómo arrancamos</h2>
+  </div>${pasos}
+  <div class="excl-grid reveal">
+    <div class="excl-box"><h4>Qué necesitamos de ${e(model.cliente.razonSocial)}</h4><ul>${necesitamos}</ul></div>
+    <div class="excl-box"><h4>Qué no incluye esta etapa</h4><ul>${noIncluye}</ul></div>
   </div>
 </section>`;
 }
@@ -565,8 +760,28 @@ function renderCta(model: InformeRenderModel): string {
  * secciones 01–05 + CTA + footer de confidencialidad. Consume únicamente
  * InformeRenderModel (R12) — los scores/semáforos salen del snapshot canónico.
  */
+/**
+ * #46 (R14) — reglas print de ancho final para las barras de score. En pantalla
+ * el JS anima `width` desde 0 leyendo `data-w`; en print (sin JS) emitimos una
+ * regla `[data-w="N"]{width:N%}` por cada score distinto presente, para que la
+ * barra aparezca en su valor final estático sin depender de la animación.
+ */
+function printBarWidths(model: InformeRenderModel): string {
+  const widths = new Set<number>();
+  for (const sec of model.secciones) {
+    if (sec.score !== null) widths.add(Math.max(0, Math.min(100, sec.score)));
+  }
+  widths.add(0);
+  const rules = [...widths]
+    .sort((a, b) => a - b)
+    .map((w) => `  .informe-web .bar i[data-w="${w}"] { width:${w}% !important; }`)
+    .join('\n');
+  return `<style>\n@media print {\n${rules}\n}\n</style>`;
+}
+
 export function renderInformeWebHtml(model: InformeRenderModel): string {
   return `${STYLE}
+${printBarWidths(model)}
 <div class="informe-web">
 <div class="prog" data-informe-prog=""></div>
 <div class="amb-layer"><div class="amb a1"></div><div class="amb a2"></div></div>
@@ -577,6 +792,7 @@ ${renderHallazgos(model)}${renderInventarioSlot(model)}
 ${renderRiesgos(model)}
 ${renderDiaADia(model)}
 ${renderPlan(model)}
+${renderProximosPasos(model)}
 ${renderCta(model)}
 <footer class="wrap">Informe confidencial preparado para ${e(model.cliente.razonSocial)} · ${e(model.periodo)}</footer>
 </div>`;
