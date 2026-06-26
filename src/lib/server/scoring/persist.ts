@@ -10,6 +10,7 @@ import type { AppUser } from '$lib/server/auth/types';
 import { auditMatchesUserScope } from '$lib/server/auth/audit-access';
 import { techIsAssigned } from '$lib/server/db/audit-assignment';
 import { markReportsStale } from '$lib/server/db/informe-reports';
+import { onAuditoriaCerrada } from '$lib/server/email/notify';
 import { scoreAudit } from './score-audit';
 import { closureFieldsSchema, type ClosureFieldsParsed } from './schemas';
 import { ClosureValidationError } from './errors';
@@ -174,6 +175,8 @@ export async function confirmClosure(
       WHERE audit_id = ${auditId}
     `;
   });
+
+  void onAuditoriaCerrada(auditId);
 
   return { warnings };
 }

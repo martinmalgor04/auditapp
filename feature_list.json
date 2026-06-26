@@ -845,7 +845,7 @@
         "Snapshots ERP/IT existentes no cambian salvo lo intencional; nuevos snapshots de tabla seguridad, próximos pasos, timeline vertical y print pasan"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 47,
@@ -864,6 +864,116 @@
       ],
       "sdd": true,
       "status": "done"
+    },
+    {
+      "id": 48,
+      "name": "48_perfil_usuario",
+      "title": "Perfil de usuario + cambio de contraseña",
+      "description": "Permitir que cualquier usuario autenticado (admin o técnico) edite su propio perfil y cambie su contraseña desde la app, sin depender del admin. Alcance: (1) ruta protegida de perfil (p.ej. /(app)/perfil) que muestra y permite editar datos propios editables (nombre visible, email; el rol NO es autoeditable); (2) cambio de contraseña autenticado pidiendo contraseña actual + nueva + confirmación, con verificación argon2id de la actual (reusa src/lib/server/auth/password.ts) y política de fortaleza mínima validada con Zod; (3) al cambiar la contraseña, invalidar las demás sesiones del usuario salvo la actual (reusa session.ts); (4) feedback con toast de éxito/error (patrón #38) y branding SyS (#11). NO incluye recuperación por mail (eso es #50). Migración SQL solo si hace falta columna nueva (p.ej. nombre visible) — idempotente. Guards server-side: cada usuario solo toca su propio perfil.",
+      "source": "Solicitud Martín (2026-06-25): que los usuarios editen su perfil y puedan cambiar su contraseña. Base: auth #3 (password.ts argon2id, session.ts, guards.ts), backoffice #4 (ABM usuarios / reset admin), UX estado/toast #37/#38, branding #11.",
+      "acceptance": [
+        "Usuario autenticado accede a ruta de perfil protegida y ve sus datos propios; no puede editar su rol",
+        "Cambio de contraseña exige contraseña actual válida (verificación argon2id), nueva + confirmación coincidentes y política de fortaleza validada con Zod; errores claros por caso",
+        "Al cambiar la contraseña se invalidan las otras sesiones del usuario (la sesión actual sigue válida)",
+        "Edición de datos propios (nombre visible / email) persistida y validada con Zod; rol inmutable desde aquí",
+        "Guard server-side: un usuario no puede editar el perfil ni la contraseña de otro",
+        "UI branded SyS con toast de éxito/error (patrón #38), mobile-first",
+        "Tests: verificación de contraseña actual, política de fortaleza, invalidación de sesiones, guard de propiedad, y e2e del flujo cambiar contraseña"
+      ],
+      "sdd": true,
+      "status": "done"
+    },
+    {
+      "id": 49,
+      "name": "49_servicio_email",
+      "title": "Servicio de email base (SMTP) + avisos internos",
+      "description": "Fundación de envío de email para toda la app, sobre SMTP genérico configurable por .env (nodemailer), apto self-hosted (Dokploy #10) usando el correo corporativo de SyS. Alcance: (1) módulo src/lib/server/email/ con cliente SMTP (host/port/user/pass/from por env, ver env.ts), envío con reintento básico y modo dry-run en dev/test (no enviar de verdad); (2) sistema de plantillas branded SyS (#11) HTML+texto plano, con render server-side y datos tipados Zod; (3) log de envíos en Postgres (tabla email_log: destinatario, plantilla, estado enviado/fallido, error, timestamps) para auditoría y reintento; (4) primer consumidor real: avisos internos automáticos a técnicos/admin en eventos clave del ciclo de auditoría — auditoría asignada (#33/#20 assignment), briefing completado (#5), informe listo/aprobado (#15) — respetando a quién notificar según asignación; (5) preferencia mínima de opt-out por usuario si aplica. Define el contrato sendEmail(template, to, data) que reusan #50/#51/#52. NO incluye recuperación de contraseña (#50) ni envío de informe/briefing al cliente (#51/#52). Migración SQL idempotente para email_log y columnas de preferencia. .env.example actualizado SIN secretos.",
+      "source": "Solicitud Martín (2026-06-25): sistema de mail para recuperación de contraseña, envío de informes y briefings, y avisos. Decisión de puerta: proveedor SMTP genérico (nodemailer), no SaaS. Eventos automáticos elegidos: avisos internos a técnicos. Base: deploy #10, env.ts, branding #11, assignment #20/#33, entrega #15, briefing #5.",
+      "acceptance": [
+        "Módulo email server-side con cliente SMTP configurable 100% por .env (host, port, user, pass, from); .env.example actualizado sin secretos",
+        "Modo dry-run en dev/test: no se envían correos reales y los tests verifican el payload renderizado",
+        "Plantillas branded SyS (HTML + texto plano) con datos validados por Zod; al menos las plantillas de los avisos internos",
+        "Migración SQL idempotente crea email_log (destinatario, plantilla, estado, error, timestamps) y registra cada intento de envío",
+        "Avisos internos automáticos a técnicos/admin en eventos: auditoría asignada, briefing completado, informe aprobado, dirigidos según asignación",
+        "Contrato sendEmail(template, to, data) reutilizable y documentado para #50/#51/#52",
+        "Tests: render de plantillas, registro en email_log, dry-run, selección de destinatarios por evento, y manejo de fallo de envío"
+      ],
+      "sdd": true,
+      "status": "done"
+    },
+    {
+      "id": 50,
+      "name": "50_recuperar_contrasena",
+      "title": "Recuperación de contraseña por email",
+      "description": "Flujo de 'olvidé mi contraseña' por email para usuarios de la app, apoyado en el servicio de email #49. Alcance: (1) ruta pública /forgot (sin auth) donde el usuario ingresa su email; respuesta SIEMPRE neutra (no revela si el email existe) para no filtrar usuarios; (2) generación de token de reseteo de un solo uso, hasheado en DB, con expiración corta (p.ej. 30-60 min), invalidado al usarse o al pedir uno nuevo (reusa patrón de token firmado/registro de #3/#15); (3) email branded SyS con link /reset/[token] (plantilla vía #49); (4) ruta /reset/[token] que valida token vigente y permite fijar nueva contraseña (Zod fortaleza, argon2id, reusa password.ts), invalida todas las sesiones del usuario y el token; (5) rate limit en /forgot y /reset (reusa rate-limit.ts); (6) pantallas amables para token inválido/expirado. Migración SQL idempotente para tabla de tokens de reseteo (password_reset_token). Branding #11, toasts #38.",
+      "source": "Solicitud Martín (2026-06-25): recuperar contraseña por mail. Base: servicio email #49, auth #3 (password.ts, session.ts, rate-limit.ts, patrón token), perfil #48, branding #11.",
+      "acceptance": [
+        "Ruta pública /forgot acepta email y responde siempre de forma neutra (no revela existencia del usuario)",
+        "Se genera token de un solo uso hasheado en DB con expiración corta; pedir uno nuevo invalida el anterior",
+        "Email branded SyS con link /reset/[token] enviado vía el servicio #49 (registrado en email_log)",
+        "Ruta /reset/[token] valida token vigente, exige nueva contraseña con política Zod (argon2id) y confirma cambio",
+        "Al resetear: token consumido e invalidado y todas las sesiones del usuario invalidadas",
+        "Rate limit en /forgot y /reset; pantallas amables para token inválido o expirado",
+        "Migración SQL idempotente para password_reset_token",
+        "Tests: respuesta neutra, expiración y un-solo-uso del token, política de contraseña, invalidación de sesiones, rate limit, y e2e del flujo forgot→email→reset→login"
+      ],
+      "sdd": true,
+      "status": "spec_ready"
+    },
+    {
+      "id": 51,
+      "name": "51_envio_informe_email",
+      "title": "Envío del informe al cliente por email",
+      "description": "Acción manual en el backoffice para enviar el informe aprobado al contacto del cliente por email, usando el servicio #49 y la entrega #15. Alcance: (1) botón 'Enviar por mail' en el detalle del informe/auditoría, habilitado solo cuando el informe está aprobado y existe contacto de cliente con email (reusa contacto #22/#23); (2) plantilla branded SyS con el link público del informe (#15, token de solo lectura) y opcionalmente el PDF (#30) como adjunto o link; el cuerpo NO expone material interno (upsell/recomendaciones); (3) registro del envío en email_log (#49) y marca visible en la auditoría de 'informe enviado' (a quién y cuándo); (4) confirmación previa y toast de resultado (#38); (5) reenvío permitido (queda log de cada envío); guard server-side admin/técnico asignado. Editor de destinatario con prefill del email del contacto y validación Zod. NO automático: es disparo manual. Migración SQL idempotente solo si hace falta marca de 'enviado'.",
+      "source": "Solicitud Martín (2026-06-25): enviar informes por mail. Base: servicio email #49, entrega informe #15 (/informe/[token]), PDF #30, contacto cliente #22/#23, branding #11, toasts #38.",
+      "acceptance": [
+        "Botón 'Enviar por mail' en el detalle del informe, habilitado solo con informe aprobado y email de contacto válido",
+        "Email branded SyS con link público del informe (token de solo lectura) y/o PDF; el cuerpo no expone material interno (test explícito)",
+        "Destinatario prefilleado desde el contacto del cliente, editable y validado con Zod",
+        "Cada envío se registra en email_log (#49) y la auditoría muestra 'informe enviado' (destinatario + fecha); reenvío permitido",
+        "Guard server-side: solo admin o técnico asignado puede enviar",
+        "Confirmación previa y toast de éxito/error (#38)",
+        "Tests: guard de estado/asignación, no-filtrado de material interno, registro en email_log, validación de destinatario, y e2e del envío"
+      ],
+      "sdd": true,
+      "status": "spec_ready"
+    },
+    {
+      "id": 52,
+      "name": "52_envio_briefing_email",
+      "title": "Envío del link de briefing al cliente por email",
+      "description": "Acción en el backoffice para enviar el link de briefing externo (#5) al contacto del cliente por email, usando el servicio #49. Alcance: (1) botón 'Enviar briefing por mail' en el detalle de la auditoría, junto a la generación del public_token (#4), habilitado cuando existe token de briefing vigente y contacto con email; (2) plantilla branded SyS con el link /briefing/[token] y una breve explicación de qué se le pide al cliente; (3) registro del envío en email_log (#49) y marca de 'briefing enviado' en la auditoría; (4) destinatario prefilleado desde el contacto (#22/#23), editable y validado Zod; reenvío permitido; confirmación + toast (#38); guard admin/técnico asignado. Disparo manual (no automático). Migración SQL idempotente solo si hace falta marca de 'enviado'.",
+      "source": "Solicitud Martín (2026-06-25): enviar briefings por mail. Base: servicio email #49, briefing externo #5, generación de token #4, contacto cliente #22/#23, branding #11, toasts #38.",
+      "acceptance": [
+        "Botón 'Enviar briefing por mail' en el detalle de la auditoría, habilitado con token de briefing vigente y email de contacto",
+        "Email branded SyS con link /briefing/[token] y explicación breve para el cliente",
+        "Destinatario prefilleado desde el contacto, editable y validado con Zod",
+        "Cada envío se registra en email_log (#49) y la auditoría muestra 'briefing enviado' (destinatario + fecha); reenvío permitido",
+        "Guard server-side: solo admin o técnico asignado puede enviar; el envío no altera el estado de la auditoría salvo la marca de enviado",
+        "Confirmación previa y toast de éxito/error (#38)",
+        "Tests: guard, validación de destinatario, registro en email_log, y e2e del envío del link de briefing"
+      ],
+      "sdd": true,
+      "status": "spec_ready"
+    },
+    {
+      "id": 53,
+      "name": "53_notificaciones_push_pwa",
+      "title": "Notificaciones push en la PWA",
+      "description": "Notificaciones push para los usuarios de la app (técnicos/admin) sobre la PWA instalada en el celular (#7), vía Web Push API + claves VAPID. Alcance: (1) suscripción push desde la PWA con permiso del navegador, guardando la suscripción (endpoint + claves) por usuario en Postgres; gestión multi-dispositivo y baja/limpieza de suscripciones inválidas; (2) claves VAPID configurables por .env (env.ts); service worker (#7) maneja el evento 'push' y muestra la notificación branded SyS, con click que abre la ruta relevante; (3) envío server-side de push en los mismos eventos internos que el email #49 (auditoría asignada, briefing completado, informe aprobado), reusando la selección de destinatarios; (4) registro de envíos y manejo de endpoints caducados (410/404 → eliminar suscripción); (5) preferencia de opt-in/opt-out por usuario. Complementa, no reemplaza, los avisos por email #49. Migración SQL idempotente para push_subscription y preferencias. .env.example actualizado sin secretos.",
+      "source": "Solicitud Martín (2026-06-25): notificaciones push en las apps celulares PWA. Base: PWA / service worker #7, servicio de avisos/eventos #49, env.ts, branding #11, assignment #20/#33.",
+      "acceptance": [
+        "El usuario puede suscribirse a push desde la PWA (permiso del navegador); la suscripción se guarda por usuario/dispositivo en Postgres",
+        "Claves VAPID configurables por .env; .env.example actualizado sin secretos",
+        "El service worker (#7) maneja el evento push y muestra notificación branded SyS; el click abre la ruta relevante",
+        "Se envía push en los eventos internos (auditoría asignada, briefing completado, informe aprobado) a los destinatarios correspondientes",
+        "Endpoints caducados (410/404) eliminan la suscripción; soporte multi-dispositivo",
+        "Preferencia opt-in/opt-out por usuario respetada en el envío",
+        "Migración SQL idempotente para push_subscription y preferencias",
+        "Tests: alta/baja de suscripción, selección de destinatarios por evento, limpieza de endpoints caducados, respeto de preferencias, y manejo del evento push en el SW"
+      ],
+      "sdd": true,
+      "status": "spec_ready"
     }
   ]
 }

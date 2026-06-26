@@ -2,6 +2,7 @@ import type { RequestHandler } from '@sveltejs/kit';
 import { apiError, apiSuccess } from '$lib/server/api/envelope';
 import { requireAdminApi } from '$lib/server/api/guards';
 import { approveReport, getReportByAuditVersion } from '$lib/server/db/informe-reports';
+import { onInformeAprobado } from '$lib/server/email/notify';
 import { getAuditForReport, informeErrorResponse } from '$lib/server/informe/access';
 
 /** POST approve (R23): borrador → aprobado, explícito e inmutable. */
@@ -28,6 +29,7 @@ export const POST: RequestHandler = async ({ params, locals }) => {
 
   try {
     const approved = await approveReport(report.id, userOrResponse.id);
+    void onInformeAprobado(audit.id, approved.id, approved.version);
     return apiSuccess({
       report_id: approved.id,
       version: approved.version,

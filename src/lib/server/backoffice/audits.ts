@@ -27,6 +27,7 @@ import {
 } from './errors';
 import { createAuditSchema, updateAuditSchema, type CreateAuditInput, type UpdateAuditInput } from './schemas';
 import { computeAuditProgress, type AuditProgress } from './progress';
+import { onAuditoriaAsignada } from '$lib/server/email/notify';
 
 const TYPE_TO_TEMPLATE_CODE: Record<string, string> = {
   it: 'it',
@@ -375,7 +376,7 @@ export async function createAudit(
   const scheduledAt = new Date(data.scheduledAt);
   const cabItems = await getCabItemsForTypes(data.types);
 
-  return sql.begin(async (tx) => {
+  const result = await sql.begin(async (tx) => {
     let clientId = data.clientId;
     let clientFields: ClientCabFields | null = null;
 
@@ -459,6 +460,9 @@ export async function createAudit(
 
     return { id: audit.id };
   });
+
+  void onAuditoriaAsignada(result.id, techIds);
+  return result;
 }
 
 export async function getAuditById(auditId: string, viewer?: AppUser): Promise<AuditDetail | null> {

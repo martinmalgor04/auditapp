@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { logger } from '$lib/server/logger';
+import { onFeedbackCliente } from '$lib/server/email/notify';
 import { isInformeShareRateLimited } from './rate-limit';
 import { resolveShareByToken } from './share';
 import {
@@ -131,6 +132,7 @@ export async function submitSurveyResponse(input: {
       conformeHallazgos: parsed.data.conforme_hallazgos,
       comentario: parsed.data.comentario
     });
+    void onFeedbackCliente(resolution.report.auditId, parsed.data.valoracion_global);
     return { ok: true, estado: 'respondida', respuesta: toSurveyView(row) };
   } catch (err) {
     if (isUniqueViolation(err)) {
