@@ -79,6 +79,24 @@ const planSchema = z
   })
   .strict();
 
+// ── #46: control de usuarios / seguridad (derivado del canónico, no del IA) ──
+const seguridadSchema = z
+  .object({
+    titulo: z.string().min(1),
+    filas: z
+      .array(
+        z
+          .object({
+            control: z.string().min(1),
+            estado: z.string(),
+            observaciones: z.string()
+          })
+          .strict()
+      )
+      .min(1)
+  })
+  .strict();
+
 // ── Página 6: qué cambia en el día a día ──
 const circuitoDiaADiaSchema = z
   .object({
@@ -127,7 +145,10 @@ export const reportClientDraftSchema = z
         callout_transversal: z.string().min(1).nullable()
       })
       .strict(),
-    proximos_pasos: z.array(z.string().min(1)).min(3).max(5)
+    proximos_pasos: z.array(z.string().min(1)).min(3).max(5),
+    // #46 (R3) — opcional/nullable: lo puebla el builder server desde el canónico,
+    // no el generador IA. Presente solo si la auditoría relevó seguridad.
+    seguridad: seguridadSchema.nullable().optional()
   })
   .strict(); // strict() rechaza claves upsell/recomendaciones/etc. (R16)
 

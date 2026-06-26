@@ -131,6 +131,46 @@ function defaultPhotoUrl(r2Key: string): string {
 }
 
 /**
+ * #46 (OQ-3) — ¿esta sección es la de control de usuarios / seguridad? Sin code
+ * fijo cableado: se detecta por `title` (contiene "seguridad" o "usuario") tras
+ * normalizar acentos y caso. Determinístico, no lanza.
+ */
+function isSeccionSeguridad(section: CanonicalAudit['sections'][number]): boolean {
+  const t = section.title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+  return t.includes('seguridad') || t.includes('usuario');
+}
+
+/**
+ * #46 (R1, R2, R3) — deriva la tabla de control de usuarios / seguridad del
+ * canónico ya stripeado. Toma la primera sección cuyo título identifica seguridad
+ * (OQ-3) y arma una fila por ítem no-`na`: label → control, value → estado,
+ * observations → observaciones. Devuelve null si no hay sección de seguridad o si
+ * no quedan filas con control (R2). Todo el texto sale del canónico curado (R3,
+ * R18): nunca `upsell_findings` ni `internal_draft`.
+ */
+function deriveSeguridad(
+  canonical: CanonicalAudit
+): RenderClientDraft['seguridad'] {
+  const section = canonical.sections.find(isSeccionSeguridad);
+  if (!section) return null;
+
+  const filas = section.items
+    .filter((item) => !item.na)
+    .map((item) => ({
+      control: item.label,
+      estado: cellText(item.value),
+      observaciones: cellText(item.observations)
+    }))
+    .filter((fila) => fila.control.trim() !== '');
+
+  if (filas.length === 0) return null;
+  return { titulo: section.title, filas };
+}
+
+/**
  * View-model del render imprimible (R26): datos públicos del snapshot canónico
  * (vía stripInternalFindings, R16) + client_draft. Nunca recibe internal_draft.
  *
@@ -185,7 +225,12 @@ export function buildInformeRenderModel(
       domain: resolveSectionDomain(s, auditTipo),
       standardRef: s.standard_ref ?? null
     })),
-    draft: report.clientDraft as RenderClientDraft,
+    // #46 (R1–R3): inyecta la tabla de seguridad derivada del canónico en el
+    // draft. null cuando la auditoría no relevó seguridad (R2).
+    draft: {
+      ...(report.clientDraft as RenderClientDraft),
+      seguridad: deriveSeguridad(canonical)
+    },
     inventarioIt: deriveInventarioIt(
       canonical,
       auditTipo,
