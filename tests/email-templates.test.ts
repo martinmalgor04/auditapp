@@ -85,3 +85,61 @@ describe('email templates (#49 R5)', () => {
     expect(sendMail).not.toHaveBeenCalled();
   });
 });
+
+describe('password_reset template (R8 #50)', () => {
+  beforeEach(() => {
+    setSqlForTests(getTestSql());
+    resetMailTransportForTests();
+    setMailTransportForTests({ sendMail: vi.fn().mockResolvedValue({ messageId: 'x' }) });
+    process.env.NODE_ENV = 'test';
+    delete process.env.SMTP_HOST;
+  });
+
+  afterEach(() => {
+    resetMailTransportForTests();
+  });
+
+  it('renderiza HTML con resetUrl y expiraEnMin', () => {
+    const data = {
+      nombre: 'Martín',
+      resetUrl: 'http://localhost:5173/reset/abc123',
+      expiraEnMin: 60
+    };
+    const rendered = EMAIL_TEMPLATES.password_reset.render(data);
+    expect(rendered.subject.length).toBeGreaterThan(0);
+    expect(rendered.html).toContain('Servicios y Sistemas');
+    expect(rendered.html).toContain(data.resetUrl);
+    expect(rendered.html).toContain('60');
+    expect(rendered.html).toContain('Martín');
+    expect(rendered.text).toContain(data.resetUrl);
+    expect(rendered.text).toContain('60');
+    expect(rendered.text).toContain('Martín');
+    // No debe ser el placeholder reservado
+    expect(rendered.html).not.toContain('Reservado');
+  });
+
+  it('texto plano no vacío e incluye nota de no solicitaste', () => {
+    const data = {
+      nombre: 'Ana',
+      resetUrl: 'http://localhost:5173/reset/xyz',
+      expiraEnMin: 30
+    };
+    const rendered = EMAIL_TEMPLATES.password_reset.render(data);
+    expect(rendered.text).toContain('ignorá');
+    expect(rendered.text.length).toBeGreaterThan(50);
+  });
+
+  it('datos inválidos (resetUrl sin URL) devuelven fallido sin tocar transporte', async () => {
+    const sendMail = vi.fn();
+    setMailTransportForTests({ sendMail });
+
+    const result = await sendEmail('password_reset', 'a@b.com', {
+      nombre: 'Ana',
+      resetUrl: 'no-es-url',
+      expiraEnMin: 60
+    });
+
+    expect(result.status).toBe('fallido');
+    expect(sendMail).not.toHaveBeenCalled();
+  });
+});

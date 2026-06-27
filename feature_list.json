@@ -918,7 +918,7 @@
         "Tests: respuesta neutra, expiración y un-solo-uso del token, política de contraseña, invalidación de sesiones, rate limit, y e2e del flujo forgot→email→reset→login"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 51,

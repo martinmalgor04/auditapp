@@ -151,7 +151,25 @@ Ver auditoría: ${data.auditUrl}`;
   },
   password_reset: {
     schema: passwordResetSchema,
-    render: () => renderReserved('password_reset')
+    render(data) {
+      const subject = 'Restablecer tu contraseña — Auditapp';
+      const bodyHtml = `<p style="margin:0 0 12px;color:#374151;">Hola ${data.nombre},</p>
+<p style="margin:0 0 12px;color:#374151;">Recibimos una solicitud para restablecer la contraseña de tu cuenta en Auditapp.</p>
+<p style="margin:0 0 12px;color:#374151;">Hacé clic en el botón de abajo para crear una nueva contraseña. El enlace es válido por <strong>${data.expiraEnMin} minutos</strong> y solo puede usarse una vez.</p>
+${emailButton(data.resetUrl, 'Restablecer contraseña')}
+<p style="margin:24px 0 0;color:#6B7280;font-size:13px;">Si no solicitaste este cambio, podés ignorar este correo. Tu contraseña actual no se modificará.</p>`;
+      const bodyText = `Hola ${data.nombre},
+
+Recibimos una solicitud para restablecer la contraseña de tu cuenta en Auditapp.
+
+Usá el siguiente enlace para crear una nueva contraseña (válido por ${data.expiraEnMin} minutos, un solo uso):
+
+${data.resetUrl}
+
+Si no solicitaste este cambio, ignorá este correo. Tu contraseña actual no se modificará.`;
+      const wrapped = wrapEmailLayout({ title: subject, bodyHtml, bodyText });
+      return { subject, ...wrapped };
+    }
   },
   envio_informe_cliente: {
     schema: envioInformeClienteSchema,

@@ -46,6 +46,15 @@ export async function touchSessionExpiry(id: string, expiresAt: Date): Promise<v
 }
 
 /**
+ * Borra TODAS las sesiones del usuario (R14 #50): al resetear la contraseña por email
+ * no hay sesión «actual» de confianza, se invalidan todas.
+ */
+export async function deleteAllSessionsForUser(userId: string): Promise<void> {
+  const sql = getSql();
+  await sql`DELETE FROM session WHERE user_id = ${userId}`;
+}
+
+/**
  * Borra todas las sesiones del usuario excepto la indicada (R11): tras cambiar la
  * contraseña, las demás sesiones quedan invalidadas y la actual sigue vigente.
  */
