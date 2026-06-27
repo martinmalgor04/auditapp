@@ -24,6 +24,9 @@ import {
 import { techIsAssigned } from '$lib/server/db/audit-assignment';
 import { reopenAudit } from '$lib/server/scoring/persist';
 import { normalizeDatetimeInput } from '$lib/datetime-local';
+import { sendBriefingEmail, getBriefingEmailMark } from '$lib/server/backoffice/briefing-email';
+import { canShowBriefingLink } from '$lib/server/backoffice/briefing-link';
+import { getSql } from '$lib/server/db/client';
 
 function formDatetime(raw: FormDataEntryValue | null): string | null | undefined {
   if (raw === null) return undefined;
@@ -78,6 +81,19 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     }
   }
 
+  // #52 R2, R6: email de contacto, habilitación de envío y marca de briefing enviado
+  const sql = getSql();
+  const [empresaContact] = await sql<{ email: string | null; referente_nombre: string | null }[]>`
+    SELECT email, referente_nombre FROM empresa WHERE id = ${audit.clientId} LIMIT 1
+  `.catch(() => [{ email: null, referente_nombre: null }]);
+  const contactEmail = empresaContact?.email ?? null;
+  const contactName = empresaContact?.referente_nombre ?? audit.razonSocial;
+
+  const canSendBriefingEmail =
+    canShowBriefingLink(audit.status, audit.publicToken) && !!contactEmail;
+
+  const briefingEmail = await getBriefingEmailMark(audit.id).catch(() => null);
+
   return {
     audit,
     technicians,
@@ -89,6 +105,10 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     startedAt: audit.startedAt?.toISOString() ?? null,
     finishedAt: audit.finishedAt?.toISOString() ?? null,
     briefingUrl: audit.publicToken ? getBriefingUrl(audit.publicToken) : null,
+    contactEmail,
+    contactName,
+    canSendBriefingEmail,
+    briefingEmail,
     reports: reports.map((r) => ({
       report_id: r.id,
       version: r.version,
@@ -206,6 +226,22 @@ export const actions: Actions = {
       redirect(303, `/auditorias/${params.id}/cierre`);
     } catch (e) {
       if (isRedirect(e)) throw e;
+      return failFromError(e);
+    }
+  },
+
+  // #52 R4, R5, R8, R9, R10: enviar link de briefing al cliente por email
+  enviarBriefingEmail: async ({ request, locals, params }) => {
+    const user = requireStaff(locals);
+
+    const formData = await request.formData();
+    const toOverride = formData.get('to') ? String(formData.get('to')).trim() : undefined;
+
+    try {
+      const result = await sendBriefingEmail(params.id, user, toOverride);
+      const success = result.status !== 'fallido';
+      return { success, status: result.status, sentTo: result.sentTo };
+    } catch (e) {
       return failFromError(e);
     }
   }

@@ -10,7 +10,40 @@
   import { formatVisita } from '$lib/informe/visita';
   import { toDatetimeLocalValue } from '$lib/datetime-local';
 
-  let { data, form }: { data: PageData; form?: { error?: string; url?: string } } = $props();
+  let { data, form }: {
+    data: PageData;
+    form?: { error?: string; url?: string; success?: boolean; status?: string; sentTo?: string }
+  } = $props();
+
+  // #52 R1, R2, R10: modal de envío de briefing por email
+  let showBriefingEmailModal = $state(false);
+  let briefingEmailTo = $state(data.contactEmail ?? '');
+
+  // Toast de resultado (#38)
+  let toastMessage = $state<string | null>(null);
+  let toastType = $state<'success' | 'error'>('success');
+  let toastTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function showToast(message: string, type: 'success' | 'error') {
+    toastMessage = message;
+    toastType = type;
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toastMessage = null;
+    }, 4000);
+  }
+
+  // Reaccionar al resultado del form action
+  $effect(() => {
+    if (form && 'status' in form) {
+      if (form.success) {
+        showToast(`Briefing enviado a ${form.sentTo}`, 'success');
+        showBriefingEmailModal = false;
+      } else if (form.error) {
+        showToast(form.error, 'error');
+      }
+    }
+  });
 
   const scheduledValue = $derived(
     data.audit.scheduledAt
@@ -81,6 +114,29 @@
             Regenerar link
           </button>
         </form>
+        <!-- #52 R1, R2: botón "Enviar briefing por mail" -->
+        <div class="mt-3">
+          <button
+            type="button"
+            class="text-sm font-medium text-sys-electrico hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
+            disabled={!data.canSendBriefingEmail}
+            onclick={() => {
+              briefingEmailTo = data.contactEmail ?? '';
+              showBriefingEmailModal = true;
+            }}
+          >
+            Enviar briefing por mail
+          </button>
+          {#if !data.canSendBriefingEmail && !data.contactEmail}
+            <p class="mt-1 text-xs text-sys-medio">El cliente no tiene email registrado.</p>
+          {/if}
+          {#if data.briefingEmail}
+            <p class="mt-1 text-xs text-sys-medio">
+              Briefing enviado a <span class="font-medium">{data.briefingEmail.sentTo}</span> el
+              {new Date(data.briefingEmail.sentAt).toLocaleDateString('es-AR')}
+            </p>
+          {/if}
+        </div>
       {/if}
       {#if data.audit.status === 'briefing_enviado'}
         <form method="POST" action="?/completarBriefingInternamente" class="mt-2">
@@ -205,3 +261,58 @@
     </form>
   {/if}
 </div>
+
+<!-- #52 R10: modal de confirmación para envío de briefing por email -->
+{#if showBriefingEmailModal}
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Enviar briefing por email"
+  >
+    <div class="w-full max-w-md rounded-sys-app bg-sys-blanco p-6 shadow-xl">
+      <h3 class="sys-section-title mb-4">Enviar briefing por mail</h3>
+      <p class="mb-4 text-sm text-sys-medio">
+        Se enviará el link de briefing al contacto del cliente. Podés editar el destinatario antes de confirmar.
+      </p>
+      <form
+        method="POST"
+        action="?/enviarBriefingEmail"
+        onsubmit={() => { showBriefingEmailModal = false; }}
+      >
+        <label class="block text-sm font-medium text-sys-oscuro" for="briefing-email-to">
+          Destinatario
+        </label>
+        <input
+          id="briefing-email-to"
+          name="to"
+          type="email"
+          required
+          class="sys-input mt-1 w-full"
+          bind:value={briefingEmailTo}
+        />
+        <div class="mt-6 flex gap-3">
+          <button type="submit" class="sys-btn-accent flex-1">Enviar</button>
+          <button
+            type="button"
+            class="sys-btn-secondary flex-1"
+            onclick={() => { showBriefingEmailModal = false; }}
+          >
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{/if}
+
+<!-- #38/#52 R10: toast de resultado -->
+{#if toastMessage}
+  <div
+    class="fixed bottom-6 right-6 z-50 max-w-sm rounded-sys-app px-4 py-3 text-sm shadow-lg {toastType === 'success' ? 'bg-sys-verde text-white' : 'bg-sys-rojo text-white'}"
+    role="alert"
+    aria-live="polite"
+  >
+    {toastMessage}
+  </div>
+{/if}

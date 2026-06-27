@@ -1,18 +1,18 @@
 # Sesión actual
 
-**Feature activa:** #51 `51_envio_informe_email`
+**Feature activa:** #52 `52_envio_briefing_email`
 
-**Estado:** en progreso
+**Estado:** implementado (pendiente revisión)
 
 **Plan (T1–T11):**
-- [ ] T1 — Completar `render` de `envio_informe_cliente` en templates.ts
-- [ ] T2 — Extender tests/email-templates.test.ts
-- [ ] T3 — Crear src/lib/server/informe/enviar.ts
-- [ ] T4 — tests/informe-enviar.test.ts
-- [ ] T5 — Endpoint POST /api/audits/[id]/report/[version]/enviar
-- [ ] T6 — tests/api/informe-enviar.test.ts
-- [ ] T7 — tests/informe-enviado.test.ts
-- [ ] T8 — Extender load de +page.server.ts
-- [ ] T9 — Componente dialog + UI en +page.svelte
-- [ ] T10 — e2e/envio-informe-email.spec.ts
-- [ ] T11 — Verificación final
+- [x] T1 — Completar `render` de `envio_briefing_cliente` en templates.ts
+- [x] T2 — tests/envio-briefing-email-template.test.ts
+- [x] T3 — src/lib/server/backoffice/briefing-email.ts (sendBriefingEmail)
+- [x] T4 — getBriefingEmailMark en el mismo archivo
+- [x] T5 — tests/api/envio-briefing-email-send.test.ts
+- [x] T6 — Extender +page.server.ts (load + action enviarBriefingEmail)
+- [x] T7 — tests/envio-briefing-email-enable.test.ts
+- [x] T8 — Extender +page.svelte (botón + modal + toast)
+- [x] T9 — tests/envio-briefing-email-schema.test.ts
+- [x] T10 — e2e/envio-briefing-email.spec.ts
+- [x] T11 — Verificación: 257 test files en verde, 0 type errors

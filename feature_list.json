@@ -954,7 +954,7 @@
         "Tests: guard, validación de destinatario, registro en email_log, y e2e del envío del link de briefing"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 53,

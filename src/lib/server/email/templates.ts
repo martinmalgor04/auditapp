@@ -195,6 +195,24 @@ Si tenés alguna consulta, contactate con tu referente de Servicios y Sistemas.`
   },
   envio_briefing_cliente: {
     schema: envioBriefingClienteSchema,
-    render: () => renderReserved('envio_briefing_cliente')
+    render(data) {
+      const subject = 'Servicios y Sistemas — completá el briefing previo a tu auditoría';
+      const bodyHtml = `<p style="margin:0 0 12px;color:#374151;">Hola ${data.contactoNombre},</p>
+<p style="margin:0 0 12px;color:#374151;">Desde <strong>Servicios y Sistemas</strong> estamos preparando la auditoría de tu empresa. Para asegurarnos de cubrir exactamente lo que necesitás, te pedimos que completes un breve briefing previo.</p>
+<p style="margin:0 0 12px;color:#374151;">Te va a tomar unos minutos y nos ayuda a llegar con todo listo el día de la visita: infraestructura existente, módulos de Tango en uso, prioridades y consultas que querés que veamos.</p>
+${emailButton(data.briefingUrl, 'Completar el briefing')}
+<p style="margin:24px 0 0;font-size:13px;color:#6B7280;">Si tenés alguna consulta antes de la auditoría, respondé este correo o contactate con tu referente de Servicios y Sistemas.</p>`;
+      const bodyText = `Hola ${data.contactoNombre},
+
+Desde Servicios y Sistemas estamos preparando la auditoría de tu empresa. Para asegurarnos de cubrir exactamente lo que necesitás, te pedimos que completes un breve briefing previo.
+
+Te va a tomar unos minutos y nos ayuda a llegar con todo listo el día de la visita: infraestructura existente, módulos de Tango en uso, prioridades y consultas que querés que veamos.
+
+Completar el briefing: ${data.briefingUrl}
+
+Si tenés alguna consulta, respondé este correo o contactate con tu referente de Servicios y Sistemas.`;
+      const wrapped = wrapEmailLayout({ title: subject, bodyHtml, bodyText });
+      return { subject, ...wrapped };
+    }
   }
 };
