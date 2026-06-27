@@ -18,6 +18,7 @@ export type AuditForReport = {
   assignedTechId: string | null;
   startedAt: Date | null;
   finishedAt: Date | null;
+  empresaId: string | null;
 };
 
 export async function getAuditForReport(auditId: string): Promise<AuditForReport | null> {
@@ -30,9 +31,10 @@ export async function getAuditForReport(auditId: string): Promise<AuditForReport
       assigned_tech_id: string | null;
       started_at: Date | null;
       finished_at: Date | null;
+      empresa_id: string | null;
     }[]
   >`
-    SELECT id, status, ref_code, assigned_tech_id, started_at, finished_at
+    SELECT id, status, ref_code, assigned_tech_id, started_at, finished_at, empresa_id
     FROM audit
     WHERE id = ${auditId} AND archived_at IS NULL
     LIMIT 1
@@ -44,7 +46,8 @@ export async function getAuditForReport(auditId: string): Promise<AuditForReport
         refCode: row.ref_code,
         assignedTechId: row.assigned_tech_id,
         startedAt: row.started_at,
-        finishedAt: row.finished_at
+        finishedAt: row.finished_at,
+        empresaId: row.empresa_id
       }
     : null;
 }

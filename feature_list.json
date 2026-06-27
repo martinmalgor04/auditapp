@@ -936,7 +936,7 @@
         "Tests: guard de estado/asignación, no-filtrado de material interno, registro en email_log, validación de destinatario, y e2e del envío"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 52,

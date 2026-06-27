@@ -173,7 +173,25 @@ Si no solicitaste este cambio, ignorá este correo. Tu contraseña actual no se 
   },
   envio_informe_cliente: {
     schema: envioInformeClienteSchema,
-    render: () => renderReserved('envio_informe_cliente')
+    render(data) {
+      const subject = 'Tu informe de auditoría — Servicios y Sistemas';
+      const pdfLink = data.pdfUrl
+        ? `\n<p style="margin:16px 0 0;font-size:14px;color:#374151;">También podés acceder a la <a href="${data.pdfUrl}" style="color:#2196F3;">versión para imprimir / PDF</a>.</p>`
+        : '';
+      const bodyHtml = `<p style="margin:0 0 12px;color:#374151;">Hola ${data.contactoNombre},</p>
+<p style="margin:0 0 12px;color:#374151;">Tu informe de auditoría IT/ERP está listo. Podés consultarlo en cualquier momento desde el siguiente enlace:</p>
+${emailButton(data.informeUrl, 'Ver el informe')}${pdfLink}
+<p style="margin:24px 0 0;font-size:13px;color:#6B7280;">Si tenés alguna consulta sobre el informe, contactate con tu referente de Servicios y Sistemas.</p>`;
+      const bodyText = `Hola ${data.contactoNombre},
+
+Tu informe de auditoría IT/ERP está listo.
+
+Ver el informe: ${data.informeUrl}${data.pdfUrl ? `\nVersión para imprimir / PDF: ${data.pdfUrl}` : ''}
+
+Si tenés alguna consulta, contactate con tu referente de Servicios y Sistemas.`;
+      const wrapped = wrapEmailLayout({ title: subject, bodyHtml, bodyText });
+      return { subject, ...wrapped };
+    }
   },
   envio_briefing_cliente: {
     schema: envioBriefingClienteSchema,

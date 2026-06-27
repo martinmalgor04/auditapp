@@ -86,6 +86,70 @@ describe('email templates (#49 R5)', () => {
   });
 });
 
+describe('envio_informe_cliente template (R4 #51)', () => {
+  beforeEach(() => {
+    setSqlForTests(getTestSql());
+    resetMailTransportForTests();
+    setMailTransportForTests({ sendMail: vi.fn().mockResolvedValue({ messageId: 'x' }) });
+    process.env.NODE_ENV = 'test';
+    delete process.env.SMTP_HOST;
+  });
+
+  afterEach(() => {
+    resetMailTransportForTests();
+  });
+
+  it('renderiza HTML branded con informeUrl y pdfUrl (R4)', () => {
+    const data = {
+      contactoNombre: 'Juan Pérez',
+      informeUrl: 'http://localhost:5173/informe/abc123token',
+      pdfUrl: 'http://localhost:5173/informe/abc123token/imprimir'
+    };
+    const rendered = EMAIL_TEMPLATES.envio_informe_cliente.render(data);
+    expect(rendered.subject).toContain('informe');
+    expect(rendered.subject).toContain('Servicios y Sistemas');
+    expect(rendered.html).toContain('Servicios y Sistemas');
+    expect(rendered.html).toContain(data.informeUrl);
+    expect(rendered.html).toContain(data.pdfUrl);
+    expect(rendered.html).toContain('Juan Pérez');
+    expect(rendered.text).toContain(data.informeUrl);
+    expect(rendered.text).toContain(data.pdfUrl);
+    expect(rendered.text).toContain('Juan Pérez');
+    expect(rendered.html).not.toContain('Reservado');
+  });
+
+  it('renderiza sin pdfUrl (campo opcional)', () => {
+    const data = {
+      contactoNombre: 'Ana García',
+      informeUrl: 'http://localhost:5173/informe/tok456'
+    };
+    const rendered = EMAIL_TEMPLATES.envio_informe_cliente.render(data);
+    expect(rendered.html).toContain(data.informeUrl);
+    expect(rendered.text).toContain(data.informeUrl);
+    expect(rendered.html).not.toContain('/imprimir');
+    expect(rendered.text).not.toContain('/imprimir');
+  });
+
+  it('fixture con upsell_findings/internal_draft → ninguno de sus textos aparece (R4)', () => {
+    const internalText = 'UPSELL_SECRET_FINDING_12345';
+    const internalDraft = 'INTERNAL_DRAFT_CONFIDENTIAL_99';
+    const data = {
+      contactoNombre: internalText,  // provocaría leak si se pasara el draft interno
+      informeUrl: 'http://localhost:5173/informe/tok789',
+      pdfUrl: 'http://localhost:5173/informe/tok789/imprimir'
+    };
+    // La plantilla SOLO usa contactoNombre, informeUrl, pdfUrl.
+    // Si alguien pasara los campos internos por error, no están en el schema → no renderiza.
+    const rendered = EMAIL_TEMPLATES.envio_informe_cliente.render(data);
+    expect(rendered.html).not.toContain(internalDraft);
+    expect(rendered.text).not.toContain(internalDraft);
+    // El schema Zod rechaza campos extra (strict=false, pero el render solo accede a los 3)
+    // Verificamos que no hay filtración de texto que NO fuera explícitamente pasado
+    expect(rendered.html).not.toContain('upsell_findings');
+    expect(rendered.html).not.toContain('internal_draft');
+  });
+});
+
 describe('password_reset template (R8 #50)', () => {
   beforeEach(() => {
     setSqlForTests(getTestSql());

@@ -9,6 +9,8 @@ import { buildInformeRenderModel } from '$lib/server/informe/model';
 import { buildShareView, type ShareView } from '$lib/server/informe/share';
 import { getSurveyByActiveShare } from '$lib/server/db/survey-responses';
 import { toSurveyState, type SurveyState } from '$lib/server/informe/survey';
+import { getEmpresaById } from '$lib/server/db/empresa';
+import { listInformeEnvios, type InformeEnvio } from '$lib/server/informe/enviar';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
   const user = requireUser(locals);
@@ -46,10 +48,18 @@ export const load: PageServerLoad = async ({ locals, params }) => {
   let shares: ShareView[] = [];
   // Encuesta de conformidad (#47, R9): solo admin la ve, sobre informe aprobado.
   let encuesta: SurveyState | null = null;
+  // #51 — Envío por email: prefill email y marca de enviado, solo aprobado.
+  let empresaEmail: string | null = null;
+  let informeEnvios: InformeEnvio[] = [];
   if (report.status === 'aprobado') {
     shares = (await listSharesByReport(report.id)).map((s) => buildShareView(s));
     if (isAdmin) {
       encuesta = toSurveyState(await getSurveyByActiveShare(report.id));
+      if (audit.empresaId) {
+        const empresa = await getEmpresaById(audit.empresaId);
+        empresaEmail = empresa?.email ?? null;
+        informeEnvios = await listInformeEnvios(report.id, empresaEmail);
+      }
     }
   }
 
@@ -57,6 +67,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     auditId: audit.id,
     shares,
     encuesta,
+    empresaEmail,
+    informeEnvios,
     version: report.version,
     status: report.status,
     errorMessage: report.errorMessage,
