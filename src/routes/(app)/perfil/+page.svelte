@@ -1,7 +1,9 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import { invalidateAll } from '$app/navigation';
+  import { onMount } from 'svelte';
   import type { PageData } from './$types';
+  import { subscribePush, unsubscribePush, isPushSubscribed } from '$lib/client/push/subscribe';
 
   type FormResult = {
     form?: 'perfil' | 'password';
@@ -31,6 +33,49 @@
       toast = { type: 'error', message: form.error };
     }
   });
+
+  // Push toggle state
+  let pushSubscribed = $state<boolean | null>(null); // null = cargando
+  let pushLoading = $state(false);
+  let pushSupported = $state(false);
+
+  onMount(async () => {
+    pushSupported =
+      typeof window !== 'undefined' &&
+      'serviceWorker' in navigator &&
+      'PushManager' in window &&
+      'Notification' in window;
+    if (pushSupported) {
+      pushSubscribed = await isPushSubscribed();
+    }
+  });
+
+  async function togglePush() {
+    pushLoading = true;
+    try {
+      if (pushSubscribed) {
+        const ok = await unsubscribePush();
+        if (ok) {
+          pushSubscribed = false;
+          toast = { type: 'success', message: 'Notificaciones push desactivadas' };
+        } else {
+          toast = { type: 'error', message: 'No se pudo desactivar las notificaciones push' };
+        }
+      } else {
+        const ok = await subscribePush();
+        if (ok) {
+          pushSubscribed = true;
+          toast = { type: 'success', message: 'Notificaciones push activadas' };
+        } else {
+          toast = { type: 'error', message: 'No se pudo activar las notificaciones push. Verificá los permisos del navegador.' };
+        }
+      }
+    } catch {
+      toast = { type: 'error', message: 'Error al cambiar preferencia de notificaciones push' };
+    } finally {
+      pushLoading = false;
+    }
+  }
 
   function perfilErrors(): Record<string, string> {
     return form?.form === 'perfil' ? (form.errors ?? {}) : {};
@@ -108,6 +153,45 @@
       </button>
     </form>
   </section>
+
+  <!-- #53: toggle push PWA -->
+  {#if pushSupported}
+    <section class="mb-8 rounded-sys-app border border-[var(--sys-border-subtle)] bg-white p-4 shadow-sys-card">
+      <h2 class="mb-2 font-semibold text-sys-profundo">Notificaciones push</h2>
+      <p class="mb-4 text-sm text-[var(--sys-text-muted-light)]">
+        Recibí avisos de auditorías en tu dispositivo aunque la app esté cerrada.
+      </p>
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          onclick={togglePush}
+          disabled={pushLoading || pushSubscribed === null}
+          class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50"
+          class:bg-sys-profundo={pushSubscribed}
+          class:bg-gray-200={!pushSubscribed}
+          role="switch"
+          aria-checked={pushSubscribed ?? false}
+          aria-label="Activar notificaciones push"
+          data-testid="push-toggle"
+        >
+          <span
+            class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+            class:translate-x-5={pushSubscribed}
+            class:translate-x-0={!pushSubscribed}
+          ></span>
+        </button>
+        <span class="text-sm text-sys-profundo">
+          {#if pushSubscribed === null}
+            Cargando…
+          {:else if pushSubscribed}
+            Activadas en este dispositivo
+          {:else}
+            Desactivadas en este dispositivo
+          {/if}
+        </span>
+      </div>
+    </section>
+  {/if}
 
   <!-- R6–R13: cambio de contraseña -->
   <section class="rounded-sys-app border border-[var(--sys-border-subtle)] bg-white p-4 shadow-sys-card">

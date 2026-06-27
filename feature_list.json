@@ -973,7 +973,7 @@
         "Tests: alta/baja de suscripción, selección de destinatarios por evento, limpieza de endpoints caducados, respeto de preferencias, y manejo del evento push en el SW"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     }
   ]
 }

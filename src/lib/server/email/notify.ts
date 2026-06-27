@@ -3,6 +3,8 @@ import { listAuditAssignments } from '$lib/server/db/audit-assignment';
 import { getServerEnv } from '$lib/server/env';
 import { logger } from '$lib/server/logger';
 import { sendEmail } from './index';
+import { sendPushToUsers, type PushEventName } from '$lib/server/push/index';
+import { buildPushPayload } from '$lib/server/push/payloads';
 
 export type EventoInterno =
   | 'auditoria_asignada'
@@ -162,6 +164,20 @@ async function safeNotify(label: string, fn: () => Promise<void>): Promise<void>
   }
 }
 
+/** Envía push al canal push (complementa el email, no lo reemplaza). R9, R13 */
+async function notifyPush(
+  userIds: string[],
+  evento: PushEventName,
+  data: { auditRef: string; clienteNombre: string; auditUrl: string; version?: number; valoracionGlobal?: number }
+): Promise<void> {
+  try {
+    const payload = buildPushPayload(evento, data);
+    await sendPushToUsers(userIds, evento, payload);
+  } catch (err) {
+    logger.error('notify_push_failed', { evento }, err);
+  }
+}
+
 export async function onAuditoriaAsignada(auditId: string, techIds: string[]): Promise<void> {
   await safeNotify('auditoria_asignada', async () => {
     const ctx = await loadAuditContext(auditId);
@@ -175,18 +191,28 @@ export async function onAuditoriaAsignada(auditId: string, techIds: string[]): P
     const users = await loadUsersByIds(recipientIds);
     const auditUrl = buildAuditUrl(auditId);
 
-    for (const userId of recipientIds) {
-      const user = users.get(userId);
-      if (!user?.email) {
-        continue;
+    const emailPromise = (async () => {
+      for (const userId of recipientIds) {
+        const user = users.get(userId);
+        if (!user?.email) {
+          continue;
+        }
+        await sendEmail('aviso_auditoria_asignada', user.email, {
+          tecnicoNombre: user.name,
+          auditRef: ctx.refCode,
+          clienteNombre: ctx.clienteNombre,
+          auditUrl
+        });
       }
-      await sendEmail('aviso_auditoria_asignada', user.email, {
-        tecnicoNombre: user.name,
-        auditRef: ctx.refCode,
-        clienteNombre: ctx.clienteNombre,
-        auditUrl
-      });
-    }
+    })();
+
+    const pushPromise = notifyPush(recipientIds, 'aviso_auditoria_asignada', {
+      auditRef: ctx.refCode,
+      clienteNombre: ctx.clienteNombre,
+      auditUrl
+    });
+
+    await Promise.all([emailPromise, pushPromise]);
   });
 }
 
@@ -197,15 +223,25 @@ export async function onBriefingCompletado(auditId: string): Promise<void> {
       return;
     }
     const userIds = await resolveInternalRecipientUserIds(auditId, 'briefing_completado');
+    const auditUrl = buildAuditUrl(auditId);
+
     const emails = await resolveEmailsFromUserIds(userIds);
-    if (emails.length === 0) {
-      return;
-    }
-    await sendEmail('aviso_briefing_completado', emails, {
+    const emailPromise =
+      emails.length > 0
+        ? sendEmail('aviso_briefing_completado', emails, {
+            auditRef: ctx.refCode,
+            clienteNombre: ctx.clienteNombre,
+            auditUrl
+          })
+        : Promise.resolve();
+
+    const pushPromise = notifyPush(userIds, 'aviso_briefing_completado', {
       auditRef: ctx.refCode,
       clienteNombre: ctx.clienteNombre,
-      auditUrl: buildAuditUrl(auditId)
+      auditUrl
     });
+
+    await Promise.all([emailPromise, pushPromise]);
   });
 }
 
@@ -220,16 +256,27 @@ export async function onInformeAprobado(
       return;
     }
     const userIds = await resolveInternalRecipientUserIds(auditId, 'informe_aprobado');
+    const auditUrl = buildAuditUrl(auditId);
+
     const emails = await resolveEmailsFromUserIds(userIds);
-    if (emails.length === 0) {
-      return;
-    }
-    await sendEmail('aviso_informe_aprobado', emails, {
+    const emailPromise =
+      emails.length > 0
+        ? sendEmail('aviso_informe_aprobado', emails, {
+            auditRef: ctx.refCode,
+            clienteNombre: ctx.clienteNombre,
+            version,
+            auditUrl
+          })
+        : Promise.resolve();
+
+    const pushPromise = notifyPush(userIds, 'aviso_informe_aprobado', {
       auditRef: ctx.refCode,
       clienteNombre: ctx.clienteNombre,
-      version,
-      auditUrl: buildAuditUrl(auditId)
+      auditUrl,
+      version
     });
+
+    await Promise.all([emailPromise, pushPromise]);
   });
 }
 
@@ -240,15 +287,25 @@ export async function onAuditoriaCerrada(auditId: string): Promise<void> {
       return;
     }
     const userIds = await resolveInternalRecipientUserIds(auditId, 'auditoria_cerrada');
+    const auditUrl = buildAuditUrl(auditId);
+
     const emails = await resolveEmailsFromUserIds(userIds);
-    if (emails.length === 0) {
-      return;
-    }
-    await sendEmail('aviso_auditoria_cerrada', emails, {
+    const emailPromise =
+      emails.length > 0
+        ? sendEmail('aviso_auditoria_cerrada', emails, {
+            auditRef: ctx.refCode,
+            clienteNombre: ctx.clienteNombre,
+            auditUrl
+          })
+        : Promise.resolve();
+
+    const pushPromise = notifyPush(userIds, 'aviso_auditoria_cerrada', {
       auditRef: ctx.refCode,
       clienteNombre: ctx.clienteNombre,
-      auditUrl: buildAuditUrl(auditId)
+      auditUrl
     });
+
+    await Promise.all([emailPromise, pushPromise]);
   });
 }
 
@@ -259,15 +316,26 @@ export async function onFeedbackCliente(auditId: string, valoracionGlobal: numbe
       return;
     }
     const userIds = await resolveInternalRecipientUserIds(auditId, 'feedback_cliente');
+    const auditUrl = buildAuditUrl(auditId);
+
     const emails = await resolveEmailsFromUserIds(userIds);
-    if (emails.length === 0) {
-      return;
-    }
-    await sendEmail('aviso_feedback_cliente', emails, {
+    const emailPromise =
+      emails.length > 0
+        ? sendEmail('aviso_feedback_cliente', emails, {
+            auditRef: ctx.refCode,
+            clienteNombre: ctx.clienteNombre,
+            valoracionGlobal,
+            auditUrl
+          })
+        : Promise.resolve();
+
+    const pushPromise = notifyPush(userIds, 'aviso_feedback_cliente', {
       auditRef: ctx.refCode,
       clienteNombre: ctx.clienteNombre,
-      valoracionGlobal,
-      auditUrl: buildAuditUrl(auditId)
+      auditUrl,
+      valoracionGlobal
     });
+
+    await Promise.all([emailPromise, pushPromise]);
   });
 }

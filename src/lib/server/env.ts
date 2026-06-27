@@ -48,7 +48,11 @@ export const serverEnvSchema = z.object({
   SMTP_USER: optionalString,
   SMTP_PASS: optionalString,
   SMTP_FROM: optionalString,
-  SMTP_SECURE: optionalBool
+  SMTP_SECURE: optionalBool,
+  // ── Push PWA (Web Push / VAPID, #53) ──
+  VAPID_PUBLIC_KEY: optionalString,
+  VAPID_PRIVATE_KEY: optionalString,
+  VAPID_SUBJECT: optionalString
 });
 
 /** Id estable de la instancia para dedupe de bundles (#20). Fallback 'unknown'. */
@@ -61,6 +65,24 @@ export type ServerEnv = z.infer<typeof serverEnvSchema>;
 
 /** Remitente por defecto cuando SMTP_FROM no está configurado (#49 R1). */
 export const DEFAULT_SMTP_FROM = 'auditorias@serviciosysistemas.com.ar';
+
+/** Configuración VAPID; null si alguna clave obligatoria falta (modo no-op, R12). */
+export function getVapidConfig(): {
+  publicKey: string;
+  privateKey: string;
+  subject: string;
+} | null {
+  const env = getServerEnv();
+  const { VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT } = env;
+  if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY || !VAPID_SUBJECT) {
+    return null;
+  }
+  return {
+    publicKey: VAPID_PUBLIC_KEY,
+    privateKey: VAPID_PRIVATE_KEY,
+    subject: VAPID_SUBJECT
+  };
+}
 
 /** Remitente efectivo: SMTP_FROM o default corporativo SyS. */
 export function resolveSmtpFrom(env: ServerEnv): string {

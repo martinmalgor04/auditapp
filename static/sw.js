@@ -30,6 +30,62 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+/** Ícono de marca SyS para las notificaciones push. */
+const PUSH_ICON = '/icons/icon-192.png';
+const PUSH_BADGE = '/icons/icon-192.png';
+
+/**
+ * Handler push: parsea el PushPayload, muestra la notificación branded SyS. R7
+ * Tolera payload inválido sin romper.
+ */
+self.addEventListener('push', (event) => {
+  let payload = null;
+  try {
+    if (event.data) {
+      payload = event.data.json();
+    }
+  } catch {
+    // payload inválido: silencioso
+  }
+
+  if (!payload || !payload.title) {
+    return;
+  }
+
+  const title = payload.title;
+  const options = {
+    body: payload.body ?? '',
+    icon: PUSH_ICON,
+    badge: PUSH_BADGE,
+    tag: payload.tag ?? undefined,
+    data: { url: payload.url ?? '/' }
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+/**
+ * Handler click en notificación: abre/enfoca la ruta del payload. R8
+ */
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url ?? '/';
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Reusar ventana existente si la hay
+      for (const client of clientList) {
+        const clientUrl = new URL(client.url);
+        if (clientUrl.origin === self.location.origin) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      return self.clients.openWindow(url);
+    })
+  );
+});
+
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
