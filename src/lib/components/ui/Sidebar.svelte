@@ -19,8 +19,7 @@
 
 <aside class="hidden lg:flex flex-col fixed left-0 top-0 h-full w-[220px] bg-sys-navy z-40">
   <div class="px-4 py-5 border-b border-white/10" data-sys-shell-header>
-    <img src="/brand/sys-horizontal-w.png" alt="Servicios & Sistemas" class="h-6 mb-1" />
-    <p class="text-sys-text-navy-muted text-xs">servicios & sistemas</p>
+    <img src="/brand/sys-horizontal-w.png" alt="Servicios & Sistemas" class="h-6" />
   </div>
 
   <nav class="flex-1 py-4 px-2 space-y-1">

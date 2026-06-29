@@ -52,6 +52,14 @@
         <p class="px-3 py-2 text-xs font-medium text-[--sys-text-primary] truncate border-b border-[--sys-border]">
           {user.name}
         </p>
+        <a
+          href="/perfil"
+          role="menuitem"
+          onclick={close}
+          class="block w-full px-3 py-2 text-left text-sm text-[--sys-text-secondary] hover:bg-[--sys-bg-app]"
+        >
+          Mi perfil
+        </a>
         <form method="POST" action="/logout">
           <button
             type="submit"
@@ -79,6 +87,12 @@
         {/if}
       </div>
     </div>
+    <a
+      href="/perfil"
+      class="block w-full text-left text-xs text-sys-text-navy-muted hover:text-white transition-colors py-1"
+    >
+      Mi perfil
+    </a>
     <form method="POST" action="/logout">
       <button
         type="submit"
