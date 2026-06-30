@@ -38,6 +38,10 @@ services:
       # Subido a 120M para audio de reunión (debe ser >= REUNION_MAX_AUDIO_BYTES)
       BODY_SIZE_LIMIT: ${BODY_SIZE_LIMIT:-120M}
       AUTO_SEED: ${AUTO_SEED:-true}
+      # Push PWA (#53) — sin estas tres claves /perfil no puede activar notificaciones (modo no-op)
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-}
       PORT: '3033'
     networks:
       - dokploy-network
