@@ -6,6 +6,7 @@ import {
 } from '$lib/server/auth/session';
 import { findSessionById } from '$lib/server/db/sessions';
 import { logger } from '$lib/server/logger';
+import { handleManualInformeRequest } from '$lib/server/informe/manual-serve';
 
 function requestContext(event: RequestEvent): Record<string, unknown> {
   return {
@@ -33,6 +34,12 @@ export const handle: Handle = async ({ event, resolve }) => {
     }
   } else {
     event.locals.user = null;
+  }
+
+  // Interceptar documentos HTML manuales (#55)
+  const manualResponse = await handleManualInformeRequest(event);
+  if (manualResponse) {
+    return manualResponse;
   }
 
   const response = await resolve(event);

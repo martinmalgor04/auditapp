@@ -224,8 +224,22 @@ Open questions resueltas. Las de abajo quedan como registro histórico.
   modelo** con la estructura/columnas exactas (equipo + foto); la implementación se
   ajusta a ese modelo cuando llegue (dependencia de entrada — bloquea la tarea de
   mapeo de columnas).
-- **OQ-3 → La sección de inventario va ANTES del Plan** (no inmediatamente tras
-  Hallazgos). Ajustar el orden de render en `web-render.ts`.
+- **OQ-3 → CORREGIDO: el inventario va DENTRO de la sección Hallazgos**, al final
+  (tras la lectura transversal / callout), como bloque `.equip` — NO como sección
+  propia antes del Plan. Así está en el informe real de Grupo Agros (Parte IT,
+  "Equipos relevados en sitio").
+
+**Referencia real (gold standard `informes/2026-informe-grupo_agros_formosa-auditoria-erp-it.html`):**
+- Columnas de la tabla de equipos: **tipo · marca · modelo · observaciones**
+  (no EOL; el EOL/semáforo del scoring queda opcional/secundario). Confirmar con el
+  modelo que Martín enviará si difieren las `key`.
+- Galería `.equip-gallery` con `.equip-fig` + `<img>` + `.equip-cap` (caption con
+  `<b>` título del equipo + descripción), placeholder `.equip-ph` si falta la foto.
+- Las `<img src>` apuntan a la URL pública R2 (ver OQ-1).
+
+**Fuera de alcance (caso puntual):** el informe real combinaba ERP+IT en un solo
+documento de dos partes con heroes/gauges separados; Martín aclaró que ese combinado
+es un caso particular y NO debe modelarse. El render sigue siendo por tipo.
 
 ## 7. Open questions para la puerta humana (resueltas — ver §8)
 

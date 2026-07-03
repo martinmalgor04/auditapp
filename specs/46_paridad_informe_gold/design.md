@@ -214,14 +214,15 @@ Open questions resueltas. Las de abajo quedan como registro histórico.
 
 - **OQ-1 → "Próximos pasos" SIN número** en el eyebrow (no se reserva el 06 del abono futuro).
 - **OQ-2 → `TL_HORIZONTAL_MAX = 4`.** Hasta 4 etapas horizontal; 5+ vertical.
-- **OQ-3 → Identificación por título/dominio** (no hay code fijo). Detectar la sección
-  de seguridad/control de usuarios por `title` (contiene "seguridad"/"usuarios") o
-  `domain`; documentar el criterio exacto en implementación.
+- **OQ-3 → Identificación por `code` por template:** sección de seguridad/control de
+  usuarios = **B9** (erp-tango-v3 "Seguridad y usuarios Tango"), **E7** (erp-estandar-v1
+  "Usuarios y permisos"), **A5+A6** (it-v2 "Control de acceso" + "Protección de cuentas").
+  Mapa de codes cableado; fallback por `title`/`domain` solo si no hay match.
 - **OQ-4 → Print A4 robusto en AMBOS:** vista web pública (`web-render.ts`) y render A4
   imprimible del editor (`render-*.ts`). Portar `@media print` + `@page` a los dos.
-- **OQ-5 → `estado` = ENUM con color.** Estado normalizado (OK / Parcial / Faltante) con
-  semáforo SyS (verde/naranja/rojo, tokens `--sys-*`), no texto libre. Definir el origen
-  del enum en `draft.seguridad`.
+- **OQ-5 → PENDIENTE (esperando a Martín):** `estado` de la tabla seguridad = ¿texto libre
+  curado (como el gold) o ENUM con semáforo Sí/Parcial/No (verde/amarillo/rojo, tokens
+  `--sys-*`)? No implementar la tabla de seguridad hasta cerrar esto.
 
 ## Open Questions para la puerta humana (resueltas — ver arriba)
 

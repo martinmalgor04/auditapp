@@ -8,11 +8,15 @@ import type postgres from 'postgres';
 
 type DbExecutor = postgres.Sql | postgres.TransactionSql;
 
+/** Origen de la versión del informe (R1). */
+export type AuditReportSource = 'ia' | 'manual';
+
 export type AuditReportRow = {
   id: string;
   auditId: string;
   version: number;
   status: InformeStatus;
+  source?: AuditReportSource;
   canonicalJson: CanonicalAudit;
   schemaVersion: string;
   clientDraft: ReportClientDraft | null;
@@ -44,7 +48,7 @@ export type AuditReportEditRow = {
 };
 
 const REPORT_COLUMNS = `
-  id, audit_id, version, status, canonical_json, schema_version,
+  id, audit_id, version, status, source, canonical_json, schema_version,
   client_draft, internal_draft, prompt_version, model, error_message, loom_url,
   requested_by, edited_by, edited_at, approved_by, approved_at,
   ejemplar, context_meta, created_at, updated_at, stale_since
@@ -57,6 +61,7 @@ function mapRow(row: Record<string, any>): AuditReportRow {
     auditId: row.audit_id,
     version: row.version,
     status: row.status,
+    source: row.source ?? 'ia',
     canonicalJson: row.canonical_json,
     schemaVersion: row.schema_version,
     clientDraft: row.client_draft,
@@ -404,4 +409,62 @@ export async function listEditHistory(reportId: string): Promise<AuditReportEdit
     editedBy: row.edited_by,
     editedAt: row.edited_at
   }));
+}
+
+/**
+ * INSERT atómico de versión manual (R4–R8).
+ * Crea nueva versión con MAX(version)+1, estado 'aprobado', copia canonical_json/schema_version
+ * de la última versión existente (cualquier status), y guarda el HTML manual.
+ * Retorna null si no hay versión previa (requiere base para copiar canónico).
+ */
+export async function insertManualReport(input: {
+  auditId: string;
+  htmlManual: string;
+  uploadedBy: string;
+}): Promise<AuditReportRow | null> {
+  const sql = getSql();
+
+  // R7: Validar que existe al menos una versión previa + obtener datos de la última
+  const latest = await sql`
+    SELECT version, canonical_json, schema_version
+    FROM audit_report
+    WHERE audit_id = ${input.auditId}
+    ORDER BY version DESC
+    LIMIT 1
+  `;
+
+  if (!latest[0]) {
+    return null; // R7: rechaza sin versión previa
+  }
+
+  // R4, R5, R6: Insertar nueva versión manual con datos de la anterior
+  const rows = await sql.unsafe(
+    `INSERT INTO audit_report
+      (audit_id, version, status, source, canonical_json, schema_version,
+       html_manual, requested_by, approved_by, approved_at)
+     VALUES ($1, $2, 'aprobado', 'manual', $3::jsonb, $4, $5, $6, $6, now())
+     RETURNING ${REPORT_COLUMNS}`,
+    [
+      input.auditId,
+      latest[0].version + 1,
+      latest[0].canonical_json as never,
+      latest[0].schema_version,
+      input.htmlManual,
+      input.uploadedBy
+    ]
+  );
+  return rows[0] ? mapRow(rows[0]) : null;
+}
+
+/**
+ * Obtiene el HTML manual de un informe si source='manual' (R2).
+ * Retorna null si no existe o el informe no es manual.
+ */
+export async function getReportManualHtml(reportId: string): Promise<string | null> {
+  const sql = getSql();
+  const rows = await sql.unsafe(
+    `SELECT html_manual FROM audit_report WHERE id = $1 AND source = 'manual' LIMIT 1`,
+    [reportId]
+  );
+  return rows[0]?.html_manual ?? null;
 }

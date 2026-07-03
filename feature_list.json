@@ -974,6 +974,46 @@
       ],
       "sdd": true,
       "status": "done"
+    },
+    {
+      "id": 54,
+      "name": "54_captacion_modelo_datos",
+      "title": "Modelo de datos compartido de la máquina de captación",
+      "description": "Contrato de datos de la máquina de captación en el mismo Postgres de auditapp, con auditapp como única autoridad de DDL. Una segunda app (captacion-app, Python, en Dokploy: reusa scraper + sysmkt) lee/escribe estas tablas conectándose al mismo DATABASE_URL sin correr DDL; la integración entre apps es por DB, no por HTTP. Alcance: (1) migración idempotente que crea captacion_prospecto_meta (metadata de prospección 1:1 con empresa: icp_score, segmento A/B/C, buy_signals, fuente), content_asset (biblioteca de contenido versionada y multi-tipo: cold_email/linkedin/ig/newsletter/vsl/informe/propuesta/snippet), campaign, sequence_step, message (instancia de mensaje a una empresa con estado de envío/aprobación/proveedor), email_event (open/click/bounce/reply append-only) y suppression_list (opt-out/bounces, Ley 25.326), todo anclado en la entidad canónica empresa (#23), NO en crm_lead (deprecada #23/017); (2) empresa_evento.tipo suma 'email' y la derivación de estado (#23) cuenta un cold email entregado como contacto, moviendo la empresa a 'contactada' con paridad TS↔SQL; (3) vista captacion_prospecto (join empresa + meta, excluye suppression_list) para que la captacion-app seleccione a quién contactar sin tocar crm_lead; (4) helpers de lectura en db/ para mostrar la actividad de captación en la ficha de empresa. NO incluye lógica de captación, envío, tracking, generación con Claude ni UI/endpoints en auditapp (todo en la captacion-app y su propio repo). Migración idempotente; no toca crm_lead/crm_lead_event/vista client.",
+      "source": "Decisión Martín (2026-06-30): scraper + automatización de captación en app separada en Dokploy compartiendo el Postgres de auditapp; DDL propiedad de auditapp; panel de aprobación en la captacion-app. Base: modelo de datos #2, empresa unificada/derivación de estado #23, auth #3.",
+      "acceptance": [
+        "Migración idempotente (2x sin error) crea captacion_prospecto_meta, content_asset, campaign, sequence_step, message, email_event y suppression_list con FKs a empresa/app_user, CHECKs e índices del design",
+        "captacion_prospecto_meta es 1:1 con empresa (PK = empresa_id, ON DELETE CASCADE) y no altera columnas de empresa ni la vista client",
+        "content_asset versiona contenido multi-tipo con UNIQUE (slug, version) y estado borrador/aprobado/archivado",
+        "message modela estado de envío/aprobación/proveedor y email_event registra delivered/open/click/bounce/complaint/reply/unsubscribe/failed (append-only)",
+        "suppression_list impone unicidad case-insensitive por email; vista captacion_prospecto excluye los emails suprimidos",
+        "empresa_evento.tipo acepta 'email' y un cold email entregado deriva estado 'contactada' con test de paridad SQL↔TS verde (#23)",
+        "Helper de lectura listMessagesByEmpresa y la ficha de empresa muestran la actividad de captación; sin endpoints HTTP de captación en auditapp",
+        "crm_lead/crm_lead_event/vista client intactas; pnpm run check, build y test verdes",
+        "Tests: captacion-schema (idempotencia, columnas/CHECK/FK/unique de las 7 tablas, vista, no-regresión crm_lead), captacion-db (listMessagesByEmpresa, timeline con tipo='email'), empresa-estado (email cuenta como contacto + paridad)"
+      ],
+      "sdd": true,
+      "status": "spec_ready"
+    },
+    {
+      "id": 55,
+      "name": "55_informe_html_manual",
+      "title": "Subir HTML del informe pulido a mano (versión manual entregable)",
+      "description": "Permitir que un admin/técnico suba un archivo HTML del informe editado a mano y que ese HTML sea el informe vigente entregable al cliente, cerrando el gap de #45/#46 (paridad del render generado con el gold standard): el generador deja el informe al ~80% y hoy Martín descarga el HTML (#31), lo pule a mano y lo sube al CDN R2 para mandarle el link al cliente POR FUERA del app. Esta feature internaliza ese workflow manual. Alcance: (1) acción 'Subir HTML' en el panel interno de la versión del informe (src/routes/(app)/auditorias/[id]/informe/[version]) que acepta un .html y crea una NUEVA versión de audit_report marcada como manual/editada (source=manual), que pasa a ser la vigente para descargar (#31) y entregar (#15), sin borrar las versiones generadas por IA (#14) — reusa el versionado existente; (2) el HTML se guarda y sirve TAL CUAL, sin reescribir ni embeber fotos: las imágenes apuntan a las URLs de attachments del propio app (/audits/{id}/...) y se resuelven como hoy; (3) la entrega #15 (/informe/[token], token firmado, revocable, con registro de enviado/vistas) sirve el HTML manual tal cual, con la encuesta de conformidad (#47) embebida debajo, reemplazando el paso manual de subir al CDN y mandar el link a mano; (4) el HTML se sirve como DOCUMENTO DIRECTO (decisión de puerta 2026-07-02): sin iframe ni sanitización que rompa el script de animaciones (reveal-on-scroll/gauge); la encuesta #47 se inyecta antes del </body>; el modelo de confianza es que solo admin/técnico asignado puede subir; (5) el render público nunca inyecta material interno (upsell/recomendaciones): la invariante de #14/#15 se mantiene y el contenido del HTML manual es responsabilidad del autor. NO cambia el motor de scoring ni el generador #14: el HTML subido reemplaza el informe en la ENTREGA, no el pipeline de generación.",
+      "source": "Solicitud operativa SyS (2026-07-02, Martín): poder subir el HTML del informe pulido a mano y que el app lo entregue al cliente, en vez de subirlo al CDN R2 y mandar el link por fuera. Decisiones de puerta: (1) se entrega al cliente en el link público /informe/[token], no solo interno; (2) el HTML se sirve tal cual, sin reescribir fotos, con la encuesta #47 debajo; (3) el HTML subido crea una nueva versión 'manual' de audit_report que pasa a ser la vigente; (4) servido como documento directo, no iframe ni sanitización (el script de animaciones debe sobrevivir), encuesta inyectada antes de </body>. Base: descarga HTML #31 (round-trip descargar→pulir→subir), informe IA #14, entrega #15 (/informe/[token]), encuesta #47, inventario/fotos #45, paridad gold standard #45/#46. Referencia: ~/Downloads/2026-informe-grupo_agros_formosa-auditoria-erp-it.html (export del app refinado a mano).",
+      "acceptance": [
+        "Acción 'Subir HTML' en el panel interno de la versión del informe (admin/técnico asignado) que acepta un archivo .html y crea una nueva versión de audit_report marcada como manual (source/origen manual), sin borrar las versiones generadas por IA",
+        "La versión manual subida pasa a ser la vigente para descargar (#31) y entregar (#15); las versiones anteriores se conservan y siguen listables",
+        "La entrega pública /informe/[token] (#15) sirve el HTML manual TAL CUAL (sin reescribir ni embeber fotos), con la encuesta de conformidad (#47) embebida debajo",
+        "El token público firmado, revocable, con expiración y registro de enviado/vistas de #15 aplica igual a la versión manual",
+        "El render público de la versión manual nunca inyecta material interno (upsell/recomendaciones); test invariante",
+        "El HTML manual se sirve como documento directo (sin iframe ni sanitización destructiva): el script de animaciones del informe (reveal-on-scroll/gauge) funciona en el render público; la encuesta #47 se inyecta antes de </body> sin romper el documento",
+        "Guard server-side: solo admin/técnico asignado sube y gestiona la versión manual; cliente y técnicos no asignados no acceden a la acción",
+        "No cambia el motor de scoring ni el generador de informes #14; el HTML subido reemplaza el informe en la entrega, no el pipeline de generación",
+        "Tests: alta de versión manual y vigencia, entrega pública del HTML manual con encuesta al pie, no-filtrado de material interno, guard de permisos, y round-trip descargar(#31)→subir coherente"
+      ],
+      "sdd": true,
+      "status": "in_progress"
     }
   ]
 }
