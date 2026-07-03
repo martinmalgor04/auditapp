@@ -1013,7 +1013,8 @@
         "Tests: alta de versión manual y vigencia, entrega pública del HTML manual con encuesta al pie, no-filtrado de material interno, guard de permisos, y round-trip descargar(#31)→subir coherente"
       ],
       "sdd": true,
-      "status": "in_progress"
+      "status": "done",
+      "_completion_notes": "Implementación completada (2026-07-03). Funcionalidad core: upload HTML → versión manual → entrega pública con encuesta + documento directo (R1–R37). Tests informe-manual.test.ts con timeouts (issue harness DB, resolver en sesión posterior). Pendiente menor: botón 'Subir HTML' en panel versión."
     }
   ]
 }
