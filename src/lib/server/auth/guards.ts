@@ -43,7 +43,8 @@ export function requireAdmin(locals: App.Locals): AppUser {
 export const ADMIN_ONLY_ACTIONS = [
   'reopen_audit',
   'manage_users',
-  'edit_templates'
+  'edit_templates',
+  'archive_audit'
 ] as const;
 
 export type AdminOnlyAction = (typeof ADMIN_ONLY_ACTIONS)[number];

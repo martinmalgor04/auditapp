@@ -77,6 +77,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     approvedAt: report.approvedAt ? report.approvedAt.toISOString() : null,
     ejemplar: report.ejemplar,
     isAdmin,
+    source: report.source ?? 'ia',
     clientDraft: report.clientDraft,
     internalDraft: report.internalDraft,
     upsellFindings: report.canonicalJson.upsell_findings,

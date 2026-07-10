@@ -251,7 +251,7 @@
     <AuditBundleActions auditId={data.audit.id} />
   {/if}
 
-  {#if !data.audit.archivedAt}
+  {#if data.isAdmin && !data.audit.archivedAt}
     <form
       method="POST"
       action="?/archive"

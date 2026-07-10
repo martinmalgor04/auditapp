@@ -4,6 +4,7 @@ import { requireStaffApi } from '$lib/server/api/guards';
 import {
   AttachmentNotFoundError,
   AuditNotFoundError,
+  StorageForbiddenError,
   deleteAttachment,
   deleteAttachmentSchema,
   StorageValidationError
@@ -35,12 +36,16 @@ export const DELETE: RequestHandler = async ({ params, request, locals }) => {
       attachmentId,
       itemId: parsed.data.item_id,
       rowId: parsed.data.row_id,
-      userId: userOrResponse.id
+      userId: userOrResponse.id,
+      user: userOrResponse
     });
     return apiSuccess({ ok: true });
   } catch (err) {
     if (err instanceof AuditNotFoundError || err instanceof AttachmentNotFoundError) {
       return apiError(err.message, 404);
+    }
+    if (err instanceof StorageForbiddenError) {
+      return apiError(err.message, 403);
     }
     if (err instanceof StorageValidationError) {
       return apiError(err.message, 400);

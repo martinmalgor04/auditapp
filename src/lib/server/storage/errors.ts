@@ -33,3 +33,12 @@ export class AttachmentConflictError extends Error {
     this.name = 'AttachmentConflictError';
   }
 }
+
+export class StorageForbiddenError extends Error {
+  readonly code = 'STORAGE_FORBIDDEN';
+
+  constructor(message = 'No tenés permiso para esta auditoría') {
+    super(message);
+    this.name = 'StorageForbiddenError';
+  }
+}

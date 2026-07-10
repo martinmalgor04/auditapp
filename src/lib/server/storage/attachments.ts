@@ -1,4 +1,6 @@
+import type { AppUser } from '../auth/types';
 import type { AuditStatus } from '../db/audit-status';
+import { techIsAssigned } from '../db/audit-assignment';
 import { deleteAttachmentById, getAttachmentById, insertAttachment } from '../db/attachments';
 import { getFormItemForAudit } from '../db/audit-form';
 import { getTemplateItemSectionCode, removeAttachmentFromResponse, upsertFileRefResponse } from '../db/audit-responses';
@@ -7,6 +9,7 @@ import {
   AttachmentConflictError,
   AttachmentNotFoundError,
   AuditNotFoundError,
+  StorageForbiddenError,
   StorageValidationError
 } from './errors';
 import { logger } from '$lib/server/logger';
@@ -32,6 +35,17 @@ async function getAuditForStorage(auditId: string): Promise<{ id: string; status
   return row;
 }
 
+async function assertStorageAccess(auditId: string, user: AppUser): Promise<void> {
+  if (user.role === 'admin') return;
+  if (user.role !== 'tecnico') {
+    throw new StorageForbiddenError();
+  }
+  const assigned = await techIsAssigned(auditId, user.id);
+  if (!assigned) {
+    throw new StorageForbiddenError();
+  }
+}
+
 function assertAuditEditable(status: AuditStatus): void {
   if (!EDITABLE_ATTACHMENT_STATUSES.includes(status)) {
     throw new StorageValidationError('La auditoría no admite adjuntos en este estado');
@@ -47,8 +61,10 @@ export async function requestPresignedUpload(input: {
   sizeBytes: number;
   kind: 'photo' | 'export';
   userId: string;
+  user: AppUser;
 }): Promise<PresignPutResult> {
   const audit = await getAuditForStorage(input.auditId);
+  await assertStorageAccess(input.auditId, input.user);
   assertAuditEditable(audit.status);
 
   let r2Key: string;
@@ -81,8 +97,10 @@ export async function confirmUpload(input: {
   sizeBytes: number;
   kind: 'photo' | 'export';
   userId: string;
+  user: AppUser;
 }): Promise<{ attachmentId: string }> {
   const audit = await getAuditForStorage(input.auditId);
+  await assertStorageAccess(input.auditId, input.user);
   assertAuditEditable(audit.status);
 
   if (!isR2KeyForAudit(input.r2Key, input.auditId)) {
@@ -135,6 +153,7 @@ export async function confirmUpload(input: {
 export async function requestPresignedDownload(input: {
   attachmentId: string;
   userId: string;
+  user: AppUser;
 }): Promise<PresignGetResult> {
   const attachment = await getAttachmentById(input.attachmentId);
   if (!attachment) {
@@ -142,6 +161,7 @@ export async function requestPresignedDownload(input: {
   }
 
   await getAuditForStorage(attachment.audit_id);
+  await assertStorageAccess(attachment.audit_id, input.user);
 
   return presignGet({ r2Key: attachment.r2_key });
 }
@@ -163,8 +183,10 @@ export async function deleteAttachment(input: {
   itemId: string;
   rowId?: string;
   userId: string;
+  user: AppUser;
 }): Promise<void> {
   const audit = await getAuditForStorage(input.auditId);
+  await assertStorageAccess(input.auditId, input.user);
   assertAuditEditable(audit.status);
 
   const attachment = await getAttachmentById(input.attachmentId);
@@ -217,7 +239,11 @@ export async function uploadObjectToR2(input: {
   r2Key: string;
   contentType: string;
   body: ArrayBuffer | Blob;
+  user: AppUser;
 }): Promise<void> {
+  await getAuditForStorage(input.auditId);
+  await assertStorageAccess(input.auditId, input.user);
+
   if (!isR2KeyForAudit(input.r2Key, input.auditId)) {
     throw new StorageValidationError('r2_key no corresponde a la auditoría');
   }

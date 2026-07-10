@@ -21,5 +21,6 @@ export {
   StorageValidationError,
   AttachmentNotFoundError,
   AuditNotFoundError,
-  AttachmentConflictError
+  AttachmentConflictError,
+  StorageForbiddenError
 } from './errors';

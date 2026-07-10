@@ -4,6 +4,7 @@ import { requireStaffApi } from '$lib/server/api/guards';
 import {
   AttachmentConflictError,
   AuditNotFoundError,
+  StorageForbiddenError,
   confirmUpload,
   confirmUploadSchema,
   StorageValidationError
@@ -37,13 +38,17 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
       contentType: parsed.data.content_type,
       sizeBytes: parsed.data.size_bytes,
       kind: parsed.data.kind,
-      userId: userOrResponse.id
+      userId: userOrResponse.id,
+      user: userOrResponse
     });
 
     return apiSuccess({ attachment_id: result.attachmentId });
   } catch (err) {
     if (err instanceof AuditNotFoundError) {
       return apiError(err.message, 404);
+    }
+    if (err instanceof StorageForbiddenError) {
+      return apiError(err.message, 403);
     }
     if (err instanceof AttachmentConflictError) {
       return apiError(err.message, 409);

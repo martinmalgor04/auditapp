@@ -1,6 +1,7 @@
 import { error, fail, isRedirect, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { requireStaff } from '$lib/server/auth/guards';
+import { requireAdmin, requireStaff } from '$lib/server/auth/guards';
+import type { AppUser } from '$lib/server/auth/types';
 import {
   archiveAudit,
   getAuditById,
@@ -15,6 +16,7 @@ import {
 } from '$lib/server/backoffice/briefing-link';
 import { parseCabResponses } from '$lib/server/backoffice/form-parsers';
 import { failFromError } from '$lib/server/backoffice/route-helpers';
+import { ForbiddenError } from '$lib/server/backoffice/errors';
 import { listReportsByAudit } from '$lib/server/db/informe-reports';
 import { listReunionSessionsByAudit } from '$lib/server/db/reunion-sessions';
 import {
@@ -31,6 +33,13 @@ import { getSql } from '$lib/server/db/client';
 function formDatetime(raw: FormDataEntryValue | null): string | null | undefined {
   if (raw === null) return undefined;
   return normalizeDatetimeInput(String(raw));
+}
+
+async function assertAdminOrAssigned(auditId: string, user: AppUser): Promise<void> {
+  if (user.role === 'admin') return;
+  if (!(await techIsAssigned(auditId, user.id))) {
+    throw new ForbiddenError('No tenés permiso para modificar esta auditoría');
+  }
 }
 
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -135,6 +144,8 @@ export const actions: Actions = {
     const user = requireStaff(locals);
 
     try {
+      await assertAdminOrAssigned(params.id, user);
+
       const formData = await request.formData();
       const cabResponses = parseCabResponses(formData);
 
@@ -162,7 +173,7 @@ export const actions: Actions = {
 
   archive: async ({ locals, params }) => {
     try {
-      const user = requireStaff(locals);
+      const user = requireAdmin(locals);
       await archiveAudit(params.id, user.id);
       redirect(303, '/tablero');
     } catch (e) {
@@ -174,9 +185,10 @@ export const actions: Actions = {
   },
 
   generateBriefingLink: async ({ locals, params }) => {
-    requireStaff(locals);
+    const user = requireStaff(locals);
 
     try {
+      await assertAdminOrAssigned(params.id, user);
       const result = await generateBriefingLink(params.id);
       return { success: true, url: result.url, token: result.token };
     } catch (e) {
@@ -185,9 +197,10 @@ export const actions: Actions = {
   },
 
   regenerateBriefingLink: async ({ locals, params }) => {
-    requireStaff(locals);
+    const user = requireStaff(locals);
 
     try {
+      await assertAdminOrAssigned(params.id, user);
       const result = await regenerateBriefingLink(params.id);
       return { success: true, url: result.url, token: result.token };
     } catch (e) {
@@ -196,8 +209,9 @@ export const actions: Actions = {
   },
 
   completarBriefingInternamente: async ({ locals, params }) => {
-    requireStaff(locals);
+    const user = requireStaff(locals);
     try {
+      await assertAdminOrAssigned(params.id, user);
       await completarBriefingInternamente(params.id);
       return { success: true };
     } catch (e) {

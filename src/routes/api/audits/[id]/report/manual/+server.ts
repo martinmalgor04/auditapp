@@ -100,6 +100,9 @@ export const POST: RequestHandler = async ({ params, locals, request }) => {
       version: newReport.version
     });
   } catch (err) {
+    if (err && typeof err === 'object' && 'code' in err && err.code === '23505') {
+      return apiError('Conflicto de versión, reintentá', 409);
+    }
     console.error('[manual-upload]', err);
     return apiError(`Error al guardar informe: ${err instanceof Error ? err.message : 'desconocido'}`, 500);
   }

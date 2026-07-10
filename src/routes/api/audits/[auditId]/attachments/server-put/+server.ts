@@ -4,6 +4,7 @@ import { requireStaffApi } from '$lib/server/api/guards';
 import {
   AuditNotFoundError,
   MAX_UPLOAD_BYTES,
+  StorageForbiddenError,
   StorageValidationError,
   uploadObjectToR2
 } from '$lib/server/storage';
@@ -45,11 +46,14 @@ export const POST: RequestHandler = async ({ params, request, locals, url }) => 
   const contentType = request.headers.get('content-type')?.split(';')[0]?.trim() ?? 'application/octet-stream';
 
   try {
-    await uploadObjectToR2({ auditId, r2Key, contentType, body });
+    await uploadObjectToR2({ auditId, r2Key, contentType, body, user: userOrResponse });
     return apiSuccess({ ok: true });
   } catch (err) {
     if (err instanceof AuditNotFoundError) {
       return apiError(err.message, 404);
+    }
+    if (err instanceof StorageForbiddenError) {
+      return apiError(err.message, 403);
     }
     if (err instanceof StorageValidationError) {
       return apiError(err.message, 400);

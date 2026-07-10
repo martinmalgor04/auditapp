@@ -22,6 +22,9 @@ Backlog activo: [`feature_list.json`](../feature_list.json). Mapa de trazabilida
 | 39 | [`39_relevamiento_visible_reapertura/`](39_relevamiento_visible_reapertura/requirements.md) | Ver relevamiento de auditorías cerradas + reapertura accesible | spec_ready |
 | 40 | [`40_offline_snapshot/`](40_offline_snapshot/requirements.md) | Snapshot local del relevamiento (recuperación offline) | in_progress |
 | 41 | [`41_referencia_auditoria/`](41_referencia_auditoria/requirements.md) | Referencia legible y anti-duplicado de auditorías | in_progress |
+| 56 | [`56_storage_audit_access/`](56_storage_audit_access/requirements.md) | Cerrar IDOR de adjuntos (ownership) | spec_ready |
+| 57 | [`57_backoffice_mutation_scope/`](57_backoffice_mutation_scope/requirements.md) | Acotar update/archive/briefing | spec_ready |
+| 58 | [`58_manual_informe_encuesta_csp/`](58_manual_informe_encuesta_csp/requirements.md) | Encuesta manual + race + nosniff | spec_ready |
 
 Cada carpeta contiene:
 

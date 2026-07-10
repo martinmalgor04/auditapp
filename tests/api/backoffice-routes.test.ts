@@ -71,27 +71,55 @@ describe('backoffice routes auth', () => {
     }
   });
 
-  it('tecnico can archive audits', async () => {
+  it('tecnico cannot archive audits', async () => {
     const { auditId } = await insertTestAuditRow(sql, { razonSocial: 'Guard test' });
 
-    try {
-      await auditActions.archive({
-        locals: {
-          user: {
-            id: tecnicoId,
-            email: 'facu@serviciosysistemas.com.ar',
-            name: 'Facu',
-            role: 'tecnico',
-            active: true,
-            auditTypes: ['it']
-          }
-        },
-        params: { id: auditId }
-      } as never);
-      expect.fail('should redirect');
-    } catch (e) {
-      expect(isRedirect(e)).toBe(true);
-    }
+    const result = await auditActions.archive({
+      locals: {
+        user: {
+          id: tecnicoId,
+          email: 'facu@serviciosysistemas.com.ar',
+          name: 'Facu',
+          role: 'tecnico',
+          active: true,
+          auditTypes: ['it']
+        }
+      },
+      params: { id: auditId }
+    } as never);
+
+    expect(result).toMatchObject({
+      status: 403,
+      data: { error: expect.any(String) }
+    });
+  });
+
+  it('tecnico no asignado cannot generateBriefingLink', async () => {
+    const { auditId } = await insertTestAuditRow(sql, {
+      razonSocial: 'Briefing scope',
+      status: 'borrador',
+      assignedTechEmail: 'facu@serviciosysistemas.com.ar'
+    });
+    const simonId = await findUserIdByEmail(sql, 'simon@serviciosysistemas.com.ar');
+
+    const result = await auditActions.generateBriefingLink({
+      locals: {
+        user: {
+          id: simonId,
+          email: 'simon@serviciosysistemas.com.ar',
+          name: 'Simon',
+          role: 'tecnico',
+          active: true,
+          auditTypes: ['erp-tango']
+        }
+      },
+      params: { id: auditId }
+    } as never);
+
+    expect(result).toMatchObject({
+      status: 403,
+      data: { error: expect.any(String) }
+    });
   });
 
   it('admin can archive audits', async () => {

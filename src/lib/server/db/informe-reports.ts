@@ -424,34 +424,28 @@ export async function insertManualReport(input: {
 }): Promise<AuditReportRow | null> {
   const sql = getSql();
 
-  // R7: Validar que existe al menos una versión previa + obtener datos de la última
-  const latest = await sql`
-    SELECT version, canonical_json, schema_version
-    FROM audit_report
-    WHERE audit_id = ${input.auditId}
-    ORDER BY version DESC
-    LIMIT 1
-  `;
-
-  if (!latest[0]) {
-    return null; // R7: rechaza sin versión previa
-  }
-
-  // R4, R5, R6: Insertar nueva versión manual con datos de la anterior
+  // Allocate+insert atómico (#58): una sola statement evita TOCTOU de SELECT+INSERT.
+  // Si no hay versión previa, RETURNING vacío → null (R7).
   const rows = await sql.unsafe(
     `INSERT INTO audit_report
       (audit_id, version, status, source, canonical_json, schema_version,
        html_manual, requested_by, approved_by, approved_at)
-     VALUES ($1, $2, 'aprobado', 'manual', $3::jsonb, $4, $5, $6, $6, now())
+     SELECT
+       $1,
+       COALESCE(MAX(version), 0) + 1,
+       'aprobado',
+       'manual',
+       (SELECT canonical_json FROM audit_report WHERE audit_id = $1 ORDER BY version DESC LIMIT 1),
+       (SELECT schema_version FROM audit_report WHERE audit_id = $1 ORDER BY version DESC LIMIT 1),
+       $2,
+       $3,
+       $3,
+       now()
+     FROM audit_report
+     WHERE audit_id = $1
+     HAVING COUNT(*) > 0
      RETURNING ${REPORT_COLUMNS}`,
-    [
-      input.auditId,
-      latest[0].version + 1,
-      latest[0].canonical_json as never,
-      latest[0].schema_version,
-      input.htmlManual,
-      input.uploadedBy
-    ]
+    [input.auditId, input.htmlManual, input.uploadedBy]
   );
   return rows[0] ? mapRow(rows[0]) : null;
 }

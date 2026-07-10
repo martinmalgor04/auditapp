@@ -67,12 +67,16 @@ export async function handleManualInformeRequest(event: RequestEvent): Promise<R
     // Registrar vista (R26)
     await registerShareView(share.id);
 
+    // Threat model (#55 / #58): HTML trusted-uploader (admin/técnico asignado).
+    // Sin CSP restrictivo ni iframe sandbox: rompería animaciones del HTML pulido.
+    // XSS residual si una cuenta staff comprometida sube script malicioso.
     // Servir documento (R18, R26)
     return new Response(docWithSurvey, {
       status: 200,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
-        'X-Robots-Tag': 'noindex, nofollow'
+        'X-Robots-Tag': 'noindex, nofollow',
+        'X-Content-Type-Options': 'nosniff'
       }
     });
   } catch (err) {
@@ -130,7 +134,7 @@ function buildSurveyBlock(token: string, respondedAt?: Date | null): string {
     `;
   }
 
-  // R22: form plano sin JavaScript
+  // R22: form plano sin JavaScript — valores alineados a surveyResponseSchema (#47 / #58)
   return `
     <div ${containerStyle}>
       <h3 style="margin-top: 0; color: #333;">¿Qué te pareció el informe?</h3>
@@ -141,10 +145,11 @@ function buildSurveyBlock(token: string, respondedAt?: Date | null): string {
           </label>
           <select name="valoracion_global" required style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;">
             <option value="">Seleccionar…</option>
-            <option value="muy_satisfecho">Muy satisfecho</option>
-            <option value="satisfecho">Satisfecho</option>
-            <option value="neutral">Neutral</option>
-            <option value="insatisfecho">Insatisfecho</option>
+            <option value="1">1 — Muy baja</option>
+            <option value="2">2 — Baja</option>
+            <option value="3">3 — Media</option>
+            <option value="4">4 — Alta</option>
+            <option value="5">5 — Muy alta</option>
           </select>
         </div>
         <div>
@@ -153,10 +158,11 @@ function buildSurveyBlock(token: string, respondedAt?: Date | null): string {
           </label>
           <select name="claridad_informe" required style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;">
             <option value="">Seleccionar…</option>
-            <option value="muy_clara">Muy clara</option>
-            <option value="clara">Clara</option>
-            <option value="poco_clara">Poco clara</option>
-            <option value="confusa">Confusa</option>
+            <option value="1">1 — Muy confusa</option>
+            <option value="2">2 — Poco clara</option>
+            <option value="3">3 — Aceptable</option>
+            <option value="4">4 — Clara</option>
+            <option value="5">5 — Muy clara</option>
           </select>
         </div>
         <div>
@@ -165,10 +171,8 @@ function buildSurveyBlock(token: string, respondedAt?: Date | null): string {
           </label>
           <select name="conforme_hallazgos" required style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;">
             <option value="">Seleccionar…</option>
-            <option value="totalmente_conforme">Totalmente conforme</option>
-            <option value="conforme">Conforme</option>
-            <option value="parcialmente_conforme">Parcialmente conforme</option>
-            <option value="disconforme">Disconforme</option>
+            <option value="true">Sí</option>
+            <option value="false">No</option>
           </select>
         </div>
         <div>

@@ -296,4 +296,84 @@ describe('attachments presign API', () => {
     expect(body.data.download_url).toContain(r2Key);
     expect(body.data.download_url).toContain('X-Amz-Signature');
   });
+
+  it('técnico no asignado recibe 403 en presign-put y presign-get', async () => {
+    const assignedId = await findUserIdByEmail(sql, 'facu@serviciosysistemas.com.ar');
+    const otherId = await findUserIdByEmail(sql, 'simon@serviciosysistemas.com.ar');
+    const assignedUser: AppUser = {
+      id: assignedId,
+      email: 'facu@serviciosysistemas.com.ar',
+      name: 'Facu',
+      role: 'tecnico',
+      active: true,
+      auditTypes: ['it']
+    };
+    const otherUser: AppUser = {
+      id: otherId,
+      email: 'simon@serviciosysistemas.com.ar',
+      name: 'Simon',
+      role: 'tecnico',
+      active: true,
+      auditTypes: ['erp-tango']
+    };
+
+    const okPut = await presignPutPost({
+      params: { auditId },
+      request: new Request('http://localhost', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          item_id: itemId,
+          section_code: sectionCode,
+          filename: 'foto.jpg',
+          content_type: 'image/jpeg',
+          size_bytes: 1024,
+          kind: 'photo'
+        })
+      }),
+      locals: staffLocals(assignedUser)
+    } as never);
+    expect(okPut.status).toBe(200);
+
+    const forbiddenPut = await presignPutPost({
+      params: { auditId },
+      request: new Request('http://localhost', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          item_id: itemId,
+          section_code: sectionCode,
+          filename: 'foto.jpg',
+          content_type: 'image/jpeg',
+          size_bytes: 1024,
+          kind: 'photo'
+        })
+      }),
+      locals: staffLocals(otherUser)
+    } as never);
+    expect(forbiddenPut.status).toBe(403);
+
+    const r2Key = `audits/${auditId}/_general/55555555-5555-5555-5555-555555555555`;
+    const [att] = await sql<{ id: string }[]>`
+      INSERT INTO attachment (
+        audit_id, r2_key, filename, content_type, size_bytes, kind, uploaded_by
+      )
+      VALUES (
+        ${auditId}, ${r2Key}, 'doc.pdf', 'application/pdf', 500, 'export', ${adminUser.id}
+      )
+      RETURNING id
+    `;
+
+    const forbiddenGet = await presignGetHandler({
+      params: { attachmentId: att.id },
+      locals: staffLocals(otherUser)
+    } as never);
+    expect(forbiddenGet.status).toBe(403);
+
+    const adminGet = await presignGetHandler({
+      params: { attachmentId: att.id },
+      locals: staffLocals(adminUser)
+    } as never);
+    expect(adminGet.status).toBe(200);
+  });
 });

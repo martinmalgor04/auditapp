@@ -3,6 +3,7 @@ import { apiError, apiSuccess, parseJsonBody } from '$lib/server/api/envelope';
 import { requireStaffApi } from '$lib/server/api/guards';
 import {
   AuditNotFoundError,
+  StorageForbiddenError,
   presignPutRequestSchema,
   requestPresignedUpload,
   StorageValidationError
@@ -36,7 +37,8 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
       contentType: parsed.data.content_type,
       sizeBytes: parsed.data.size_bytes,
       kind: parsed.data.kind,
-      userId: userOrResponse.id
+      userId: userOrResponse.id,
+      user: userOrResponse
     });
 
     return apiSuccess({
@@ -48,6 +50,9 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
   } catch (err) {
     if (err instanceof AuditNotFoundError) {
       return apiError(err.message, 404);
+    }
+    if (err instanceof StorageForbiddenError) {
+      return apiError(err.message, 403);
     }
     if (err instanceof StorageValidationError) {
       return apiError(err.message, 400);

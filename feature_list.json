@@ -1015,6 +1015,54 @@
       "sdd": true,
       "status": "done",
       "_completion_notes": "Implementación completada (2026-07-03). Funcionalidad core: upload HTML → versión manual → entrega pública con encuesta + documento directo (R1–R37). Tests informe-manual.test.ts con timeouts (issue harness DB, resolver en sesión posterior). Pendiente menor: botón 'Subir HTML' en panel versión."
+    },
+    {
+      "id": 56,
+      "name": "56_storage_audit_access",
+      "title": "Cerrar IDOR de adjuntos — ownership por asignación",
+      "description": "Cualquier staff autenticado puede hoy presign/confirm/delete/download adjuntos de cualquier auditoría porque getAuditForStorage solo verifica existencia. Alinear storage con assertFormAccess: admin siempre; técnico solo si techIsAssigned (audit_assignment). Hallazgo S1 de la auditoría de seguridad 2026-07-10. Plan operativo: plans/01_assert_audit_storage_access.md.",
+      "source": "Auditoría deuda técnica / seguridad auditapp (2026-07-10). Finding S1 IDOR adjuntos. Referencia: plans/01_assert_audit_storage_access.md, canvas tech-debt-architecture-audit.",
+      "acceptance": [
+        "Los endpoints presign-put, confirm, server-put, DELETE attachment y presign-get responden 403 a técnico no asignado",
+        "Admin y técnico con audit_assignment siguen operando (200 / URLs firmadas)",
+        "El check vive en dominio attachments.ts vía techIsAssigned (no solo assigned_tech_id)",
+        "Tests vitest de API cubren IDOR negativo y no-regresión; pnpm run check y pnpm test verdes",
+        "Sin cambios de schema ni de endpoints de reunión"
+      ],
+      "sdd": true,
+      "status": "done"
+    },
+    {
+      "id": 57,
+      "name": "57_backoffice_mutation_scope",
+      "title": "Acotar mutaciones de detalle — update/archive/briefing",
+      "description": "Las actions update, archive y generate/regenerate/completar briefing del detalle de auditoría solo usan requireStaff: cualquier técnico puede mutar o archivar auditorías ajenas vía POST directo (la UI oculta archive a no-admins). Alinear con sendBriefingEmail: archive solo admin; update y briefing links admin o techIsAssigned. Hallazgos S2/S5/N2. Plan: plans/02_backoffice_mutation_scope.md.",
+      "source": "Auditoría deuda técnica / seguridad auditapp (2026-07-10). Findings S2 IDOR mutación, S5 archive sin admin, N2 briefing sin scope. Referencia: plans/02_backoffice_mutation_scope.md.",
+      "acceptance": [
+        "Action archive exige requireAdmin; técnico recibe 403 (test invertido respecto al caso actual que permite archivar)",
+        "Actions update, generateBriefingLink, regenerateBriefingLink y completarBriefingInternamente exigen admin o techIsAssigned",
+        "enviarBriefingEmail y reopenAudit sin regresión",
+        "Asignación evaluada con techIsAssigned (multi-tipo), no solo assignedTechId",
+        "Tests backoffice-routes verdes; pnpm run check y pnpm test verdes"
+      ],
+      "sdd": true,
+      "status": "done"
+    },
+    {
+      "id": 58,
+      "name": "58_manual_informe_encuesta_csp",
+      "title": "Encuesta manual alineada + race version + nosniff",
+      "description": "Tres fixes del flujo #55: (1) buildSurveyBlock emite enums incompatibles con surveyResponseSchema #47 (1–5 + boolean) → encuesta pública siempre falla; (2) insertManualReport hace SELECT+INSERT no atómico → race UNIQUE; (3) documentar threat model XSS del HTML trusted-uploader y agregar X-Content-Type-Options: nosniff sin imponer CSP restrictivo que rompa animaciones (puerta #55). Plan: plans/03_manual_informe_encuesta_csp.md.",
+      "source": "Auditoría deuda técnica / seguridad auditapp (2026-07-10). Findings A7 encuesta rota, A3 race insertManualReport, S3 residual documentado. Referencia: plans/03_manual_informe_encuesta_csp.md.",
+      "acceptance": [
+        "El form inyectado en HTML manual usa valores 1–5 y true/false compatibles con surveyResponseSchema; sin enums legacy",
+        "submitSurveyResponse acepta respuestas del HTML manual sin cambiar el schema Zod de #47",
+        "insertManualReport asigna version de forma atómica; conflicto unique → HTTP 409 en el endpoint manual",
+        "Serving manual incluye X-Content-Type-Options: nosniff y no agrega CSP restrictivo; threat model documentado en código",
+        "Tests informe-manual + encuesta-schema verdes; pnpm run check y pnpm test verdes"
+      ],
+      "sdd": true,
+      "status": "done"
     }
   ]
 }

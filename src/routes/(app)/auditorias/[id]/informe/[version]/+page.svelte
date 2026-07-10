@@ -11,8 +11,10 @@
   import { startReportPolling } from '$lib/client/informe/polling';
   import type { RenderClientDraft } from '$lib/informe/render';
   import EnviarInformeDialog from '$lib/components/informe/enviar-informe-dialog.svelte';
+  import ManualUploadDialog from '$lib/components/informe/manual-upload-dialog.svelte';
 
   let { data }: { data: PageData } = $props();
+  let showUploadDialog = $state(false);
 
   let tab = $state<'cliente' | 'interna'>('cliente');
   let status = $state(data.status);
@@ -107,13 +109,39 @@
 <div class="max-w-5xl space-y-6">
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div class="flex items-center gap-3">
-      <h1 class="sys-page-title">Informe IA · v{data.version}</h1>
+      <h1 class="sys-page-title">
+        Informe {data.source === 'manual' ? 'manual' : 'IA'} · v{data.version}
+      </h1>
       <ReportStatusBadge {status} />
+      {#if data.source === 'manual'}
+        <span
+          class="rounded-full bg-sys-electrico/10 px-2.5 py-0.5 text-xs font-semibold text-sys-electrico"
+          data-testid="badge-manual"
+        >
+          manual
+        </span>
+      {/if}
     </div>
     <a href="/auditorias/{data.auditId}" class="text-sm text-sys-electrico hover:underline">
       ← Volver a la auditoría
     </a>
   </div>
+
+  {#if data.isAdmin}
+    <div class="flex flex-wrap items-center gap-3">
+      <button
+        type="button"
+        class="sys-btn-secondary"
+        data-testid="subir-html-btn"
+        onclick={() => (showUploadDialog = true)}
+      >
+        Subir HTML
+      </button>
+      <span class="text-xs text-sys-medio">
+        Sube el HTML pulido a mano; crea una nueva versión que pasa a ser la vigente.
+      </span>
+    </div>
+  {/if}
 
   {#if actionError}
     <p class="text-sm text-sys-rojo" role="alert">{actionError}</p>
@@ -157,18 +185,30 @@
           {editMode ? 'Salir de edición' : 'Editar sobre el informe'}
         </button>
       {/if}
-      <button
-        type="button"
-        class="sys-btn-secondary"
-        disabled={busy}
-        onclick={() => confirm('¿Regenerar? Crea una nueva versión.') && call(base)}
-      >
-        Regenerar (nueva versión)
-      </button>
-      <a href="/auditorias/{data.auditId}/informe/{data.version}/imprimir" class="sys-btn-accent">
-        Vista de impresión
-      </a>
-      {#if model}
+      {#if data.source !== 'manual'}
+        <button
+          type="button"
+          class="sys-btn-secondary"
+          disabled={busy}
+          onclick={() => confirm('¿Regenerar? Crea una nueva versión.') && call(base)}
+        >
+          Regenerar (nueva versión)
+        </button>
+        <a href="/auditorias/{data.auditId}/informe/{data.version}/imprimir" class="sys-btn-accent">
+          Vista de impresión
+        </a>
+      {:else}
+        <a
+          href="{base}/{data.version}/html?inline=1"
+          target="_blank"
+          rel="noopener"
+          class="sys-btn-accent"
+          data-testid="previsualizar-manual"
+        >
+          Previsualizar documento
+        </a>
+      {/if}
+      {#if model || data.source === 'manual'}
         <a
           href="{base}/{data.version}/html"
           class="sys-btn-secondary"
@@ -189,16 +229,18 @@
       >
         Informe cliente
       </button>
-      <button
-        type="button"
-        class="px-4 py-2 text-sm font-semibold {tab === 'interna'
-          ? 'border-b-2 border-sys-electrico text-sys-electrico'
-          : 'text-sys-medio'}"
-        onclick={() => (tab = 'interna')}
-        data-testid="tab-vista-interna"
-      >
-        Vista interna
-      </button>
+      {#if data.source !== 'manual'}
+        <button
+          type="button"
+          class="px-4 py-2 text-sm font-semibold {tab === 'interna'
+            ? 'border-b-2 border-sys-electrico text-sys-electrico'
+            : 'text-sys-medio'}"
+          onclick={() => (tab = 'interna')}
+          data-testid="tab-vista-interna"
+        >
+          Vista interna
+        </button>
+      {/if}
     </div>
 
     {#if status === 'aprobado'}
@@ -302,8 +344,15 @@
         {:else}
           <ReportRender {model} />
         {/if}
+      {:else if data.source === 'manual'}
+        <iframe
+          title="Vista previa del informe manual"
+          src="{base}/{data.version}/html?inline=1"
+          class="h-[80vh] w-full rounded-sys-app border border-sys-offwhite"
+          data-testid="preview-manual-iframe"
+        ></iframe>
       {/if}
-    {:else}
+    {:else if data.source !== 'manual'}
       <InternalView upsellFindings={data.upsellFindings} internalDraft={data.internalDraft} />
     {/if}
   {/if}
@@ -318,6 +367,10 @@
     onError={onEnviarError}
     onClose={() => (showEnviarDialog = false)}
   />
+{/if}
+
+{#if showUploadDialog}
+  <ManualUploadDialog auditId={data.auditId} onClose={() => (showUploadDialog = false)} />
 {/if}
 
 {#if toast}

@@ -3,6 +3,7 @@ import { apiError, apiSuccess } from '$lib/server/api/envelope';
 import { requireStaffApi } from '$lib/server/api/guards';
 import {
   AttachmentNotFoundError,
+  StorageForbiddenError,
   requestPresignedDownload
 } from '$lib/server/storage';
 
@@ -20,7 +21,8 @@ export const GET: RequestHandler = async ({ params, locals }) => {
   try {
     const result = await requestPresignedDownload({
       attachmentId,
-      userId: userOrResponse.id
+      userId: userOrResponse.id,
+      user: userOrResponse
     });
 
     return apiSuccess({
@@ -30,6 +32,9 @@ export const GET: RequestHandler = async ({ params, locals }) => {
   } catch (err) {
     if (err instanceof AttachmentNotFoundError) {
       return apiError(err.message, 404);
+    }
+    if (err instanceof StorageForbiddenError) {
+      return apiError(err.message, 403);
     }
     return apiError('Error al generar URL de descarga', 500);
   }

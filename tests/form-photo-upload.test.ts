@@ -65,7 +65,8 @@ describe('form photo upload', () => {
       contentType: 'image/jpeg',
       sizeBytes: 1024,
       kind: 'photo',
-      userId: tech!.id
+      userId: tech!.id,
+      user: tech!
     });
 
     const confirm = await confirmUpload({
@@ -76,7 +77,8 @@ describe('form photo upload', () => {
       contentType: 'image/jpeg',
       sizeBytes: 1024,
       kind: 'photo',
-      userId: tech!.id
+      userId: tech!.id,
+      user: tech!
     });
 
     expect(confirm.attachmentId).toBeTruthy();
@@ -140,7 +142,8 @@ describe('form photo upload', () => {
       contentType: 'image/jpeg',
       sizeBytes: 2048,
       kind: 'photo',
-      userId: tech!.id
+      userId: tech!.id,
+      user: tech!
     });
 
     await confirmUpload({
@@ -151,7 +154,8 @@ describe('form photo upload', () => {
       contentType: 'image/jpeg',
       sizeBytes: 2048,
       kind: 'photo',
-      userId: tech!.id
+      userId: tech!.id,
+      user: tech!
     });
 
     const [resp] = await sql<{ value: { rows: typeof tableValue.rows } }[]>`
