@@ -13,6 +13,7 @@ import {
   shareEstado
 } from '../src/lib/server/informe/share';
 import { InformeReportNotApprovedError } from '../src/lib/server/informe/errors';
+import { insertManualReport } from '../src/lib/server/db/informe-reports';
 
 describe('informe share — token y expiración (R2, R3, R7)', () => {
   it('genera tokens de 43 caracteres base64url (256 bits)', () => {
@@ -128,5 +129,32 @@ describe('informe share — resolución pública (R2)', () => {
       SELECT count(*) FROM audit_report_share WHERE report_id = ${reportId}
     `;
     expect(Number(count.count)).toBe(0);
+  });
+
+  it('token de informe manual (sin client_draft) resuelve ok — #55', async () => {
+    const { auditId, admin } = await seedReportForShare(sql, 'aprobado');
+    const manual = await insertManualReport({
+      auditId,
+      htmlManual: '<html><body><h1>Informe manual</h1></body></html>',
+      uploadedBy: admin.id
+    });
+    expect(manual).not.toBeNull();
+    expect(manual!.source).toBe('manual');
+    expect(manual!.clientDraft).toBeNull();
+
+    const share = await createReportShare({
+      reportId: manual!.id,
+      createdBy: admin.id,
+      expiresInDays: null
+    });
+    expect(share.expiresAt).toBeNull();
+
+    const resolution = await resolveShareByToken(share.token);
+    expect(resolution.ok).toBe(true);
+    if (resolution.ok) {
+      expect(resolution.report.id).toBe(manual!.id);
+      expect(resolution.report.source).toBe('manual');
+      expect(resolution.report.clientDraft).toBeNull();
+    }
   });
 });

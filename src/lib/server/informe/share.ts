@@ -116,7 +116,13 @@ export async function resolveShareByToken(token: string): Promise<ShareResolutio
     return { ok: false };
   }
   const report = await getReportById(share.reportId);
-  if (!report || !report.clientDraft) {
+  if (!report) {
+    logger.info('informe_share_rejected', { reason: 'report_missing', shareId: share.id });
+    return { ok: false };
+  }
+  // #55: la versión manual no tiene client_draft; el HTML vive en html_manual.
+  // Exigir clientDraft solo para source=ia (flujo histórico #15).
+  if (report.source !== 'manual' && !report.clientDraft) {
     logger.info('informe_share_rejected', { reason: 'report_missing', shareId: share.id });
     return { ok: false };
   }
