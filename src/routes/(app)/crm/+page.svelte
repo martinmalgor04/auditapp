@@ -274,7 +274,47 @@
     <SysButton type="submit" variant="secondary">Filtrar</SysButton>
   </form>
 
-  <div class="overflow-x-auto rounded-sys border border-sys-borde bg-white shadow-sm">
+  <!-- Cards mobile (< lg) -->
+  <div class="space-y-2 lg:hidden">
+    {#each data.empresas as empresa (empresa.id)}
+      <a
+        href="/crm/{empresa.id}"
+        class="block rounded-sys border border-sys-borde bg-white p-3 shadow-sm"
+        data-testid="crm-empresa-card"
+      >
+        <div class="flex items-start justify-between gap-2">
+          <span class="font-medium text-sys-profundo">{empresa.razonSocial}</span>
+          <span
+            class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium {EMPRESA_RELACION_BADGE[
+              empresa.relacion
+            ]}"
+          >
+            {EMPRESA_RELACION_LABELS[empresa.relacion]}
+          </span>
+        </div>
+        {#if empresa.cuit}
+          <p class="mt-0.5 text-xs tabular-nums text-sys-medio">{empresa.cuit}</p>
+        {/if}
+        <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-sys-medio">
+          <span
+            class="rounded-full px-2 py-0.5 font-medium {EMPRESA_ESTADO_BADGE[empresa.estado]}"
+          >
+            {EMPRESA_ESTADO_LABELS[empresa.estado]}
+          </span>
+          <span>{empresa.rubro ?? '—'} · {empresa.provincia ?? '—'}</span>
+        </div>
+      </a>
+    {:else}
+      <p
+        class="rounded-sys border border-sys-borde bg-white px-4 py-8 text-center text-sys-medio"
+      >
+        Sin empresas para los filtros aplicados
+      </p>
+    {/each}
+  </div>
+
+  <!-- Tabla desktop (>= lg) -->
+  <div class="hidden overflow-x-auto rounded-sys border border-sys-borde bg-white shadow-sm lg:block">
     <table class="min-w-full text-left text-sm" data-testid="crm-empresas-table">
       <thead class="border-b border-sys-borde bg-sys-offwhite text-sys-medio">
         <tr>

@@ -75,7 +75,7 @@ test.describe('cockpit de empresas (CRM)', () => {
     await page.getByTestId('crm-filter-q').fill('COCKPIT E2E Cliente');
     await page.getByTestId('crm-filters').getByRole('button', { name: 'Filtrar' }).click();
     await page.waitForURL(/q=/);
-    await expect(page.getByText(RAZON_CLIENTE)).toBeVisible();
+    await expect(page.getByTestId('crm-empresas-table').getByText(RAZON_CLIENTE)).toBeVisible();
     await expect(page.getByTestId('crm-empresa-row')).toHaveCount(1);
   });
 
@@ -85,8 +85,8 @@ test.describe('cockpit de empresas (CRM)', () => {
     await page.getByTestId('crm-filters').getByRole('button', { name: 'Filtrar' }).click();
     await page.waitForURL(/relacion=cliente/);
     // Solo la empresa cliente del fixture (las otras dos son prospecto / ex_cliente).
-    await expect(page.getByText(RAZON_CLIENTE)).toBeVisible();
-    await expect(page.getByText(RAZON_PROSPECTO)).toHaveCount(0);
+    await expect(page.getByTestId('crm-empresas-table').getByText(RAZON_CLIENTE)).toBeVisible();
+    await expect(page.getByTestId('crm-empresas-table').getByText(RAZON_PROSPECTO)).toHaveCount(0);
     const badges = page.getByTestId('crm-empresa-relacion');
     const n = await badges.count();
     for (let i = 0; i < n; i++) {
@@ -100,8 +100,8 @@ test.describe('cockpit de empresas (CRM)', () => {
     await page.getByTestId('crm-filters').getByRole('button', { name: 'Filtrar' }).click();
     await page.waitForURL(/estado=inactiva/);
     // El ex_cliente del fixture deriva 'inactiva'; el prospecto deriva 'sin_contactar' y no aparece.
-    await expect(page.getByText(RAZON_EXCLIENTE)).toBeVisible();
-    await expect(page.getByText(RAZON_PROSPECTO)).toHaveCount(0);
+    await expect(page.getByTestId('crm-empresas-table').getByText(RAZON_EXCLIENTE)).toBeVisible();
+    await expect(page.getByTestId('crm-empresas-table').getByText(RAZON_PROSPECTO)).toHaveCount(0);
   });
 
   test('abrir la ficha desde el listado (R19)', async ({ page }) => {
