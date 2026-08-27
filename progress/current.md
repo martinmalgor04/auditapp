@@ -13,14 +13,18 @@ limits y tests de integración API contra Postgres real.
 - Las 13 tasks de `specs/60_escaneo_ingesta_api/tasks.md` completadas `[x]`.
 - 29/29 tests nuevos verdes en `tests/api/escaneos-*.test.ts` (4 archivos).
 - Migración 031 aplicada y re-corrida verificada no-op.
-- Mapa de trazabilidad R1–R30 y desviaciones en
+- Gates con baseline comparada contra master limpio (misma VM):
+  `pnpm test` 1566 passed / 14 failed (las 14 = baseline exacta de master,
+  1537 + 29 nuevos; cero fallas nuevas) · `pnpm run check` 7 errores
+  preexistentes, cero nuevos · `pnpm run build` verde · `./init.sh` con FAIL
+  preexistentes (feature 7 sin specs en master + las 14 fallas).
+- Mapa de trazabilidad R1–R30, desviaciones y notas de verificación en
   `progress/impl_60_escaneo_ingesta_api.md`.
 - Entorno VM: Postgres 16 vía apt (Docker no disponible), rol/DB `auditapp`.
-- Zombies vitest del hook `afterFileEdit`/timeouts matados entre corridas
-  (problema documentado desde #59).
-- Pendiente al momento de este escrito: gates completos (`pnpm test`,
-  `pnpm run check`, `pnpm run build`, `./init.sh`) con baseline comparada —
-  resultados en el reporte final y en el impl doc.
+- Nota operativa: no editar archivos mientras corre la suite — el hook
+  `afterFileEdit` dispara un `pnpm test` concurrente que puede truncar la DB
+  bajo archivos SKIP_DB_RESET (flaky `encuesta-schema` observado y explicado
+  en el impl doc).
 
 ## Próximo paso
 

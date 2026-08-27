@@ -117,17 +117,26 @@ real con handlers importados directamente. Cada R tiene al menos un test.
   `auditapp` según `.env.example`; migraciones con `scripts/db-migrate.ts`
   (031 aplicada; re-corrida `applied: []`). `pg_isready` verificado.
 - `pnpm exec vitest run tests/api/escaneos-*.test.ts`: 29/29 verdes.
-- `pnpm test` completo: **1563 passed / 14 failed / 5 skipped** — las 14
-  fallas son EXACTAMENTE las preexistentes de master documentadas en el impl
-  de #59 (`tests/informe-manual.test.ts` ×8, `tests/api/report-html-download.test.ts`
-  ×5, `tests/api/audit-crud.test.ts` ×1), en archivos que este diff no toca.
-  Cero fallas nuevas; los 29 tests nuevos pasan.
+- `pnpm test` completo, baseline comparada con master limpio (misma VM):
+  - **master: 1537 passed / 14 failed / 266 archivos** — las 14 preexistentes
+    (`tests/informe-manual.test.ts` ×8, `tests/api/report-html-download.test.ts`
+    ×5, `tests/api/audit-crud.test.ts` ×1).
+  - **rama: 1566 passed / 14 failed / 270 archivos** — 1566 = 1537 + 29
+    nuevos; las 14 fallas son idénticas en archivos y conteos (ninguno de este
+    diff). Cero fallas nuevas.
 - `pnpm run check`: 7 errores, todos preexistentes en
   `tests/informe-manual.test.ts` (prop `version`). Cero errores nuevos.
 - `pnpm run build`: verde.
-- `./init.sh`: secciones 1–3 verdes (entorno, archivos del harness,
-  feature_list.json); la sección 4 (`pnpm test`) queda roja SOLO por las 14
-  fallas preexistentes de master (idéntico estado que master).
+- `./init.sh`: secciones 1–2 verdes; sección 3 FAIL **preexistente** (feature
+  7 `done` sin `specs/07_form_tecnico/` — así está en master, este diff no
+  toca `feature_list.json`); sección 4 roja por las 14 fallas preexistentes.
+- Flaky observado y explicado: en la corrida de `./init.sh` apareció una 15ª
+  falla (`tests/encuesta-schema.test.ts` R6, «Auditoría no encontrada»).
+  Causa: ese archivo está en SKIP_DB_RESET (corre sin advisory lock) y durante
+  la corrida se editó un archivo → el hook `afterFileEdit` disparó un
+  `pnpm test` concurrente cuyo global-setup truncó la DB bajo ese test. En las
+  3 corridas sin ediciones concurrentes (master y rama ×2) no se reproduce;
+  aislado pasa 10/10. No es un defecto del diff.
 - Zombies vitest: el hook `afterFileEdit` del harness (`.cursor/hooks.json`)
   y los timeouts dejan procesos que retienen el advisory lock de la DB de test
   (problema ya documentado en #59 y en la sesión mobile 2026-08-11). Se
