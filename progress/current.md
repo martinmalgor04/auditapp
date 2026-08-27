@@ -1,58 +1,62 @@
-# Sesión — Adaptación mobile (2026-08-10/11)
+# Sesión — #59 59_escaneo_modelo_datos (2026-08-27)
 
 ## Objetivo
 
-Mejorar la adaptación mobile de la app con loop de captura en simulador de celular
-(Playwright + emulación iPhone 13 / 360px Android).
+Implementar la feature #59 (modelo de datos + repositorio de escaneo de red)
+según spec aprobado en `specs/59_escaneo_modelo_datos/`. Rol: implementer.
 
-## Herramienta creada
+## Estado
 
-`scripts/mobile-audit.mjs` — recorre 18+ páginas (admin, técnico, públicas) con
-viewport mobile, saca screenshots y detecta roturas (overflow horizontal y
-elementos fuera del viewport, ignorando scrolls contenidos intencionales).
+**T1–T8 completadas.** A la espera de review (el leader cambia el status en
+`feature_list.json`; yo NO lo toco).
 
-Uso: `node scripts/mobile-audit.mjs [--audit-id <uuid>] [--only a,b,c]`
-Salida: `artifacts/mobile/<timestamp>/` con PNGs + `report.json`.
+- T1: `migrations/030_escaneo_modelo_datos.sql` (SQL tal cual del design).
+  Aplicada con el runner propio; re-corrida verificada no-op.
+- T2: `src/lib/server/escaneos/schemas.ts` + `errors.ts`.
+- T3–T6: `src/lib/server/escaneos/repo.ts` — las 9 funciones, scope empresa
+  vía join con `audit` en cada query, `updated_at = now()` manual.
+- T7: `tests/escaneos.test.ts` — 14/14 verdes contra Postgres real
+  (incluye concurrencia y cascada).
+- T8: gates — ver abajo.
 
-## Hallazgo de entorno (importante)
+## Gates
 
-- La DB local `auditapp-pg-test` (5432) está siendo truncada/sembrada
-  constantemente por ~15 procesos `vitest` watch y `pnpm test` de sesiones
-  anteriores. Cualquier captura contra 5432 es no determinística.
-- Para el loop se levantó Postgres dedicada: contenedor `auditapp-pg-mobile`
-  en puerto **5433** y dev server con `DATABASE_URL=postgres://auditapp:changeme@localhost:5433/auditapp`.
-- `node_modules` y el caché de Playwright fueron tocados por esos procesos;
-  se recuperó con `pnpm install` + `pnpm exec playwright install chromium`.
-
-## Resultado del baseline (código actual, DB estable)
-
-- 18 páginas capturadas: tablero, detalle auditoría, form, cierre, reunión,
-  auditorias/new, CRM, CRM ficha, mercado, plantillas, plantilla detalle,
-  usuarios, perfil (admin + técnico), login, briefing público, 360px.
-- **Única rotura real: tabla del CRM** (`/crm`) — 765px de ancho en viewport
-  390px, scroll horizontal sin indicación visual.
-
-## Fix aplicado
-
-- `src/routes/(app)/crm/+page.svelte`: patrón cards mobile (`lg:hidden`) +
-  tabla desktop (`hidden lg:block`), replicando el patrón del tablero.
-  Cards con razón social, CUIT, badges relación/estado, rubro · provincia.
-  Testids nuevos `crm-empresa-card` (los de tabla se conservan para e2e).
-
-## Verificación
-
-- Re-captura: 0/18 páginas con roturas (incluye 360px y briefing público).
+- `pnpm exec vitest run tests/escaneos.test.ts`: **14/14 verdes**.
+- `pnpm test` (suite completa): 1536 passed / 14 failed — las 14 fallas son
+  **preexistentes en master** (verificado con `git stash -u`: mismas 14 en
+  `tests/informe-manual.test.ts` ×8 — usa `audit.client_id`, renombrada en la
+  migración 015 —, `tests/api/report-html-download.test.ts` ×5,
+  `tests/api/audit-crud.test.ts` ×1).
+- `pnpm run check`: 7 errores, todos preexistentes en
+  `tests/informe-manual.test.ts` (prop `version`). Cero errores nuevos.
 - `pnpm run build`: verde.
-- `pnpm run check`: 7 errores PREEXISTENTES en `tests/informe-manual.test.ts`
-  (prop `version` inexistente) — no relacionados con este cambio.
-- e2e `crm-cockpit.spec.ts`: 6/6 verdes (ajustados 3 asserts a scope
-  `crm-empresas-table` porque el texto ahora existe en card mobile + fila desktop).
-- e2e `crm-ficha` + `crm-import` + `ui-layout`: 8/9 — la falla
-  (`crm-ficha` R21, `select[name="assignedTechId"]`) es PREEXISTENTE:
-  reproducida con `git stash` sin mis cambios.
+- `./init.sh`: rojo por causas preexistentes verificadas en master limpio:
+  (a) sección 3 — feature 7 (`07_form_tecnico`) figura `done` sin archivos de
+  spec (inconsistencia vieja del backlog); (b) sección 4 — las 14 fallas de
+  tests preexistentes. Ninguna es de #59.
 
-## Pendiente
+## Trazabilidad y desviaciones
 
-- Commit + push (a pedido del usuario).
-- `crm-ficha` R21 falla en master — investigar aparte (no es del cambio mobile).
-- Procesos vitest watch zombies: matados a pedido del usuario (2026-08-11).
+Mapa R↔test completo (R1–R28 cubiertos) y desviaciones justificadas en
+`progress/impl_59_escaneo_modelo_datos.md`. La principal: el snippet de
+upsert del design estaba abreviado — se persisten todas las columnas del
+schema y COALESCE se aplica uniforme (R18), con guard para `tipo`.
+
+Limitación conocida del schema aprobado (documentada, no modificada):
+`escaneo_software_uq` no deduplica con `version IS NULL` (NULLs distintos en
+Postgres).
+
+## Entorno (VM cloud)
+
+- Docker no disponible → Postgres 16 vía apt; rol/DB `auditapp` según
+  `.env.example` (`postgres://auditapp:changeme@localhost:5432/auditapp`).
+- El hook `afterFileEdit` del harness lanza `pnpm test` por edición; sus
+  corridas se acumularon como zombies sobre el advisory lock de la DB de test
+  (mismo problema documentado por la sesión mobile 2026-08-11). Se mataron;
+  las corridas de gates se hicieron con el árbol limpio.
+
+## Próximo paso
+
+`/leader` → reviewer para #59. Las fallas preexistentes de
+`tests/informe-manual.test.ts` (schema viejo + tipos) convendría atacarlas en
+una feature de mantenimiento aparte.

@@ -150,3 +150,10 @@
 - **Verificación:** `pnpm run check` 0 errores (44 warnings preexistentes ajenos); `pnpm test` 235 archivos, 1306 pass / 2 skip; e2e `e2e/encuesta-conformidad.spec.ts` creado.
 - **Veredicto:** APPROVED.
 - **Próximo paso:** `/leader` → siguiente feature del backlog.
+
+## 2026-08-10/11 — Adaptación mobile (sesión fuera de flujo SDD)
+
+- **Agente:** Cursor (sesión directa, sin feature del backlog)
+- **Resultado:** Loop de captura mobile (Playwright + emulación iPhone 13 / 360px) con `scripts/mobile-audit.mjs` (18+ páginas, reporte de roturas). Única rotura real: tabla del CRM (`/crm`) → fix con patrón cards mobile (`lg:hidden`) + tabla desktop, testid `crm-empresa-card`. Re-captura 0/18 roturas. `pnpm run build` verde; `pnpm run check` con 7 errores PREEXISTENTES en `tests/informe-manual.test.ts`.
+- **Notas de entorno:** DB local 5432 no determinística por procesos `vitest` watch zombie de sesiones anteriores (matados 2026-08-11); para el loop se usó Postgres dedicada en 5433. Falla preexistente detectada: e2e `crm-ficha` R21 (`select[name="assignedTechId"]`) reproducible en master.
+- **Archivada:** 2026-08-27 por el implementer de #59 al actualizar `progress/current.md` (la sesión quedó sin archivar; el trabajo ya estaba en master).
