@@ -7,8 +7,20 @@ según spec aprobado en `specs/59_escaneo_modelo_datos/`. Rol: implementer.
 
 ## Estado
 
-**T1–T8 completadas.** A la espera de review (el leader cambia el status en
+**T1–T8 completadas. Review 1: RECHAZADO con un blocker (B1) → corregido y
+re-verificado.** A la espera de re-review (el leader cambia el status en
 `feature_list.json`; yo NO lo toco).
+
+### Corrección post-review (B1)
+
+- `escaneo_software_uq` → `UNIQUE NULLS NOT DISTINCT (dispositivo_id, nombre,
+  version)` (editada in-place en la migración 030, no mergeada a ningún
+  ambiente). R20 ahora deduplica también con `version IS NULL` — verificado
+  empíricamente en PG16 (INSERT directo duplicado → violación UNIQUE; dos
+  chunks idénticos vía repo → 1 fila).
+- Test 15°: "software sin versión reenviado se ignora" (R20 con NULL).
+- Fix assertion flaky `created_at` (tolerancia 2 s por clock skew entre
+  procesos; al reviewer le fallaba 2/3 corridas standalone en macOS).
 
 - T1: `migrations/030_escaneo_modelo_datos.sql` (SQL tal cual del design).
   Aplicada con el runner propio; re-corrida verificada no-op.
@@ -21,12 +33,13 @@ según spec aprobado en `specs/59_escaneo_modelo_datos/`. Rol: implementer.
 
 ## Gates
 
-- `pnpm exec vitest run tests/escaneos.test.ts`: **14/14 verdes**.
-- `pnpm test` (suite completa): 1536 passed / 14 failed — las 14 fallas son
+- `pnpm exec vitest run tests/escaneos.test.ts`: **15/15 verdes** (14 del
+  design + 1 post-review B1).
+- `pnpm test` (suite completa): 1537 passed / 14 failed — las 14 fallas son
   **preexistentes en master** (verificado con `git stash -u`: mismas 14 en
   `tests/informe-manual.test.ts` ×8 — usa `audit.client_id`, renombrada en la
   migración 015 —, `tests/api/report-html-download.test.ts` ×5,
-  `tests/api/audit-crud.test.ts` ×1).
+  `tests/api/audit-crud.test.ts` ×1). Cero fallas nuevas.
 - `pnpm run check`: 7 errores, todos preexistentes en
   `tests/informe-manual.test.ts` (prop `version`). Cero errores nuevos.
 - `pnpm run build`: verde.

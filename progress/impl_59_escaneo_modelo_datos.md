@@ -11,7 +11,7 @@
 | `src/lib/server/escaneos/schemas.ts` | Nuevo. Enums Zod, `macNormalizada`, inputs, `identidadDispositivo`, `TRANSICIONES`. |
 | `src/lib/server/escaneos/errors.ts` | Nuevo. Errores tipados; reusa `AuditNotFoundError` de backoffice (design §Errores). |
 | `src/lib/server/escaneos/repo.ts` | Nuevo. Las 9 funciones del design, SQL puro parametrizado, scope empresa vía join con `audit` en cada una (salvo `escaneosColgados`, job de sistema R7). |
-| `tests/escaneos.test.ts` | Nuevo. 14 casos del design §Tests contra Postgres real. |
+| `tests/escaneos.test.ts` | Nuevo. Los 14 casos del design §Tests + 1 post-review (R20 con `version` NULL) = 15, contra Postgres real. |
 
 ## Mapa de trazabilidad R ↔ test
 
@@ -39,7 +39,7 @@ un test; cada test declara sus R en el nombre.
 | R17 | happy path (campos omitidos → NULL en DB, sin defaults sintéticos) |
 | R18 | NULL conserva (hostname/so_nombre/fabricante/tipo prevalecen; modelo nuevo sí actualiza) |
 | R19 | happy path (software con `dispositivo_id` correcto) |
-| R20 | mismo dispositivo (software idéntico reenviado → 1 sola fila) |
+| R20 | mismo dispositivo (software idéntico reenviado → 1 sola fila); software sin versión (dos envíos con `version: null` → 1 fila; INSERT directo duplicado → viola `escaneo_software_uq`) |
 | R21 | happy path (servicio con puerto/protocolo/estado) |
 | R22 | mismo dispositivo (mismo puerto/protocolo → actualiza estado y versión, 1 fila) |
 | R23 | marcarRevision (default `sin_revisar`, sin revisor) |
@@ -80,12 +80,21 @@ un test; cada test declara sus R en el nombre.
    backoffice) antes de tocar la DB; el CHECK `escaneo_error_ck` queda como
    segunda línea. El design no tipaba este caso.
 
-## Limitación conocida del schema aprobado (no se modifica: SQL TAL CUAL)
+## Corrección post-review (2026-08-27, blocker B1)
 
-- `escaneo_software_uq UNIQUE (dispositivo_id, nombre, version)` no deduplica
-  cuando `version IS NULL` (Postgres trata NULLs como distintos). R20 se
-  verifica con versión no-NULL. Si el agente reporta software sin versión con
-  frecuencia, evaluar `NULLS NOT DISTINCT` (PG15+) en una migración futura.
+- **B1 — R20 con `version IS NULL`**: el reviewer verificó empíricamente que
+  `UNIQUE (dispositivo_id, nombre, version)` no deduplicaba con `version`
+  NULL (NULLs distintos en Postgres) y que `ON CONFLICT ... DO NOTHING`
+  tampoco matcheaba. Fix in-place en la migración 030 (no mergeada a ningún
+  ambiente): `UNIQUE NULLS NOT DISTINCT (dispositivo_id, nombre, version)`
+  (sintaxis PG15+; el repo usa PG16). `escaneo_servicio_uq` no lo necesita
+  (`puerto`/`protocolo` son NOT NULL). Verificación empírica post-fix: INSERT
+  directo duplicado con NULL → viola `escaneo_software_uq`; dos chunks
+  idénticos vía repo → 1 fila; `(NULL)` y `('11.0')` coexisten. Test nuevo:
+  "software sin versión reenviado se ignora" (15° caso).
+- **Observación menor**: assertion `created_at >= antes` del happy path era
+  flaky por clock skew de milisegundos entre procesos (le falló al reviewer
+  2/3 corridas en macOS). Ahora con tolerancia de 2 s y cota superior.
 
 ## Notas de verificación
 
