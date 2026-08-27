@@ -1097,7 +1097,7 @@
         "Validación Zod en frontera; errores sin stack traces ni datos sensibles"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "in_progress"
     },
     {
       "id": 61,

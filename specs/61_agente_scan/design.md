@@ -30,10 +30,13 @@ especificada).
    SyS y publicada en GHCR; el agente la referencia por digest (R21).
 6. **Cola offline en SQLite** (driver puro Go, sin CGO) con backoff
    exponencial; el cierre a `completado` solo con cola vacía (R17/R18).
-7. **Distribución por GitHub Releases**: `.exe` NSIS firmado + `.dmg`
-   notarizado; aviso de nueva versión leyendo `static/agente/version.json`
-   de AuditApp (archivo estático, sin endpoint nuevo); sin auto-update en
-   v1 (R29).
+7. **Distribución por GitHub Releases**: `.exe` NSIS + `.dmg`. En v1 SIN
+   firma de código (decisión de puerta 2026-08-27): distribución interna
+   por USB o `curl` (sin Mark-of-the-Web/quarantine) con bypass documentado
+   de SmartScreen/Gatekeeper; firma (OV Windows + Apple Developer ID con
+   notarización) diferida a v2. Aviso de nueva versión leyendo
+   `static/agente/version.json` de AuditApp (archivo estático, sin endpoint
+   nuevo); sin auto-update en v1 (R29).
 
 ## Arquitectura del agente
 
@@ -389,24 +392,23 @@ dispositivos persistidos, idempotencia de reenvío. Cubre R22, R23, R13–R19.
 Internet a mitad de sync, purga de credenciales post-cierre. Cubre R5–R8,
 R10, R18. Se documenta en `progress/impl_61_agente_scan.md` con evidencia.
 
-## Preguntas abiertas para la puerta humana
+## Preguntas de puerta — RESUELTAS (2026-08-27)
 
-1. **Licencia de Open-AudIT:** ¿la edición Community alcanza para el volumen
-   de dispositivos de los clientes SyS? ¿La redistribución del instalador
-   oficial dentro de la imagen `sys-openaudit` es compatible con su
-   licencia? ¿Hace falta Professional/Enterprise?
-2. **Certificados de firma:** ¿SyS compra certificado OV/EV de code-signing
-   Windows (sin EV, SmartScreen advierte las primeras instalaciones) y
-   cuenta Apple Developer (notarización)?
-3. **Repo aparte** `sys-scan-agent` vs subdirectorio en auditapp (este spec
-   propone repo aparte).
-4. **GHCR del org** para publicar `sys-openaudit`: ¿existe/habilitar?
-5. **Paso UAC/admin único** por notebook (Npcap / daemon BPF): ¿aceptable
-   como parte de la preparación de las notebooks de técnicos?
-6. **Auto-update diferido a v2** del agente: ¿confirmado?
+1. **Licencia de Open-AudIT:** Community (GPL) alcanza. La imagen
+   `sys-openaudit` redistribuye el instalador oficial como agregación
+   (procesos separados, sin linkeo): compatible con GPL. Si el volumen o
+   las features comerciales hacen falta, se evalúa Enterprise más adelante.
+2. **Certificados de firma:** NO se compran en v1. Distribución interna
+   sin firma (USB/`curl`, bypass documentado de SmartScreen/Gatekeeper).
+   Apple Developer + OV/EV Windows quedan para v2.
+3. **Repo aparte** `sys-scan-agent`: confirmado.
+4. **GHCR del org** para publicar `sys-openaudit`: confirmado (habilitar).
+5. **Paso UAC/admin único** por notebook: aceptado — la preparación de las
+   notebooks la hace SyS, no el técnico en campo.
+6. **Auto-update diferido a v2**: confirmado.
 
 ## Gates
 
-Repo del agente: `go test ./...` · build Windows/macOS firmados en CI ·
-integración con contenedor real · prueba de campo documentada.
+Repo del agente: `go test ./...` · build Windows/macOS en CI (sin firma en
+v1) · integración con contenedor real · prueba de campo documentada.
 Repo auditapp (pieza aditiva): `pnpm run check` · `pnpm test` · `./init.sh`.

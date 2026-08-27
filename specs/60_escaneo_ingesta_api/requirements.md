@@ -6,13 +6,18 @@
 > Consume el modelo y el repositorio de #59 (`specs/59_escaneo_modelo_datos/`).
 > Sin UI (#62), sin agente (#61), sin scoring (#63), sin diff (#64).
 >
-> **Refinamiento respecto del backlog (a validar en puerta humana):** la
-> entrada #60 del backlog menciona «el agente puede crear escaneo». Como el
-> token es **por escaneo** (scope limitado a ESE escaneo), el escaneo debe
-> existir antes de emitir el token. Por eso la creación del escaneo queda del
-> lado staff (sesión, admin o técnico asignado — patrón #33/#57) y el agente
-> opera todo lo demás con su token. El acceptance del backlog se cumple vía
-> flujo combinado: staff crea + emite token → agente hace el resto por API.
+> **Decisiones de puerta humana (2026-08-27):**
+>
+> 1. **Flujo «staff crea, agente opera» APROBADO.** Como el token es **por
+>    escaneo** (scope limitado a ESE escaneo), el escaneo debe existir antes
+>    de emitir el token. La creación queda del lado staff (sesión, admin o
+>    técnico asignado — patrón #33/#57) y el agente opera todo lo demás con
+>    su token. El acceptance del backlog se cumple vía flujo combinado:
+>    staff crea + emite token → agente hace el resto por API.
+> 2. **Parámetros operativos APROBADOS:** TTL de token 12 h con rotación
+>    (revocación del previo); rate limit 30/min en ingesta por token, 60/min
+>    en el resto y 10 fallos de auth/min por IP; job de escaneos colgados
+>    ejecutado por cron del host Dokploy contra el endpoint de sistema.
 
 ## Contexto verificado (repo real)
 

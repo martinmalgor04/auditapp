@@ -20,6 +20,16 @@
 >    2026: solo Windows Server 2016+ y Linux) → corre en contenedor Linux vía
 >    Docker Desktop. FirstWave no publica imagen Docker oficial → imagen
 >    propia (ver design §Imagen `sys-openaudit`).
+> 4. **Segunda ronda de puerta (2026-08-27):** (a) Open-AudIT **Community**
+>    (GPL) alcanza — la imagen propia lo redistribuye como agregación
+>    (procesos separados, sin linkeo), compatible con GPL; si el volumen o
+>    las features comerciales hacen falta, se evalúa Enterprise después.
+>    (b) **Sin firma de código en v1** (ver R2). (c) **Repo aparte**
+>    `sys-scan-agent` con contrato versionado (JSON Schema exportado de los
+>    Zod de #59). (d) Imagen `sys-openaudit` en **GHCR** del org. (e) **Paso
+>    UAC/admin único** por notebook aceptado (la preparación la hace SyS, no
+>    el técnico en campo). (f) **Sin auto-update en v1** (aviso + descarga
+>    manual, R29).
 
 ## Contexto verificado
 
@@ -59,9 +69,12 @@ propia en macOS (Apple Silicon) y Windows 10/11 (x64), sin depender de un
 browser del usuario.
 
 **R2** — El agente DEBE distribuirse como un único instalador por
-plataforma: `.exe` firmado con el certificado de code-signing de SyS en
-Windows, y `.app` firmada con Developer ID y notarizada, empaquetada en
-`.dmg`, en macOS.
+plataforma: `.exe` (NSIS) en Windows y `.app` empaquetada en `.dmg` en
+macOS. En v1 los binarios van SIN firma de código (decisión de puerta
+2026-08-27): la distribución es interna (USB o descarga vía `curl`, sin
+Mark-of-the-Web/quarantine) con instrucciones documentadas para el bypass
+puntual de SmartScreen/Gatekeeper. La firma (OV Windows + Apple Developer
+ID con notarización) entra en v2.
 
 **R3** — CUANDO el agente detecte que Docker Desktop no está instalado u
 operativo, el sistema DEBE guiar al técnico por una instalación asistida
