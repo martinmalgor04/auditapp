@@ -117,6 +117,17 @@ real con handlers importados directamente. Cada R tiene al menos un test.
   `auditapp` según `.env.example`; migraciones con `scripts/db-migrate.ts`
   (031 aplicada; re-corrida `applied: []`). `pg_isready` verificado.
 - `pnpm exec vitest run tests/api/escaneos-*.test.ts`: 29/29 verdes.
+- `pnpm test` completo: **1563 passed / 14 failed / 5 skipped** — las 14
+  fallas son EXACTAMENTE las preexistentes de master documentadas en el impl
+  de #59 (`tests/informe-manual.test.ts` ×8, `tests/api/report-html-download.test.ts`
+  ×5, `tests/api/audit-crud.test.ts` ×1), en archivos que este diff no toca.
+  Cero fallas nuevas; los 29 tests nuevos pasan.
+- `pnpm run check`: 7 errores, todos preexistentes en
+  `tests/informe-manual.test.ts` (prop `version`). Cero errores nuevos.
+- `pnpm run build`: verde.
+- `./init.sh`: secciones 1–3 verdes (entorno, archivos del harness,
+  feature_list.json); la sección 4 (`pnpm test`) queda roja SOLO por las 14
+  fallas preexistentes de master (idéntico estado que master).
 - Zombies vitest: el hook `afterFileEdit` del harness (`.cursor/hooks.json`)
   y los timeouts dejan procesos que retienen el advisory lock de la DB de test
   (problema ya documentado en #59 y en la sesión mobile 2026-08-11). Se
