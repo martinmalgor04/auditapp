@@ -70,6 +70,34 @@ Si la miniatura no carga pero el contador dice «1 foto(s)», revisá credencial
 
 Tras el deploy, «Generar informe» requiere `ANTHROPIC_API_KEY` en las env del proyecto app (el compose la reenvía al contenedor).
 
+## Escaneo de red — job de escaneos colgados (#60)
+
+El agente externo `sys-scan-agent` (#61) sincroniza escaneos contra
+`POST /api/escaneos/[escaneoId]/dispositivos` y endpoints afines, autenticado
+con tokens de escaneo (los emite el staff por API; TTL 12 h con rotación).
+
+Los escaneos que quedan colgados (>24 h en `en_curso`/`sincronizando` sin
+actividad) los marca `fallido` el endpoint de sistema:
+
+```
+POST /api/system/escaneos-colgados
+Authorization: Bearer $ESCANEO_SYSTEM_TOKEN
+```
+
+- **`ESCANEO_SYSTEM_TOKEN`**: generar con `openssl rand -base64 32` y
+  configurar en las env del proyecto **app**. Es fail-closed: si la variable
+  no está configurada, el endpoint responde 401 a todo request.
+- **Scheduler externo** (el repo no corre cron interno): cron horario en el
+  host Dokploy. Ejemplo de entrada en `crontab -e` del host:
+
+```cron
+0 * * * * curl -fsS -X POST -H "Authorization: Bearer $ESCANEO_SYSTEM_TOKEN" https://app.auditoriaserviciosysistemas.com.ar/api/system/escaneos-colgados
+```
+
+- El job es **idempotente**: una segunda corrida sin actividad intermedia
+  marca 0 escaneos. Respuesta 200: `{ "success": true, "data": { "marcados": N } }`.
+- Rate limit: 10 fallos de autenticación por minuto por IP → 429.
+
 ## Postgres expuesto (puerto 4043)
 
 Postgres se publica en el **host** en el puerto **4043** → contenedor `5432`.
