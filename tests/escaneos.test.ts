@@ -83,7 +83,9 @@ describe('escaneos — modelo de datos y repositorio (#59)', () => {
     expect(esc.agente_version).toBe('0.1.0');
     expect(esc.estado).toBe('pendiente');
     expect(esc.consentimiento_otorgado).toBe(true);
-    expect(esc.created_at.getTime()).toBeGreaterThanOrEqual(antes.getTime());
+    // Tolerancia de 2s: created_at lo pone el reloj de Postgres, `antes` el del proceso
+    expect(esc.created_at.getTime()).toBeGreaterThanOrEqual(antes.getTime() - 2000);
+    expect(esc.created_at.getTime()).toBeLessThanOrEqual(Date.now() + 2000);
 
     // R1: auditoría de otra empresa → AUDIT_NOT_FOUND, sin escribir
     const otraEmpresa = await insertTestEmpresa(sql, { razonSocial: 'Ajena SA' });
@@ -262,6 +264,35 @@ describe('escaneos — modelo de datos y repositorio (#59)', () => {
       SELECT estado_puerto, version FROM escaneo_servicio WHERE dispositivo_id = ${srv.id}
     `;
     expect([svcRow.estado_puerto, svcRow.version]).toEqual(['filtered', '9.8']);
+  });
+
+  it('software sin versión reenviado se ignora: NULLS NOT DISTINCT en la UNIQUE (R20)', async () => {
+    const { auditId, empresaId, tecnicoId } = await fixtures();
+    const esc = await escaneoEnCurso(empresaId, auditId, tecnicoId);
+
+    // Caso común en Open-AudIT: software detectado sin versión
+    await upsertDispositivos(empresaId, esc.id, [
+      chunk({ ip: '192.168.10.90', software: [{ nombre: 'Tango Gestión', version: null }] })
+    ]);
+    await upsertDispositivos(empresaId, esc.id, [
+      chunk({ ip: '192.168.10.90', software: [{ nombre: 'Tango Gestión', version: null }] })
+    ]);
+
+    const [{ n }] = await sql<{ n: number }[]>`
+      SELECT count(*)::int AS n
+      FROM escaneo_software s
+      JOIN escaneo_dispositivo d ON d.id = s.dispositivo_id
+      WHERE d.escaneo_id = ${esc.id} AND s.nombre = 'Tango Gestión' AND s.version IS NULL
+    `;
+    expect(n).toBe(1);
+
+    // La DB sola también lo garantiza (sin ON CONFLICT)
+    const [dev] = await sql<{ id: string }[]>`
+      SELECT id FROM escaneo_dispositivo WHERE escaneo_id = ${esc.id}
+    `;
+    await expect(
+      sql`INSERT INTO escaneo_software (dispositivo_id, nombre, version) VALUES (${dev.id}, 'Tango Gestión', NULL)`
+    ).rejects.toThrow(/escaneo_software_uq/);
   });
 
   it('campo en NULL entrante conserva el valor previo (R18)', async () => {

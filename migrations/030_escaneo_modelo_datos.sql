@@ -128,7 +128,8 @@ CREATE TABLE IF NOT EXISTS escaneo_software (
 
   created_at      timestamptz NOT NULL DEFAULT now(),
 
-  CONSTRAINT escaneo_software_uq UNIQUE (dispositivo_id, nombre, version)
+  -- NULLS NOT DISTINCT (PG15+): software sin versión también deduplica (R20)
+  CONSTRAINT escaneo_software_uq UNIQUE NULLS NOT DISTINCT (dispositivo_id, nombre, version)
 );
 
 CREATE INDEX IF NOT EXISTS escaneo_software_dispositivo_idx
