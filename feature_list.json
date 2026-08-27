@@ -1083,7 +1083,7 @@
         "Tests de integración contra Postgres real verdes; pnpm run check y pnpm test verdes"
       ],
       "sdd": true,
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "id": 60,
@@ -1103,7 +1103,7 @@
       "id": 61,
       "name": "61_agente_scan",
       "title": "Agente sys-scan-agent (notebook del técnico)",
-      "description": "Agente externo que corre en la notebook del técnico dentro de la LAN del cliente: dispara discovery vía Open-AudIT + Nmap, normaliza resultados y los sincroniza contra la API de ingesta (#60). Las credenciales del cliente viven cifradas y efímeras en la notebook; NUNCA se persisten en AuditApp. Depende de #60.",
+      "description": "Agente externo que corre en la notebook del técnico dentro de la LAN del cliente: dispara discovery vía Open-AudIT + Nmap, normaliza resultados y los sincroniza contra la API de ingesta (#60). Las credenciales del cliente viven cifradas y efímeras en la notebook; NUNCA se persisten en AuditApp. Depende de #60. Decisiones de producto (2026-08-27): (1) app de ESCRITORIO con ventana propia — NO browser en localhost; stack candidato Wails (Go + webview nativo + frontend Svelte, mismo stack que AuditApp); (2) el técnico instala UNA sola app: Docker/Open-AudIT/Nmap son dependencias internas invisibles, el agente las instala/orquesta/apaga sin interacción del técnico; (3) debe correr en macOS (Apple Silicon) y Windows 10/11 — Open-AudIT no soporta Windows desktop ni macOS nativo, va en contenedor Linux vía Docker Desktop (imagen propia sobre Ubuntu 24.04, FirstWave no publica imagen oficial). Riesgo técnico a resolver en el spec: Docker Desktop mete NAT entre el contenedor y la LAN → el ARP scan no atraviesa y las MACs (identidad primaria del modelo #59) deben obtenerse vía credenciales (WMI/SSH/SNMP), Nmap en el host, o VM bridged; testear en campo antes de cerrar #61.",
       "source": "Spec #59 (contexto y fuera de alcance): el agente y su comunicación con Open-AudIT.",
       "acceptance": [
         "El agente ejecuta un discovery contra un rango y sincroniza dispositivos por chunks con reintentos",
