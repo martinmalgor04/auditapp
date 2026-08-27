@@ -146,7 +146,7 @@ export async function resolverTokenEscaneo(
   tokenClaro: string
 ): Promise<{ escaneoId: string; empresaId: string } | null>;
 
-/** Persiste versión/hostname del agente cuando difieren (R17). */
+/** Persiste versión/hostname del agente cuando difieren (R21). */
 export async function registrarAgente(
   empresaId: string,
   escaneoId: string,
@@ -189,7 +189,7 @@ export function requireEscaneoToken(
 
 1. Sin `Authorization: Bearer` → 401 «No autorizado».
 2. `resolverTokenEscaneo` null → 401 «No autorizado» (mismo mensaje para
-   inexistente/revocado/expirado, R7) + log categorizado sin token (R26).
+   inexistente/revocado/expirado, R7) + log categorizado sin token (R30).
 3. `escaneoIdPath !== token.escaneoId` → 404 «Escaneo no encontrado» (R9).
 4. OK → `{ escaneoId, empresaId }` del token (R8).
 
@@ -199,7 +199,7 @@ export function requireSystemToken(request: Request): Response | null;
 ```
 
 Env var `ESCANEO_SYSTEM_TOKEN`, comparación `timingSafeEqual`, fail-closed si
-no está configurada (R23).
+no está configurada (R27).
 
 ## Rate limit — `src/lib/server/api/escaneo-rate-limit.ts`
 
@@ -209,15 +209,15 @@ Mismo patrón Map + prune throttled de `auth/rate-limit.ts`, con flag
 
 ```ts
 export function isIngestaRateLimited(tokenHash: string, now?: number): boolean;
-//   30 req/min por token — solo POST dispositivos (R19)
+//   30 req/min por token — solo POST dispositivos (R23)
 export function isAgenteRateLimited(tokenHash: string, now?: number): boolean;
-//   60 req/min por token — resto de endpoints del agente (R20)
+//   60 req/min por token — resto de endpoints del agente (R24)
 export function isTokenAuthRateLimited(clientIp: string, now?: number): boolean;
-//   10 fallos de auth/min por IP (R21)
+//   10 fallos de auth/min por IP (R25)
 export function resetEscaneoRateLimits(): void; // solo tests
 ```
 
-Dimensionamiento de R19: clientes SyS son PyMEs; un /24 son 254 hosts ≈ 3
+Dimensionamiento de R23: clientes SyS son PyMEs; un /24 son 254 hosts ≈ 3
 chunks de 100. Aun una red de 3.000 hosts son 30 chunks: cabe en 1 minuto.
 El límite frena loops rotos del agente, no el uso legítimo.
 
@@ -226,19 +226,19 @@ El límite frena loops rotos del agente, no el uso legítimo.
 Convenciones comunes: envelope `apiSuccess`/`apiError`; `parseJsonBody`;
 Zod `safeParse` con mensajes de issues unidos (patrón `crm/leads/batch`);
 errores de dominio mapeados por `http.ts`; requests del agente exigen
-`X-Agente-Version` (R17) y pasan por rate limit antes de tocar DB.
+`X-Agente-Version` (R19) y pasan por rate limit antes de tocar DB.
 
 ### Staff (sesión)
 
-**`POST /api/escaneos`** — crea escaneo en `pendiente` (R18).
+**`POST /api/escaneos`** — crea escaneo en `pendiente` (R22).
 
 - Guard: `requireStaffApi`; si rol ≠ admin → exigir
   `techIsAssigned(body.auditId, user.id)` (R6, patrón #33/#57).
 - Body: `crearEscaneoInput` de #59 (incluye `auditId`; `agenteVersion` es la
   versión vigente del agente que la UI #62 precarga — la corrige el agente
-  vía R17 al conectarse).
+  vía R21 al conectarse).
 - Empresa: se resuelve desde la auditoría (`SELECT empresa_id FROM audit
-  WHERE id = ...`); 404 si no existe (R18). Luego
+  WHERE id = ...`); 404 si no existe (R22). Luego
   `crearEscaneo(empresaId, user.id, input)` (#59).
 - 201 con la fila del escaneo.
 
@@ -279,14 +279,14 @@ export const chunkDispositivosInput = z.object({
 }).strict();
 ```
 
-- Rate limit `isIngestaRateLimited` (R19) → 429.
+- Rate limit `isIngestaRateLimited` (R23) → 429.
 - `upsertDispositivos(empresaId, escaneoId, parsed.dispositivos)` (#59) →
   200 `{ recibidos: n, dispositivosDetectados: total }` (el total se relee
   con `obtenerEscaneo`).
 - `EscaneoNoMutableError` → 409 (estado terminal o `pendiente`: el repo de
   #59 solo acepta `en_curso`/`sincronizando` — R4/R10).
 
-**`POST /api/escaneos/[escaneoId]/estado`** — transición (R16).
+**`POST /api/escaneos/[escaneoId]/estado`** — transición (R16, R17, R18).
 
 - Body: `z.object({ estado: escaneoEstado, errorDetalle: z.string().min(1)
   .max(2000).optional() }).strict()` (schemas #59).
@@ -296,9 +296,9 @@ export const chunkDispositivosInput = z.object({
 
 ### Sistema
 
-**`POST /api/system/escaneos-colgados`** — job R7 de #59 (R22–R24).
+**`POST /api/system/escaneos-colgados`** — job R7 de #59 (R26–R28).
 
-- `requireSystemToken` (R23) + rate limit por IP.
+- `requireSystemToken` (R27) + rate limit por IP.
 - `marcarColgadosFallidos()` de `jobs.ts`:
 
 ```ts
@@ -321,7 +321,7 @@ export async function marcarColgadosFallidos(): Promise<{ marcados: number }> {
 ```
 
 - 200 `{ marcados: n }`. Idempotente: tras marcar, los escaneos quedan en
-  estado terminal y `escaneosColgados()` ya no los devuelve (R24).
+  estado terminal y `escaneosColgados()` ya no los devuelve (R28).
 - Scheduler externo (fuera de alcance del código): cron horario en el host
   Dokploy o GitHub Actions schedule con `curl -X POST -H "Authorization:
   Bearer $ESCANEO_SYSTEM_TOKEN"`. Se documenta en `docs/deploy-dokploy.md`
@@ -342,15 +342,15 @@ export function mapErrorEscaneo(err: unknown): Response;
 | `ConsentimientoFaltanteError` | 409 | mensaje del error |
 | `ValidationError` | 400 | mensaje del error |
 | `ZodError` | 400 | issues unidos (patrón CRM batch) |
-| desconocido | 500 | «Error interno» + `logger.error` con contexto (sin stack al cliente, R25) |
+| desconocido | 500 | «Error interno» + `logger.error` con contexto (sin stack al cliente, R29) |
 
 ## Consumo explícito de R de #59
 
 | R de #59 | Cómo lo consume #60 |
 |---|---|
 | R4 (no escritura en terminal) | `upsertDispositivos` lo garantiza; el endpoint mapea a 409 (R10). |
-| R7 (escaneos colgados) | `escaneosColgados()` es el núcleo del job (R22). |
-| R8 (consentimiento para `en_curso`) | `cambiarEstadoEscaneo` valida; el endpoint expone 409 (R16). |
+| R7 (escaneos colgados) | `escaneosColgados()` es el núcleo del job (R26). |
+| R8 (consentimiento para `en_curso`) | `cambiarEstadoEscaneo` valida; el endpoint expone 409 (R17). |
 | R10 (máquina de estados) | Toda transición pasa por `cambiarEstadoEscaneo`, también el job. |
 | R12/R13/R18 (identidad, upsert, COALESCE) | Idempotencia de chunks (R14) sin lógica extra en la API. |
 | R14 (raw sin transformación) | La API valida con Zod y pasa el payload tal cual al repo. |
@@ -364,7 +364,7 @@ export function mapErrorEscaneo(err: unknown): Response;
 | **El agente crea el escaneo por API** (lectura literal del backlog) | El token tiene scope de UN escaneo: para crear con token haría falta un token por auditoría o de larga vida — más superficie, menos trazabilidad. La creación staff-side además captura `tecnico_id` real (R2 de #59) y habilita la UI de preparación (#62). Refinamiento a validar en puerta. |
 | **JWT firmado en vez de token opaco** | Revocación inmediata (R4) exigiría denylist en DB igualmente; el lookup de token opaco es un índice único y punto. JWT no aporta claims que se necesiten. |
 | **Columna `token_hash` en `escaneo`** | Impide historial y rotación auditable (R3/R4); tabla propia con índice parcial es la convención (`password_reset_token`). |
-| **Rate limit por IP en ingesta** | El agente sale desde la red del cliente (IP compartida/variable); la unidad natural de abuso es el token. Por IP solo para fallos de auth (R21). |
+| **Rate limit por IP en ingesta** | El agente sale desde la red del cliente (IP compartida/variable); la unidad natural de abuso es el token. Por IP solo para fallos de auth (R25). |
 | **Redis para rate limit** | No hay Redis en el stack; el deploy es un solo contenedor (Dokploy), el Map en memoria alcanza — mismo criterio que login. |
 | **Job interno con `setInterval`/`node-cron`** | Procesos de fondo dentro del server SvelteKit no sobreviven deploys ni escalan; el repo no tiene la convención. Endpoint + scheduler externo es observable y fail-closed. |
 | **Auto-revocar token al entrar en estado terminal** | El agente puede necesitar reintentar el cierre o leer el estado final; el TTL de 12 h limita la ventana. Complejidad sin beneficio. |
@@ -390,14 +390,14 @@ el caso.
 | Chunk feliz: dispositivos + software + servicios persistidos; respuesta con conteo | R13 |
 | Reenvío del mismo chunk → mismo `dispositivos_detectados`, sin duplicados | R14 |
 | Chunk de 101 dispositivos o body > 2 MB → 400, cero escrituras | R15 |
-| `pendiente → en_curso` sin consentimiento → 409; con consentimiento → 200; `pendiente → completado` → 409; `fallido` sin `errorDetalle` → 400 | R16 |
-| Sin `X-Agente-Version` → 400; major distinto → 409; versión distinta se persiste en `agente_version` | R17 |
-| `POST /api/escaneos`: 201 en `pendiente`; 404 auditoría inexistente; 403 técnico no asignado | R18, R6 |
-| 31 chunks en 1 min con mismo token → el 31 da 429 | R19 |
-| 61 GETs en 1 min → 429 | R20 |
-| 11 fallos de auth desde una IP → 429 | R21 |
-| Job: sin token de sistema → 401; con token marca `fallido` solo los >24 h con `error_detalle`; segunda corrida marca 0 | R22, R23, R24 |
-| Error inesperado del repo (stub) → 500 genérico sin stack; logs sin token en claro | R25, R26 |
+| `pendiente → en_curso` sin consentimiento → 409; con consentimiento → 200; `pendiente → completado` → 409; `fallido` sin `errorDetalle` → 400 | R16, R17, R18 |
+| Sin `X-Agente-Version` → 400; major distinto → 409; versión distinta se persiste en `agente_version` | R19, R20, R21 |
+| `POST /api/escaneos`: 201 en `pendiente`; 404 auditoría inexistente; 403 técnico no asignado | R22, R6 |
+| 31 chunks en 1 min con mismo token → el 31 da 429 | R23 |
+| 61 GETs en 1 min → 429 | R24 |
+| 11 fallos de auth desde una IP → 429 | R25 |
+| Job: sin token de sistema → 401; con token marca `fallido` solo los >24 h con `error_detalle`; segunda corrida marca 0 | R26, R27, R28 |
+| Error inesperado del repo (stub) → 500 genérico sin stack; logs sin token en claro | R29, R30 |
 
 ## Gates
 

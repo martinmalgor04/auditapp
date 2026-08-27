@@ -61,8 +61,8 @@ DEBE impedir su uso de inmediato, conservando el registro histórico de la
 emisión.
 
 **R5** — El sistema DEBE devolver el token en claro únicamente en el cuerpo
-de la respuesta de emisión; ninguna otra respuesta, log ni lectura posterior
-DEBE exponerlo.
+de la respuesta de emisión (ninguna otra respuesta, log ni lectura posterior
+lo expone; ver también R30).
 
 **R6** — CUANDO un usuario invoque los endpoints de emisión o revocación de
 token, el sistema DEBE exigir sesión con rol `admin` o
@@ -118,21 +118,29 @@ escritura en la base.
 
 **R16** — CUANDO el agente invoque `POST /api/escaneos/[escaneoId]/estado`
 con un estado destino, el sistema DEBE aplicar la máquina TRANSICIONES de #59
-incluyendo la validación de consentimiento para `en_curso` (R8 de #59); SI la
-transición es inválida o falta consentimiento ENTONCES el sistema DEBE
-responder 409 sin mutar el escaneo; SI el destino es `fallido` sin
-`errorDetalle` ENTONCES el sistema DEBE responder 400.
+incluyendo la validación de consentimiento para `en_curso` (R8 de #59).
 
-**R17** — CUANDO el agente invoque cualquier endpoint de escaneo, el sistema
-DEBE exigir el header `X-Agente-Version` con semver válido; SI el major de la
-versión no coincide con el major soportado por AuditApp ENTONCES el sistema
-DEBE responder 409 indicando que actualice el agente; CUANDO la versión
-recibida difiera de `agente_version` persistido, el sistema DEBE actualizarlo
-(junto a `agente_hostname` si viene) para reflejar lo que realmente ejecutó.
+**R17** — SI la transición solicitada es inválida o falta consentimiento
+para `en_curso` ENTONCES el sistema DEBE responder 409 sin mutar el escaneo.
+
+**R18** — SI el estado destino es `fallido` sin `errorDetalle` ENTONCES el
+sistema DEBE responder 400 sin mutar el escaneo.
+
+**R19** — CUANDO el agente invoque cualquier endpoint de escaneo, el sistema
+DEBE exigir el header `X-Agente-Version` con semver válido (400 si falta o
+es inválido).
+
+**R20** — SI el major de la versión del agente no coincide con el major
+soportado por AuditApp ENTONCES el sistema DEBE responder 409 indicando que
+actualice el agente.
+
+**R21** — CUANDO la versión recibida difiera de `agente_version` persistido,
+el sistema DEBE actualizarlo (junto a `agente_hostname` si viene) para
+reflejar lo que realmente ejecutó.
 
 ### Endpoints staff (sesión)
 
-**R18** — CUANDO un usuario staff autorizado (R6) invoque
+**R22** — CUANDO un usuario staff autorizado (R6) invoque
 `POST /api/escaneos` con un cuerpo válido según `crearEscaneoInput` (#59), el
 sistema DEBE crear el escaneo en estado `pendiente` vía el repositorio y
 responder 201; SI la auditoría no existe o no pertenece a la empresa
@@ -140,43 +148,43 @@ resuelta ENTONCES el sistema DEBE responder 404.
 
 ### Rate limiting
 
-**R19** — SI un token supera 30 requests de ingesta de dispositivos por
+**R23** — SI un token supera 30 requests de ingesta de dispositivos por
 minuto ENTONCES el sistema DEBE responder 429 hasta que venza la ventana.
 
-**R20** — SI un token supera 60 requests por minuto en el resto de los
+**R24** — SI un token supera 60 requests por minuto en el resto de los
 endpoints del agente ENTONCES el sistema DEBE responder 429 hasta que venza
 la ventana.
 
-**R21** — SI una IP supera 10 fallos de autenticación de token por minuto
+**R25** — SI una IP supera 10 fallos de autenticación de token por minuto
 ENTONCES el sistema DEBE responder 429 a los siguientes intentos desde esa
 IP hasta que venza la ventana.
 
 ### Job de escaneos colgados (R7 de #59)
 
-**R22** — CUANDO un scheduler externo invoque
+**R26** — CUANDO un scheduler externo invoque
 `POST /api/system/escaneos-colgados` con el token de sistema configurado por
 variable de entorno, el sistema DEBE marcar `fallido` (con `error_detalle`
 descriptivo) todo escaneo que `escaneosColgados()` (#59) exponga como
 candidato, usando la máquina de estados (R10 de #59), y responder la
 cantidad marcada.
 
-**R23** — SI el request al endpoint de sistema no presenta el token de
+**R27** — SI el request al endpoint de sistema no presenta el token de
 sistema válido ENTONCES el sistema DEBE responder 401; SI la variable de
 entorno no está configurada ENTONCES el sistema DEBE responder 401 a todo
 request (fail-closed, patrón `require-crm-token.ts`).
 
-**R24** — CUANDO el job de escaneos colgados se ejecute dos veces seguidas
+**R28** — CUANDO el job de escaneos colgados se ejecute dos veces seguidas
 sin actividad intermedia, la segunda ejecución DEBE marcar cero escaneos
 (idempotencia del job).
 
 ### Errores y observabilidad
 
-**R25** — El sistema NO DEBE exponer stack traces, SQL ni datos de otros
+**R29** — El sistema NO DEBE exponer stack traces, SQL ni datos de otros
 escaneos en ninguna respuesta de estos endpoints; los errores de dominio de
 #59 DEBEN mapear al envelope `apiError` con el status semántico (404/409/400)
 y los errores inesperados a 500 con mensaje genérico y log server-side.
 
-**R26** — El sistema NO DEBE loguear el token de escaneo en claro en ningún
+**R30** — El sistema NO DEBE loguear el token de escaneo en claro en ningún
 camino (ni en errores); los logs de autenticación fallida DEBEN registrar IP
 y motivo categorizado, sin material del token.
 

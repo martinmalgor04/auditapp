@@ -361,8 +361,8 @@ type CredStore interface {
 | #59 R2 (`agente_version`) | Header de versión persistido por #60 (R28/R30). |
 | #60 R13/R15 (chunk, límites) | Chunks de 50 ≤ 100, body < 2 MB (R27). |
 | #60 R16 (transiciones) | Fases del orquestador llaman `POST estado` (R15/R17). |
-| #60 R17 (`X-Agente-Version`) | Header en todo request; 409 → detener (R28). |
-| #60 R19/R20 (rate limit) | 429 → re-encolar con espera de ventana. |
+| #60 R19/R20/R21 (`X-Agente-Version`) | Header en todo request; 409 → detener (R28). |
+| #60 R23/R24 (rate limit) | 429 → re-encolar con espera de ventana. |
 
 ## Tests
 

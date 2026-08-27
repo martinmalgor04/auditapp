@@ -147,15 +147,15 @@ hasta drenar la cola.
 cierre inesperado), el resultado en AuditApp DEBE ser idéntico al de un
 envío único (idempotencia por upsert de #59, R13).
 
-**R20** — El agente DEBE soportar escaneos secuenciales (multi-VLAN:
-varios escaneos de la misma auditoría, uno tras otro) con un solo escaneo
-activo a la vez, sin reiniciar la aplicación.
+**R20** — CUANDO el técnico complete un escaneo y la misma auditoría tenga
+otro pendiente (multi-VLAN), el agente DEBE permitir iniciar el siguiente
+sin reiniciar la aplicación, con un solo escaneo activo a la vez.
 
 ### Ciclo de vida del contenedor
 
 **R21** — CUANDO el agente corra por primera vez en una notebook, el sistema
 DEBE descargar la imagen `sys-openaudit` pineada por digest (una sola vez,
-~1–2 GB) mostrando progreso, y DEBE verificar el digest antes de usarla.
+~1–2 GB), mostrando progreso y verificando el digest antes de usarla.
 
 **R22** — CUANDO se inicie un escaneo, el agente DEBE levantar un contenedor
 Linux dedicado y efímero (`--rm`) con Open-AudIT, publicando su API
@@ -198,7 +198,7 @@ avisarlo en la UI con un link de descarga (consultando el `version.json`
 publicado en AuditApp al inicio, si hay conectividad), sin auto-actualizar.
 
 **R30** — El agente DEBE estampar su versión en `agente_version` del escaneo
-a través del flujo de #60 (R17 de #60), de modo que el registro refleje la
+a través del flujo de #60 (R19–R21 de #60), de modo que el registro refleje la
 versión que realmente ejecutó el escaneo.
 
 ### UI y errores
