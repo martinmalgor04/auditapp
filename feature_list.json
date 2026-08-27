@@ -1097,7 +1097,7 @@
         "Validación Zod en frontera; errores sin stack traces ni datos sensibles"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 61,
@@ -1111,7 +1111,7 @@
         "Los datos normalizados cumplen los contratos Zod de #59"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 62,
