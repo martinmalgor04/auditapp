@@ -1063,6 +1063,95 @@
       ],
       "sdd": true,
       "status": "done"
+    },
+    {
+      "id": 59,
+      "name": "59_escaneo_modelo_datos",
+      "title": "Escaneo de red — modelo de datos y repositorio",
+      "description": "Capa de persistencia y contratos de tipos para escaneo automatizado de red (fuente de datos del relevamiento técnico). Un agente externo (sys-scan-agent, #61) corre en la notebook del técnico dentro de la LAN del cliente y sincroniza resultados de Open-AudIT + Nmap contra AuditApp. Tablas escaneo/escaneo_dispositivo/escaneo_software/escaneo_servicio, identidad determinística por MAC (fallback IP), upsert idempotente por chunk, payload crudo en jsonb, consentimiento condicionado por estado, defensa en profundidad por empresa a nivel query. Sin endpoints (#60), UI (#62), scoring (#63) ni diff (#64). Decisiones de puerta humana 2026-08-27: consentimiento condicionado, vista consolidada multi-VLAN, sin purga, no es app aparte.",
+      "source": "Spec provisto por el usuario en chat (2026-08-27), adaptado al schema real y convenciones del repo en specs/59_escaneo_modelo_datos/ tras puerta humana.",
+      "acceptance": [
+        "La migración 030 aplica y re-corre limpia (idempotente) sobre una base con datos",
+        "Ningún escaneo puede salir de pendiente sin consentimiento registrado (quién y cuándo); CHECK en DB lo garantiza para estados activos/terminales",
+        "No se puede persistir un dispositivo con MAC no normalizada (12 hex minúsculas)",
+        "Reenviar el mismo dispositivo en el mismo escaneo actualiza, no duplica; un campo en NULL no borra el valor previo (COALESCE)",
+        "upsertDispositivos con empresaId ajeno o sobre escaneo completado falla sin escribir nada",
+        "Borrar una auditoría elimina en cascada escaneos, dispositivos, software y servicios",
+        "Transiciones de estado inválidas son rechazadas; estados terminales no reabren",
+        "Dos upserts concurrentes sobre el mismo escaneo no producen duplicados ni deadlock",
+        "dispositivos_detectados refleja el conteo real tras cada chunk",
+        "Tests de integración contra Postgres real verdes; pnpm run check y pnpm test verdes"
+      ],
+      "sdd": true,
+      "status": "in_progress"
+    },
+    {
+      "id": 60,
+      "name": "60_escaneo_ingesta_api",
+      "title": "Escaneo de red — API de ingesta",
+      "description": "Endpoints HTTP para que el agente (#61) sincronice chunks de dispositivos contra AuditApp: crear escaneo, registrar consentimiento, upsert de dispositivos por chunk, transiciones de estado. Autenticación por token de escaneo con scope limitado (no sesión de usuario). Depende de #59.",
+      "source": "Spec #59 (fuera de alcance): endpoints HTTP y autenticación por token de escaneo.",
+      "acceptance": [
+        "El agente puede crear escaneo, enviar chunks y cerrar escaneo vía API con token de scope limitado",
+        "Un token no puede operar sobre escaneos ajenos (defensa en profundidad empresa + escaneo)",
+        "Validación Zod en frontera; errores sin stack traces ni datos sensibles"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 61,
+      "name": "61_agente_scan",
+      "title": "Agente sys-scan-agent (notebook del técnico)",
+      "description": "Agente externo que corre en la notebook del técnico dentro de la LAN del cliente: dispara discovery vía Open-AudIT + Nmap, normaliza resultados y los sincroniza contra la API de ingesta (#60). Las credenciales del cliente viven cifradas y efímeras en la notebook; NUNCA se persisten en AuditApp. Depende de #60.",
+      "source": "Spec #59 (contexto y fuera de alcance): el agente y su comunicación con Open-AudIT.",
+      "acceptance": [
+        "El agente ejecuta un discovery contra un rango y sincroniza dispositivos por chunks con reintentos",
+        "Las credenciales del cliente no se persisten en AuditApp bajo ningún flujo",
+        "Los datos normalizados cumplen los contratos Zod de #59"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 62,
+      "name": "62_escaneo_revision_ui",
+      "title": "Escaneo de red — UI de revisión",
+      "description": "UI para que el técnico revise los dispositivos escaneados: confirmar, descartar, fusionar con el relevamiento manual (sin sobrescribir el dato manual; el fingerprinting falla y el técnico ve cosas que Nmap no). Vista consolidada multi-VLAN por auditoría con dedup por MAC y provenance por escaneo (decisión puerta #59). Define la FK de vinculación con el relevamiento manual diferida en #59. Depende de #59.",
+      "source": "Spec #59 (fuera de alcance + decisión multi-VLAN de puerta 2026-08-27).",
+      "acceptance": [
+        "El técnico puede marcar cada dispositivo como confirmado/descartado/fusionado con registro de quién y cuándo",
+        "La vista consolidada deduplica por MAC entre escaneos de la misma auditoría mostrando provenance",
+        "Vincular un dispositivo con un ítem manual no sobrescribe campos del ítem manual"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 63,
+      "name": "63_escaneo_scoring",
+      "title": "Escaneo de red — scoring sobre hallazgos",
+      "description": "Reglas de scoring que consumen los dispositivos/servicios escaneados y alimentan el cierre e informe. Excluye del cómputo todo dispositivo en estado sin_revisar (R25 de #59). Depende de #59 y #62.",
+      "source": "Spec #59 (fuera de alcance): reglas de scoring sobre hallazgos.",
+      "acceptance": [
+        "Las reglas de scoring solo computan dispositivos confirmados/fusionados",
+        "Los hallazgos del escaneo se reflejan en el cierre/informe de la auditoría"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 64,
+      "name": "64_escaneo_diff",
+      "title": "Escaneo de red — diff entre escaneos",
+      "description": "Comparación entre escaneos (de la misma auditoría o entre auditorías anuales del mismo cliente) usando la identidad determinística por MAC: altas, bajas y cambios de dispositivos, software y servicios. Aprovecha ip inet (contención de subred) y raw jsonb. Depende de #59.",
+      "source": "Spec #59 (fuera de alcance): comparación entre escaneos.",
+      "acceptance": [
+        "El diff detecta altas, bajas y cambios por identidad MAC entre dos escaneos",
+        "El diff entre auditorías anuales de una misma empresa es consultable sin re-escanear (usa raw persistido)"
+      ],
+      "sdd": true,
+      "status": "pending"
     }
   ]
 }
