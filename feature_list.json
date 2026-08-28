@@ -1125,7 +1125,7 @@
         "Vincular un dispositivo con un ítem manual no sobrescribe campos del ítem manual"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 63,
