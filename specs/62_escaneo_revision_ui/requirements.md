@@ -9,8 +9,22 @@
 >
 > Consume el modelo y el repositorio de #59 (`specs/59_escaneo_modelo_datos/`,
 > mergeada) y las funciones de token de #60 (`specs/60_escaneo_ingesta_api/`,
-> in_progress al redactar). Sin scoring (#63), sin diff (#64), sin edición del
+> mergeada). Sin scoring (#63), sin diff (#64), sin edición del
 > dato escaneado (el dato del agente es inmutable salvo revisión).
+>
+> **Decisiones de puerta humana (2026-08-30):**
+>
+> 1. **OQ1 — Fusión = solo vínculo (opción A).** El técnico tipea en el form
+>    lo que quiera; la UI de detalle muestra los datos lado a lado. La copia
+>    asistida queda como feature futura si el flujo real lo pide.
+> 2. **OQ2 — Revisión post-cierre PERMITIDA (opción B).** Con auditoría
+>    `cerrada` las acciones de revisión de dispositivos operan normal (R4);
+>    solo se bloquean la creación de escaneos y la emisión/revocación de
+>    tokens (R32). #63 recomputará el scoring ante revisiones posteriores
+>    al cierre.
+> 3. **OQ3 — Consolidado con TODOS los escaneos que tengan dispositivos
+>    (opción A).** El estado del escaneo se muestra en la provenance; un
+>    `fallido` puede tener la única copia de datos de un tramo de red.
 >
 > Notación EARS estricta (ver `docs/specs.md`). Cada `R<n>` es verificable por
 > al menos un test concreto.
@@ -70,8 +84,10 @@ escaneos ENTONCES el sistema DEBE responder 403 sin exponer datos de
 escaneos ni ejecutar mutaciones.
 
 **R4** — MIENTRAS la auditoría esté en estado `cerrada`, el sistema DEBE
-presentar la UI de escaneos en solo lectura, sin acciones de creación de
-escaneo, emisión/revocación de token ni revisión de dispositivos.
+permitir las acciones de revisión de dispositivos (confirmar, descartar,
+fusionar, desvincular, volver a `sin_revisar`) — decisión de puerta
+2026-08-30 (OQ2 opción B): la revisión post-cierre queda habilitada y #63
+recomputará el scoring ante revisiones posteriores al cierre.
 
 ### Gestión de escaneos (diferido de #60)
 
@@ -91,6 +107,10 @@ historial de emisión (R4 de #60).
 **R8** — El sistema DEBE listar los escaneos de la auditoría con estado,
 etiqueta, rango objetivo, cantidad de dispositivos detectados y marcas
 temporales de inicio/fin.
+
+**R32** — MIENTRAS la auditoría esté en estado `cerrada`, el sistema DEBE
+rechazar la creación de escaneos y la emisión o revocación de tokens (409).
+*(id fuera de secuencia: agregado en puerta humana 2026-08-30, OQ2.)*
 
 ### Vista consolidada multi-VLAN (read-model)
 

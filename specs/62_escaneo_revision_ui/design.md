@@ -70,8 +70,12 @@ componen o conviven con esas funciones (misma línea que #60).
    (`generateBriefingLink` ya devuelve un secreto una vez vía `form`). Los
    endpoints staff de #60 quedan como API pública testeada; no se
    duplica lógica.
-7. **Auditoría cerrada = solo lectura** (R4), coherente con el detalle
-   (`readonly` cuando `status='cerrada'`); para revisar se reabre (#39).
+7. **Auditoría cerrada: revisión permitida, alta de datos bloqueada**
+   (decisión de puerta 2026-08-30, OQ2 opción B). Con `status='cerrada'`
+   las actions de revisión (`marcar`, `confirmar`, `descartar`,
+   `volverASinRevisar`, `fusionar`, `desvincular`) operan normal (R4);
+   las de creación de escaneo y emisión/revocación de token responden
+   409 (R32). #63 recomputará el scoring ante revisiones post-cierre.
 8. **Detalle por `identidad`, no por id de fila.** La URL
    `/auditorias/[id]/escaneos/dispositivos/[identidad]` es estable aunque
    lleguen ocurrencias nuevas (el id canónico cambia, la identidad no). El
@@ -580,9 +584,10 @@ corrige al conectarse (R21 de #60). Major alineado con
 Reuso de #59: `EscaneoNotFoundError` (dispositivo/escaneo inexistente o de
 otra empresa), `ValidationError` (de backoffice, para `revision='fusionado'`
 en `marcarRevisionGrupo`). En las páginas, `failFromError` mapea a
-`fail(status, { error })` sin stack (R29); auditoría cerrada en actions →
-`fail(409, { error: 'La auditoría está cerrada...' })` directo (patrón
-`fail(400)` de `copyBriefingLink`).
+`fail(status, { error })` sin stack (R29); auditoría cerrada en actions de
+creación de escaneo/token → `fail(409, { error: 'La auditoría está
+cerrada...' })` directo (patrón `fail(400)` de `copyBriefingLink`); las
+actions de revisión NO se bloquean por `cerrada` (R4, puerta 2026-08-30).
 
 ## Rutas y páginas
 
@@ -598,7 +603,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
   if (user.role !== 'admin' && !(await techIsAssigned(audit.id, user.id))) {
     error(403, 'No tenés permiso para ver los escaneos de esta auditoría'); // R3
   }
-  const readonly = audit.status === 'cerrada'; // R4
+  const cerrada = audit.status === 'cerrada'; // R32: bloquea crear escaneo/token, NO la revisión (R4)
   const filtros = filtrosConsolidadoInput.parse({
     tipo: url.searchParams.get('tipo') ?? undefined,
     revision: url.searchParams.get('revision') ?? undefined,
@@ -618,8 +623,9 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 };
 ```
 
-Actions (todas: `requireStaff` + `assertAdminOrAssigned` + guard `cerrada`
-→ `fail(409)` + `failFromError`):
+Actions (todas: `requireStaff` + `assertAdminOrAssigned` + `failFromError`;
+guard `cerrada` → `fail(409)` SOLO en `crearEscaneo`/`emitirToken`/
+`revocarToken` — R32; las de revisión operan con auditoría cerrada — R4):
 
 | Action | Cuerpo | Efecto | R |
 |---|---|---|---|
@@ -650,7 +656,8 @@ Actions (todas: `requireStaff` + `assertAdminOrAssigned` + guard `cerrada`
 
 `+page.server.ts` — load: mismos guards; `obtenerDispositivoConsolidado`
 (404 si no existe); `listarFilasInventarioManual` (para el panel de fusión);
-`readonly` por `cerrada`. Actions: `confirmar`, `descartar`,
+sin bloqueo por `cerrada` en revisión (R4, puerta 2026-08-30). Actions:
+`confirmar`, `descartar`,
 `volverASinRevisar` (→ `marcarRevisionGrupo` con nota opcional, R20/R26),
 `fusionar` (→ `fusionarDispositivo`, R21/R22), `desvincular` (→
 `desvincularDispositivo`, R24).
@@ -723,27 +730,22 @@ patrón que `field-table.svelte`.
 | **Restringir el selector de fusión a ítems de dominio IT** | El dominio se resuelve por `template_code` en el pipeline de informe; acoplar la UI a esa convención agrega fragilidad. Se listan todos los ítems-tabla de la plantilla agrupados por sección. |
 | **Detalle en modal sobre la lista** | La página propia es deep-linkable, más simple en mobile y sigue el patrón CRM (`/crm/[id]`). |
 
-## Preguntas abiertas para la puerta humana
+## Preguntas de puerta — RESUELTAS (2026-08-30)
 
-- **OQ1 — Copia asistida hacia el relevamiento manual.**
-  Opción A (propuesta): la fusión solo vincula; si el técnico quiere
-  incorporar datos del escaneo a la fila manual, los tipea en el form (la
-  UI de detalle los muestra lado a lado). Opción B: botón "precargar en
-  relevamiento" que abre el form con la fila en edición y valores sugeridos
-  del escaneo (toca el form técnico; agranda el alcance). **Propuesta: A**;
-  B puede ser una feature futura si el flujo real lo pide.
-- **OQ2 — Revisión con auditoría cerrada.**
-  Opción A (propuesta): `cerrada` = solo lectura (R4); para revisar se
-  reabre la auditoría (flujo #39 existente). Opción B: permitir revisar
-  post-cierre y que #63 recomputé scoring al cerrar de nuevo. **Propuesta:
-  A** — coherente con todo el detalle de auditoría y evita invalidar
-  scoring ya computado.
-- **OQ3 — Escaneos que entran al consolidado.**
-  Opción A (propuesta): todos los que tengan dispositivos, mostrando el
-  estado del escaneo en la provenance (un `fallido` puede tener la única
-  copia de los datos). Opción B: solo `en_curso`/`sincronizando`/
-  `completado`. **Propuesta: A** — no esconde datos al técnico; el estado
-  queda visible.
+- **OQ1 — Copia asistida hacia el relevamiento manual → opción A.**
+  La fusión solo vincula; si el técnico quiere incorporar datos del
+  escaneo a la fila manual, los tipea en el form (la UI de detalle los
+  muestra lado a lado). La copia asistida ("precargar en relevamiento")
+  queda como feature futura si el flujo real lo pide.
+- **OQ2 — Revisión con auditoría cerrada → opción B.** Se permite revisar
+  post-cierre (R4) y #63 recomputará el scoring ante revisiones
+  posteriores al cierre. Refinamiento del leader al sellar: el permiso
+  cubre SOLO las acciones de revisión; la creación de escaneos y la
+  emisión/revocación de tokens siguen bloqueadas con `cerrada` (R32) —
+  datos nuevos implican reabrir la auditoría (#39).
+- **OQ3 — Escaneos que entran al consolidado → opción A.** Todos los que
+  tengan dispositivos, mostrando el estado del escaneo en la provenance
+  (un `fallido` puede tener la única copia de los datos).
 
 ## Tests
 
@@ -786,7 +788,7 @@ template con ítem-tabla (patrón `tests/escaneos.test.ts` de #59 y
 | Caso | R |
 |---|---|
 | Load sin sesión → redirect /login; técnico no asignado → 403; admin y asignado → 200 | R2, R3 |
-| Auditoría `cerrada`: load expone `readonly`; actions de revisión/creación/token → `fail(409)` | R4 |
+| Auditoría `cerrada`: actions de revisión operan (200); creación de escaneo/token → `fail(409)` | R4, R32 |
 | Action `crearEscaneo` → escaneo `pendiente` con técnico de la sesión | R5 |
 | Action `emitirToken` → respuesta con claro + expiración; DB guarda solo hash (con #60 mergeado) | R6 |
 | Action `revocarToken` → el token deja de resolver (con #60 mergeado) | R7 |

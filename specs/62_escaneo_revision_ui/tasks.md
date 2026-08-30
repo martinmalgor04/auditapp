@@ -69,10 +69,11 @@
 - [ ] T9 — Crear
   `src/routes/(app)/auditorias/[id]/escaneos/+page.server.ts`: load con
   guards (`requireStaff`, 404 vía `getAuditById`, 403 si no admin ni
-  asignado), `readonly` por `cerrada`, parseo de filtros por query string y
-  carga de escaneos/consolidado/contadores; actions `crearEscaneo` y
-  `marcar` (con guard `fail(409)` en cerrada y `failFromError`). Cubre: R2,
-  R3, R4, R5, R20, R29.
+  asignado), flag `cerrada` (bloquea SOLO crear escaneo/token — R32; la
+  revisión queda permitida — R4, puerta 2026-08-30), parseo de filtros por
+  query string y carga de escaneos/consolidado/contadores; actions
+  `crearEscaneo` (guard `fail(409)` en cerrada) y `marcar` (permitido en
+  cerrada, con `failFromError`). Cubre: R2, R3, R4, R5, R20, R29, R32.
 - [ ] T10 — Crear
   `src/routes/(app)/auditorias/[id]/escaneos/+page.svelte` y los componentes
   `src/lib/components/escaneos/{revision-badge,escaneo-estado-badge,provenance-chips,consolidado-cards,consolidado-tabla}.svelte`:
@@ -102,11 +103,12 @@
 ## Verificación
 
 - [ ] T14 — Crear `tests/escaneos-revision-routes.test.ts` (patrón
-  `tests/api/closure-page.test.ts`): guards 303/403/200, `readonly` y
-  `fail(409)` en cerrada, crear escaneo, emitir/revocar token, marcar desde
-  lista, `fail` sin stack, markup cards/tabla y targets táctiles, enlace en
-  detalle de auditoría. Cubre: R1, R2, R3, R4, R5, R6, R7, R8, R20, R29,
-  R30, R31.
+  `tests/api/closure-page.test.ts`): guards 303/403/200, revisión permitida
+  con auditoría `cerrada` (R4) y `fail(409)` en cerrada solo para crear
+  escaneo/emitir/revocar token (R32), crear escaneo, emitir/revocar token,
+  marcar desde lista, `fail` sin stack, markup cards/tabla y targets
+  táctiles, enlace en detalle de auditoría. Cubre: R1, R2, R3, R4, R5, R6,
+  R7, R8, R20, R29, R30, R31, R32.
 - [ ] T15 — Crear `e2e/escaneos-revision.spec.ts`: flujo feliz con seed
   (login → auditoría con escaneo y dispositivos → confirmar → detalle →
   fusionar con fila manual → vínculo visible). Cubre: R1, R20, R21.
