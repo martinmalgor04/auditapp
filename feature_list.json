@@ -1097,7 +1097,7 @@
         "Validación Zod en frontera; errores sin stack traces ni datos sensibles"
       ],
       "sdd": true,
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "id": 61,
@@ -1125,7 +1125,7 @@
         "Vincular un dispositivo con un ítem manual no sobrescribe campos del ítem manual"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 63,

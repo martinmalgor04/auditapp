@@ -1,33 +1,32 @@
-# Sesión — #60 Escaneo ingesta API (2026-08-27)
+# Sesión — spec_author de 62_escaneo_revision_ui (2026-08-28)
 
 ## Objetivo
 
-Implementar la feature #60 `60_escaneo_ingesta_api` según el spec aprobado en
-puerta humana (2026-08-27): migración 031, tokens de escaneo (emisión staff,
-rotación, revocación), endpoints del agente (GET estado, consentimiento,
-dispositivos, estado), endpoint de sistema para escaneos colgados, rate
-limits y tests de integración API contra Postgres real.
+Redactar el spec EARS completo de la feature `62_escaneo_revision_ui`
+(pending → spec_ready) y frenar en la puerta humana.
 
 ## Estado
 
-- Las 13 tasks de `specs/60_escaneo_ingesta_api/tasks.md` completadas `[x]`.
-- 29/29 tests nuevos verdes en `tests/api/escaneos-*.test.ts` (4 archivos).
-- Migración 031 aplicada y re-corrida verificada no-op.
-- Gates con baseline comparada contra master limpio (misma VM):
-  `pnpm test` 1566 passed / 14 failed (las 14 = baseline exacta de master,
-  1537 + 29 nuevos; cero fallas nuevas) · `pnpm run check` 7 errores
-  preexistentes, cero nuevos · `pnpm run build` verde · `./init.sh` con FAIL
-  preexistentes (feature 7 sin specs en master + las 14 fallas).
-- Mapa de trazabilidad R1–R30, desviaciones y notas de verificación en
-  `progress/impl_60_escaneo_ingesta_api.md`.
-- Entorno VM: Postgres 16 vía apt (Docker no disponible), rol/DB `auditapp`.
-- Nota operativa: no editar archivos mientras corre la suite — el hook
-  `afterFileEdit` dispara un `pnpm test` concurrente que puede truncar la DB
-  bajo archivos SKIP_DB_RESET (flaky `encuesta-schema` observado y explicado
-  en el impl doc).
+- Spec creado en `specs/62_escaneo_revision_ui/`:
+  - `requirements.md` — 31 requisitos EARS (R1–R31) con mapa acceptance→R.
+  - `design.md` — read-model consolidado multi-VLAN (query SQL con
+    `GROUP BY identidad` + `ARRAY_AGG` ordenado, sin vista ni tabla
+    derivada), vinculación con relevamiento manual vía
+    `(relevamiento_item_id, relevamiento_row_id)` en migración 032 (sin
+    normalizar `audit_response`), revisión por grupo de identidad, rutas
+    `/auditorias/[id]/escaneos` + detalle por `[identidad]`, 11 alternativas
+    descartadas y 3 preguntas abiertas (OQ1 copia asistida, OQ2 revisión con
+    auditoría cerrada, OQ3 estados que entran al consolidado).
+  - `tasks.md` — 16 tasks (T1–T16) con trazabilidad "Cubre: R<n>".
+- `feature_list.json`: feature 62 → `spec_ready` (única tocada).
+- Rama: `cursor/62-escaneo-revision-ui-e2e6`.
+- Hallazgo clave de investigación: el relevamiento manual vive en
+  `audit_response.value.rows[*]` con `row_id` UUID estable (no hay tabla
+  normalizada); las filas pueden borrarse → el spec contempla vínculo roto
+  (R25).
 
 ## Próximo paso
 
-Reviewer: verificar trazabilidad R↔test contra
-`progress/impl_60_escaneo_ingesta_api.md` y gates. El leader cambia el estado
-en `feature_list.json` tras el review (el implementer no lo toca).
+⏸ Puerta humana: revisar el spec (especialmente las 3 OQ del design).
+Tras aprobación, el leader pasa la feature a `in_progress` y lanza
+`implementer`. Nota: T11 (actions de token) requiere #60 mergeada.
