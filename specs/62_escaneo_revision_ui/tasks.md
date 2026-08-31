@@ -112,7 +112,7 @@
 - [x] T15 — Crear `e2e/escaneos-revision.spec.ts`: flujo feliz con seed
   (login → auditoría con escaneo y dispositivos → confirmar → detalle →
   fusionar con fila manual → vínculo visible). Cubre: R1, R20, R21.
-- [ ] T16 — Armar `progress/impl_62_escaneo_revision_ui.md` con el mapa
+- [x] T16 — Armar `progress/impl_62_escaneo_revision_ui.md` con el mapa
   R↔test completo y ejecutar gates: `pnpm test`, `pnpm exec playwright test
   e2e/escaneos-revision.spec.ts`, `pnpm run check`, `pnpm run build`,
   `./init.sh`. Cubre: todos (cierre).
