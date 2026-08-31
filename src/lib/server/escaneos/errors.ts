@@ -35,3 +35,13 @@ export class ConsentimientoFaltanteError extends Error {
     this.name = 'ConsentimientoFaltanteError';
   }
 }
+
+/** #62 R22: fusión contra ítem/fila de relevamiento inexistente o inválida. */
+export class VinculoRelevamientoInvalidoError extends Error {
+  readonly code = 'VINCULO_RELEVAMIENTO_INVALIDO';
+
+  constructor(message = 'La fila del relevamiento manual destino no existe') {
+    super(message);
+    this.name = 'VinculoRelevamientoInvalidoError';
+  }
+}

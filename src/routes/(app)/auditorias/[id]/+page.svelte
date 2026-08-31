@@ -149,6 +149,8 @@
     {#if data.audit.status === 'briefing_completo' || data.audit.status === 'en_relevamiento' || data.audit.status === 'en_cierre'}
       <a href="/auditorias/{data.audit.id}/form" class="sys-btn-accent">Abrir relevamiento técnico</a>
       <a href="/auditorias/{data.audit.id}/reunion" class="sys-btn-secondary mt-2">Asistente de reunión</a>
+      <!-- #62 R1: revisión de dispositivos escaneados -->
+      <a href="/auditorias/{data.audit.id}/escaneos" class="sys-btn-secondary mt-2" data-testid="link-escaneos">Escaneos de red</a>
       {#if data.reunionSessions && data.reunionSessions.length > 0}
         <div class="mt-3 space-y-1">
           <p class="text-xs text-sys-medio font-medium">Sesiones de reunión</p>
@@ -163,6 +165,10 @@
     {/if}
     {#if data.audit.status === 'en_cierre' || data.audit.status === 'cerrada'}
       <a href="/auditorias/{data.audit.id}/cierre" class="sys-btn-secondary mt-2">Pantalla de cierre</a>
+    {/if}
+    {#if data.audit.status === 'cerrada'}
+      <!-- #62 R1/R4: la revisión de escaneos opera también con auditoría cerrada -->
+      <a href="/auditorias/{data.audit.id}/escaneos" class="sys-btn-secondary mt-2 block" data-testid="link-escaneos">Escaneos de red</a>
     {/if}
     {#if data.audit.status === 'cerrada' && data.canViewRelevamientoReadonly}
       <a href="/auditorias/{data.audit.id}/form-readonly" class="sys-btn-secondary mt-2 block">

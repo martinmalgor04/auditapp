@@ -104,6 +104,41 @@ export const registrarConsentimientoInput = z.object({
   consentimientoAt: z.coerce.date()
 });
 
+// ── #62: UI de revisión ────────────────────────────────────────────────
+
+/**
+ * Versión precargada al crear escaneo desde la UI; el agente la corrige al
+ * conectarse (R21 de #60). Major alineado con AGENTE_MAJOR_SOPORTADO.
+ */
+export const AGENTE_VERSION_INICIAL = '1.0.0';
+
+export const filtrosConsolidadoInput = z.object({
+  tipo: dispositivoTipo.optional(),
+  revision: dispositivoRevision.optional(),
+  escaneo: z.string().uuid().optional(),
+  page: z.coerce.number().int().min(1).default(1)
+});
+
+export const crearEscaneoUiInput = z.object({
+  etiqueta: z.string().max(200).nullish(),
+  rangoObjetivo: z.string().min(1).max(200)
+});
+
+export const marcarRevisionGrupoInput = z.object({
+  identidad: z.string().min(1).max(300),
+  revision: z.enum(['confirmado', 'descartado', 'sin_revisar']),
+  nota: z.string().max(2000).nullish()
+});
+
+export const fusionarDispositivoInput = z.object({
+  identidad: z.string().min(1).max(300),
+  itemId: z.string().uuid(),
+  // row_id es UUID en filas nuevas (crypto.randomUUID) pero el canónico lo
+  // tipa string (#45): se acepta string para no romper filas históricas
+  rowId: z.string().min(1).max(100),
+  nota: z.string().max(2000).nullish()
+});
+
 export const TRANSICIONES: Record<EscaneoEstado, EscaneoEstado[]> = {
   pendiente: ['en_curso', 'cancelado'],
   en_curso: ['sincronizando', 'fallido', 'cancelado'],
@@ -121,3 +156,7 @@ export type ServicioInput = z.infer<typeof servicioInput>;
 export type DispositivoInput = z.infer<typeof dispositivoInput>;
 export type CrearEscaneoInput = z.infer<typeof crearEscaneoInput>;
 export type RegistrarConsentimientoInput = z.infer<typeof registrarConsentimientoInput>;
+export type FiltrosConsolidadoInput = z.infer<typeof filtrosConsolidadoInput>;
+export type CrearEscaneoUiInput = z.infer<typeof crearEscaneoUiInput>;
+export type MarcarRevisionGrupoInput = z.infer<typeof marcarRevisionGrupoInput>;
+export type FusionarDispositivoInput = z.infer<typeof fusionarDispositivoInput>;
