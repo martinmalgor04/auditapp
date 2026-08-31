@@ -1,0 +1,350 @@
+{
+  "$ref": "#/definitions/DispositivoInput",
+  "definitions": {
+    "DispositivoInput": {
+      "type": "object",
+      "properties": {
+        "mac": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{12}$",
+              "description": "MAC normalizada: 12 hex minúsculas (#59 R15)."
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ip": {
+          "type": "string",
+          "anyOf": [
+            {
+              "format": "ipv4"
+            },
+            {
+              "format": "ipv6"
+            }
+          ]
+        },
+        "hostname": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 300
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fqdn": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 500
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fabricante": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 300
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "modelo": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 300
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "serial": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tipo": {
+          "type": "string",
+          "enum": [
+            "servidor",
+            "workstation",
+            "notebook",
+            "switch",
+            "router",
+            "firewall",
+            "impresora",
+            "camara",
+            "nas",
+            "ups",
+            "telefonia",
+            "movil",
+            "virtual",
+            "desconocido"
+          ],
+          "default": "desconocido"
+        },
+        "soFamilia": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 100
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "soNombre": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 300
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "soVersion": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 100
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "soArquitectura": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 50
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cpuDescripcion": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 300
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "memoriaMb": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "discoTotalGb": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vistoAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fuente": {
+          "type": "string",
+          "maxLength": 50,
+          "default": "open-audit"
+        },
+        "raw": {
+          "type": "object",
+          "additionalProperties": {},
+          "default": {}
+        },
+        "software": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "nombre": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "version": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "publisher": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "instaladoAt": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "raw": {
+                "type": "object",
+                "additionalProperties": {},
+                "default": {}
+              }
+            },
+            "required": [
+              "nombre"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 2000,
+          "default": []
+        },
+        "servicios": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "puerto": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65535
+              },
+              "protocolo": {
+                "type": "string",
+                "enum": [
+                  "tcp",
+                  "udp",
+                  "sctp"
+                ],
+                "default": "tcp"
+              },
+              "estadoPuerto": {
+                "type": "string",
+                "maxLength": 50,
+                "default": "open"
+              },
+              "servicio": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "producto": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "version": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "banner": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "raw": {
+                "type": "object",
+                "additionalProperties": {},
+                "default": {}
+              }
+            },
+            "required": [
+              "puerto"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 500,
+          "default": []
+        }
+      },
+      "required": [
+        "ip"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

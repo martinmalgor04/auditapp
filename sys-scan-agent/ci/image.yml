@@ -1,0 +1,58 @@
+# CI de la imagen sys-openaudit (T8, R21/R22).
+# NOTA: al extraer este directorio a su repo propio, mover a .github/workflows/.
+name: image-sys-openaudit
+
+on:
+  push:
+    branches: [master, main]
+    paths: ['docker/sys-openaudit/**', '.github/workflows/image.yml', 'ci/image.yml']
+  workflow_dispatch:
+    inputs:
+      rev:
+        description: 'Revisión del tag (<oaeVersion>-<rev>)'
+        required: true
+        default: '1'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extraer versión pineada del Dockerfile
+        id: ver
+        run: |
+          V=$(grep -m1 '^ARG OAE_VERSION=' docker/sys-openaudit/Dockerfile | cut -d= -f2)
+          echo "oae_version=$V" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build multi-arch y push
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/sys-openaudit
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/serviciosysistemas/sys-openaudit:${{ steps.ver.outputs.oae_version }}-${{ github.event.inputs.rev || '1' }}
+            ghcr.io/serviciosysistemas/sys-openaudit:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Publicar digest (para pinear en internal/dockerx)
+        run: |
+          echo "DIGEST=${{ steps.build.outputs.digest }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Actualizar IMAGEN_DIGEST en internal/dockerx/imagen.go con este valor."

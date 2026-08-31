@@ -1,0 +1,111 @@
+# Release del agente (T15, R2/R29/R30): builds Windows (.exe NSIS) y macOS
+# (.dmg), SIN firma en v1 (decisión de puerta 2026-08-27), con SHA-256 y
+# versión inyectada por ldflags.
+# NOTA: al extraer este directorio a su repo propio, mover a .github/workflows/.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Wails CLI
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.15.0
+      - name: Build .exe NSIS (sin firma, v1)
+        run: |
+          $VERSION = ${env:GITHUB_REF_NAME}.TrimStart('v')
+          wails build -platform windows/amd64 -nsis -clean `
+            -ldflags "-X github.com/serviciosysistemas/sys-scan-agent/internal/buildinfo.Version=$VERSION"
+      - name: SHA-256 y artefacto
+        run: |
+          $VERSION = ${env:GITHUB_REF_NAME}.TrimStart('v')
+          $exe = "build\bin\sys-scan-agent-amd64-installer.exe"
+          $final = "sys-scan-agent-windows-amd64.exe"
+          Copy-Item $exe $final
+          (Get-FileHash $final -Algorithm SHA256).Hash.ToLower() | Out-File "$final.sha256" -NoNewline -Encoding ascii
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: |
+            sys-scan-agent-windows-amd64.exe
+            sys-scan-agent-windows-amd64.exe.sha256
+
+  build-macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Wails CLI
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.15.0
+      - name: Build .app (sin firma, v1)
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          wails build -platform darwin/arm64 -clean \
+            -ldflags "-X github.com/serviciosysistemas/sys-scan-agent/internal/buildinfo.Version=$VERSION"
+      - name: Empaquetar .dmg + SHA-256
+        run: |
+          brew install create-dmg
+          mkdir -p dist
+          create-dmg --overwrite "build/bin/sys-scan-agent.app" dist/ || true
+          DMG=$(ls dist/*.dmg | head -1)
+          mv "$DMG" sys-scan-agent-macos-arm64.dmg
+          shasum -a 256 sys-scan-agent-macos-arm64.dmg | awk '{print $1}' > sys-scan-agent-macos-arm64.dmg.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: |
+            sys-scan-agent-macos-arm64.dmg
+            sys-scan-agent-macos-arm64.dmg.sha256
+
+  publicar:
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artefactos
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artefactos/windows/sys-scan-agent-windows-amd64.exe
+            artefactos/windows/sys-scan-agent-windows-amd64.exe.sha256
+            artefactos/macos/sys-scan-agent-macos-arm64.dmg
+            artefactos/macos/sys-scan-agent-macos-arm64.dmg.sha256
+      - name: Resumen para actualizar version.json de AuditApp (R29)
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          REPO="${{ github.repository }}"
+          SHA_WIN=$(cat artefactos/windows/sys-scan-agent-windows-amd64.exe.sha256)
+          SHA_MAC=$(cat artefactos/macos/sys-scan-agent-macos-arm64.dmg.sha256)
+          {
+            echo "Actualizar \`static/agente/version.json\` en auditapp:"
+            echo '```json'
+            printf '{\n  "version": "%s",\n  "urlWindows": "https://github.com/%s/releases/download/%s/sys-scan-agent-windows-amd64.exe",\n  "urlMac": "https://github.com/%s/releases/download/%s/sys-scan-agent-macos-arm64.dmg",\n  "sha256Windows": "%s",\n  "sha256Mac": "%s"\n}\n' \
+              "$VERSION" "$REPO" "$GITHUB_REF_NAME" "$REPO" "$GITHUB_REF_NAME" "$SHA_WIN" "$SHA_MAC"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

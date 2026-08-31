@@ -1,0 +1,38 @@
+# CI del agente: tests unitarios + vet + build de frontend.
+# NOTA: al extraer este directorio a su repo propio, mover a .github/workflows/.
+name: test
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: go vet
+        run: go vet ./...
+      - name: Tests unitarios (sin Docker ni display)
+        run: go test ./internal/... -count=1
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Build frontend
+        run: |
+          cd frontend
+          pnpm install --frozen-lockfile
+          pnpm run check
+          pnpm run build

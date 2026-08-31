@@ -1,0 +1,53 @@
+{
+  "id": "12",
+  "type": "devices",
+  "attributes": {
+    "id": 12,
+    "name": "srv-dc01",
+    "ip": "192.168.10.10",
+    "hostname": "SRV-DC01",
+    "dns_hostname": "srv-dc01",
+    "dns_domain": "acme.local",
+    "fqdn": "SRV-DC01.acme.local",
+    "dns_fqdn": "srv-dc01.acme.local",
+    "type": "computer",
+    "os_group": "Windows",
+    "os_family": "Windows Server 2022",
+    "os_name": "Microsoft Windows Server 2022 Standard",
+    "os_version": "10.0.20348",
+    "os_arch": "x64",
+    "os_bit": 64,
+    "manufacturer": "Dell Inc.",
+    "model": "PowerEdge R450",
+    "serial": "ABC1234",
+    "form_factor": "Rack Mount",
+    "memory_count": 67108864,
+    "processor_count": 2,
+    "status": "production",
+    "last_seen": "2026-08-31 10:00:00"
+  },
+  "included": {
+    "ip": [
+      {"id": 100, "device_id": 12, "mac": "AA:BB:CC:DD:EE:01", "ip": "192.168.10.10", "interface": "Ethernet0", "version": 4}
+    ],
+    "network": [
+      {"id": 200, "device_id": 12, "mac": "AA:BB:CC:DD:EE:01", "name": "Ethernet0", "connection": "LAN"}
+    ],
+    "nmap": [
+      {"id": 300, "device_id": 12, "port": 445, "protocol": "tcp", "name": "microsoft-ds", "program": ""},
+      {"id": 301, "device_id": 12, "port": 3389, "protocol": "tcp", "name": "ms-wbt-server", "program": "Microsoft Terminal Services"},
+      {"id": 302, "device_id": 12, "port": 135, "protocol": "tcp", "name": "msrpc", "program": ""}
+    ],
+    "software": [
+      {"id": 400, "device_id": 12, "name": "Tango Gestión", "version": "19.1.0.5", "publisher": "Axoft", "installed_on": "2026-01-15 00:00:00"},
+      {"id": 401, "device_id": 12, "name": "Google Chrome", "version": "128.0.0", "publisher": "Google LLC", "installed_on": ""}
+    ],
+    "disk": [
+      {"id": 500, "device_id": 12, "device": "C:", "size": 476937, "model": "DELL PERC H755"},
+      {"id": 501, "device_id": 12, "device": "D:", "size": 1907728, "model": "DELL PERC H755"}
+    ],
+    "processor": [
+      {"id": 600, "device_id": 12, "description": "Intel Xeon Silver 4310 CPU @ 2.10GHz", "physical_count": 2, "core_count": 12}
+    ]
+  }
+}

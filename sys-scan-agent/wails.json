@@ -1,0 +1,20 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "sys-scan-agent",
+  "outputfilename": "sys-scan-agent",
+  "frontend:install": "pnpm install",
+  "frontend:build": "pnpm run build",
+  "frontend:dev:watcher": "pnpm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "Servicios y Sistemas",
+    "email": "info@serviciosysistemas.com.ar"
+  },
+  "info": {
+    "companyName": "Servicios y Sistemas",
+    "productName": "SyS Scan Agent",
+    "productVersion": "1.0.0",
+    "copyright": "© Servicios y Sistemas",
+    "comments": "Agente de escaneo de red para auditorías SyS"
+  }
+}

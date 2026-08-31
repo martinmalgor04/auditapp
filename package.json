@@ -18,7 +18,8 @@
     "db:migrate": "tsx scripts/db-migrate.ts",
     "db:seed": "tsx scripts/db-seed.ts",
     "db:seed:templates": "tsx scripts/db-seed-templates.ts",
-    "db:reset": "tsx scripts/db-reset.ts"
+    "db:reset": "tsx scripts/db-reset.ts",
+    "export:escaneo-schema": "tsx scripts/export-escaneo-schema.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",
@@ -28,6 +29,8 @@
     "@types/node": "^22.14.0",
     "@types/nodemailer": "^8.0.1",
     "@types/web-push": "^3.6.4",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.28.0",
     "fake-indexeddb": "^6.2.5",

@@ -1,0 +1,26 @@
+# Binarios y builds
+/build/bin/
+/dist/
+*.exe
+*.dmg
+*.app
+
+# Frontend
+/frontend/node_modules/
+# frontend/dist se embebe vía go:embed: se commitea solo el placeholder;
+# el build real lo genera `wails build` (CI) antes de empaquetar.
+/frontend/dist/assets/
+
+# Go
+*.test
+*.out
+/vendor/
+
+# Datos locales del agente (nunca commitear)
+*.db
+*.db-journal
+/logs/
+
+# OS
+.DS_Store
+Thumbs.db

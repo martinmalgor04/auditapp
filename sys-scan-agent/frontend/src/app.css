@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Identidad SyS (misma paleta que AuditApp) */
+    --sys-font: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+    --sys-azul-profundo: #0a1929;
+    --sys-azul-medio: #102a43;
+    --sys-blanco: #ffffff;
+    --sys-offwhite: #f7f9fb;
+    --sys-celeste: #a2c6d4;
+    --sys-azul-electrico: #2196f3;
+    --sys-verde: #27ae60;
+    --sys-rojo: #e63946;
+    --sys-naranja: #f39c12;
+    --sys-gris-neutro: #908a82;
+    --sys-radius-app: 1rem;
+    --sys-radius-cta: 0.625rem;
+  }
+
+  body {
+    font-family: var(--sys-font);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--sys-offwhite);
+    color: var(--sys-azul-profundo);
+  }
+}
+
+@layer components {
+  .sys-card {
+    @apply rounded-sys-app border border-slate-200 bg-sys-blanco shadow-sm;
+  }
+
+  .sys-btn {
+    @apply inline-flex min-h-[44px] items-center justify-center rounded-sys px-4 py-2 text-sm font-semibold transition-colors;
+  }
+
+  .sys-btn-primary {
+    @apply sys-btn bg-sys-profundo text-white hover:bg-sys-medio;
+  }
+
+  .sys-btn-secondary {
+    @apply sys-btn border border-slate-300 bg-sys-blanco text-sys-profundo hover:bg-sys-offwhite;
+  }
+
+  .sys-field {
+    @apply w-full min-h-[44px] rounded-sys-app border border-slate-300 bg-sys-blanco px-3.5 py-2.5 text-sm text-sys-profundo;
+  }
+
+  .sys-field:focus {
+    outline: none;
+    border-color: var(--sys-azul-electrico);
+  }
+}

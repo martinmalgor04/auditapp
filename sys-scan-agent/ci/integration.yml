@@ -1,0 +1,27 @@
+# Test de integración end-to-end (T16): contenedor sys-openaudit real + red
+# Docker con víctimas SSH/SNMP + stub del contrato #60.
+# NOTA: al extraer este directorio a su repo propio, mover a .github/workflows/.
+name: integration
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  endtoend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Build imagen sys-openaudit de test
+        run: docker build -t sys-openaudit:test docker/sys-openaudit/
+
+      - name: Test de integración (discovery real contra víctimas)
+        env:
+          SYS_SCAN_SKIP_IMAGE_BUILD: '1'
+        run: go test -tags=integration -v -timeout 20m ./test/integration/...

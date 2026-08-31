@@ -1,0 +1,17 @@
+{
+  "id": "22",
+  "type": "devices",
+  "attributes": {
+    "id": 22,
+    "name": "192.168.10.77",
+    "ip": "192.168.10.77",
+    "type": "unknown",
+    "manufacturer": "",
+    "memory_count": 0
+  },
+  "included": {
+    "nmap": [
+      {"id": 800, "device_id": 22, "port": 554, "protocol": "tcp", "name": "rtsp", "program": ""}
+    ]
+  }
+}
