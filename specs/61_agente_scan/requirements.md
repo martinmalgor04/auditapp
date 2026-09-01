@@ -239,8 +239,10 @@ y ofrecer reintentar o marcar el escaneo como `fallido` con detalle.
   (impresora o similar) aparece con MAC y tipo clasificado; un corte de
   Internet a mitad de sincronización no pierde datos (cola drena al volver).
 - Instalación desde cero en ambas plataformas sin pasos manuales de
-  dependencias internas (R3/R4), con `.exe` que pasa la verificación de
-  firma y `.app` que pasa `spctl`/`stapler`.
+  dependencias internas (R3/R4). En v1 los binarios van SIN firma de código
+  (R2, puerta 2026-08-27): distribución interna con bypass documentado de
+  SmartScreen/Gatekeeper; la verificación de firma (`sigcheck`/`spctl`/
+  `stapler`) aplica desde v2 cuando entren los certificados.
 
 ## Diferido / fuera de alcance
 

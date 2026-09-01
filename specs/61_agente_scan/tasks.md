@@ -78,13 +78,12 @@
   keychain del escaneo; verificación automatizada de ausencia de
   credenciales en artefactos post-cierre. Cubre: R10, R24.
 
-- [x] T15 — Empaquetado y firma en CI: `.exe` NSIS firmado (certificado
-  SyS), `.app` firmada + notarizada en `.dmg`, publicación en GitHub
-  Releases con SHA-256, versión semver inyectada por ldflags. Cubre: R2,
-  R29, R30.
-  NOTA de implementación (2026-08-31): R2 y la puerta 2026-08-27 definen v1
-  SIN firma de código; esta task decía "firmado/notarizado" y quedó
-  desactualizada respecto de la puerta. Se implementó SIN firma (R2).
+- [x] T15 — Empaquetado en CI: `.exe` NSIS y `.app` en `.dmg`, SIN firma
+  de código en v1 (R2, puerta 2026-08-27), publicación en GitHub Releases
+  con SHA-256, versión semver inyectada por ldflags. Cubre: R2, R29, R30.
+  NOTA de implementación (2026-08-31): esta task decía "firmado/
+  notarizado" y quedó desactualizada respecto de la puerta; se implementó
+  SIN firma (R2). La firma entra en v2 (certificado OV + Apple Developer).
 
 - [x] T16 — Test de integración en CI: contenedor `sys-openaudit` real + red
   Docker con víctimas SSH/SNMP + AuditApp de test con API #60 → escaneo
@@ -103,10 +102,11 @@
   ejecutable desde el entorno cloud del implementer. Checklist lista para
   ejecutar en campo.
 
-- [x] T18 — Gates: `go test ./...` verde, builds firmados de ambas
-  plataformas en CI, integración verde, prueba de campo documentada; en
-  auditapp `pnpm run check`, `pnpm test`, `./init.sh` verdes (pieza
-  aditiva). Mapa de trazabilidad en `progress/impl_61_agente_scan.md`.
+- [x] T18 — Gates: `go test ./...` verde, builds de ambas plataformas en
+  CI (sin firma en v1, ver T15), integración verde, prueba de campo
+  documentada; en auditapp `pnpm run check`, `pnpm test`, `./init.sh`
+  verdes (pieza aditiva). Mapa de trazabilidad en
+  `progress/impl_61_agente_scan.md`.
   Cubre: R1–R32.
   NOTA (2026-08-31): gates del agente verdes locales (go test/vet/fmt/race,
   cross-compile win/mac, wails build, svelte-check). Builds de plataforma e
