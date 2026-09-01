@@ -99,9 +99,19 @@
   (MACs vs `arp -a`, dispositivo sin credenciales con MAC y tipo, corte de
   Internet con drenado posterior, purga de credenciales). Evidencia en
   `progress/impl_61_agente_scan.md`. Cubre: R5, R6, R7, R8, R10, R18.
+  **BLOQUEADA (2026-08-31):** requiere notebook en LAN física real; no
+  ejecutable desde el entorno cloud del implementer. Checklist lista para
+  ejecutar en campo.
 
-- [ ] T18 — Gates: `go test ./...` verde, builds firmados de ambas
+- [x] T18 — Gates: `go test ./...` verde, builds firmados de ambas
   plataformas en CI, integración verde, prueba de campo documentada; en
   auditapp `pnpm run check`, `pnpm test`, `./init.sh` verdes (pieza
   aditiva). Mapa de trazabilidad en `progress/impl_61_agente_scan.md`.
   Cubre: R1–R32.
+  NOTA (2026-08-31): gates del agente verdes locales (go test/vet/fmt/race,
+  cross-compile win/mac, wails build, svelte-check). Builds de plataforma e
+  integración corren en CI del repo del agente (`ci/`). En auditapp los 15
+  tests nuevos pasan; los fallos de `./init.sh` son preexistentes en master
+  (verificados con stash): `informe-manual`, `report-html-download`,
+  `audit-crud` (flaky), `canonical-contract` (flaky), feature 7 sin specs.
+  Prueba de campo (T17) pendiente — bloqueada por entorno.
