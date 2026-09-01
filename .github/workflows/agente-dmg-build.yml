@@ -1,0 +1,56 @@
+# WORKFLOW TEMPORAL (2026-09-01, feature #61): buildea el .dmg del agente
+# sys-scan-agent (que vive como subdirectorio de este repo hasta que se
+# extraiga a su repo propio) para la prueba de campo T17. Se dispara solo en
+# la rama cursor/agente-dmg-build. Eliminar tras la extracción del repo.
+name: build-agente-dmg-temporal
+
+on:
+  push:
+    branches: [cursor/agente-dmg-build]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: sys-scan-agent
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: sys-scan-agent/go.mod
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: sys-scan-agent/frontend/pnpm-lock.yaml
+      - name: Wails CLI
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.15.0
+      - name: Dependencias del frontend
+        run: cd frontend && pnpm install --frozen-lockfile
+      - name: Build .app (sin firma, v1)
+        run: |
+          wails build -platform darwin/arm64 -clean \
+            -ldflags "-X github.com/serviciosysistemas/sys-scan-agent/internal/buildinfo.Version=0.1.0-fieldtest"
+      - name: Empaquetar .dmg + SHA-256
+        run: |
+          brew install create-dmg
+          mkdir -p dist
+          create-dmg --overwrite "build/bin/sys-scan-agent.app" dist/ || true
+          DMG=$(ls dist/*.dmg | head -1)
+          mv "$DMG" sys-scan-agent-macos-arm64.dmg
+          shasum -a 256 sys-scan-agent-macos-arm64.dmg | awk '{print $1}' > sys-scan-agent-macos-arm64.dmg.sha256
+      - name: Prerelease con el .dmg
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: agente-v0.1.0-fieldtest
+          name: "sys-scan-agent 0.1.0 — prueba de campo (T17, #61)"
+          prerelease: true
+          files: |
+            sys-scan-agent/sys-scan-agent-macos-arm64.dmg
+            sys-scan-agent/sys-scan-agent-macos-arm64.dmg.sha256
